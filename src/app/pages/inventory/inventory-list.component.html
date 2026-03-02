@@ -51,6 +51,16 @@
                     </mat-cell>
                 </ng-container>
 
+                <!-- SKU Column -->
+                <ng-container matColumnDef="sku">
+                    <mat-header-cell *matHeaderCellDef class="font-semibold mat-subtitle-1 text-sm">
+                        SKU
+                    </mat-header-cell>
+                    <mat-cell class="p-4 text-xs text-muted" *matCellDef="let element">
+                        {{ element.sku || '—' }}
+                    </mat-cell>
+                </ng-container>
+
                 <!-- Category Column -->
                 <ng-container matColumnDef="category">
                     <mat-header-cell *matHeaderCellDef class="font-semibold mat-subtitle-1 text-sm">
@@ -65,35 +75,46 @@
                     </mat-cell>
                 </ng-container>
 
-                <!-- Price Column -->
-                <ng-container matColumnDef="price">
-                    <mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold mat-subtitle-1 text-sm">
-                        {{ 'Price' | translate }}
-                    </mat-header-cell>
-                    <mat-cell class="p-4 text-sm" *matCellDef="let element">
-                        ${{ element.price }}
-                    </mat-cell>
-                </ng-container>
-
                 <!-- Stock Column -->
                 <ng-container matColumnDef="stock">
                     <mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold mat-subtitle-1 text-sm">
-                        {{ 'Stock' | translate }}
+                        Stock
                     </mat-header-cell>
                     <mat-cell class="p-4" *matCellDef="let element">
-                        @if(element.stock > 10) {
-                        <span class="bg-light-success text-success rounded-md font-semibold px-2 py-1 text-xs">
-                            {{ element.stock }} (High)
-                        </span>
-                        } @else if (element.stock > 0) {
-                        <span class="bg-light-warning text-warning rounded-md font-semibold px-2 py-1 text-xs">
-                            {{ element.stock }} (Low)
-                        </span>
-                        } @else {
+                        @let threshold = element.minStock ?? 10;
+                        @if (element.stock === 0) {
                         <span class="bg-light-error text-error rounded-md font-semibold px-2 py-1 text-xs">
-                            Out of Stock
+                            Agotado
                         </span>
-                        }
+                        } @else if (element.stock <= threshold) { <span
+                            class="bg-light-warning text-warning rounded-md font-semibold px-2 py-1 text-xs">
+                            {{ element.stock }} — Bajo
+                            </span>
+                            } @else {
+                            <span class="bg-light-success text-success rounded-md font-semibold px-2 py-1 text-xs">
+                                {{ element.stock }}
+                            </span>
+                            }
+                    </mat-cell>
+                </ng-container>
+
+                <!-- Min Stock Column -->
+                <ng-container matColumnDef="minStock">
+                    <mat-header-cell *matHeaderCellDef class="font-semibold mat-subtitle-1 text-sm">
+                        Mín.
+                    </mat-header-cell>
+                    <mat-cell class="p-4 text-sm text-muted" *matCellDef="let element">
+                        {{ element.minStock ?? '—' }}
+                    </mat-cell>
+                </ng-container>
+
+                <!-- Max Stock Column -->
+                <ng-container matColumnDef="maxStock">
+                    <mat-header-cell *matHeaderCellDef class="font-semibold mat-subtitle-1 text-sm">
+                        Máx.
+                    </mat-header-cell>
+                    <mat-cell class="p-4 text-sm text-muted" *matCellDef="let element">
+                        {{ element.maxStock ?? '—' }}
                     </mat-cell>
                 </ng-container>
 

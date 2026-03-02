@@ -20,70 +20,21 @@ export const navItems: NavItem[] = [
     route: '/authentication/register',
   },
   {
-    navCap: 'Other',
+    navCap: 'Inventory',
   },
   {
-    displayName: 'Menu Level',
-    iconName: 'box-multiple',
-    route: '/menu-level',
-    children: [
-      {
-        displayName: 'Menu 1',
-        iconName: 'point',
-        route: '/menu-1',
-        children: [
-          {
-            displayName: 'Menu 1',
-            iconName: 'point',
-            route: '/menu-1',
-          },
-
-          {
-            displayName: 'Menu 2',
-            iconName: 'point',
-            route: '/menu-2',
-          },
-        ],
-      },
-
-      {
-        displayName: 'Menu 2',
-        iconName: 'point',
-        route: '/menu-2',
-      },
-    ],
+    displayName: 'Dashboard',
+    iconName: 'layout-dashboard',
+    route: '/inventory/dashboard',
   },
   {
-    displayName: 'Disabled',
-    iconName: 'ban',
-    route: '/disabled',
-    disabled: true,
-  },
-  {
-    displayName: 'Chip',
-    iconName: 'mood-smile',
-    route: '/',
-    chip: true,
-    chipClass: 'bg-error text-white',
-    chipContent: '9',
-  },
-  {
-    displayName: 'Outlined',
-    iconName: 'mood-smile',
-    route: '/',
-    chip: true,
-    chipClass: 'border border-error text-error',
-    chipContent: 'outlined',
-  },
-  {
-    displayName: 'External Link',
-    iconName: 'star',
-    route: 'https://www.google.com/',
-    external: true,
-  },
-  {
-    displayName: 'Inventory',
+    displayName: 'Gestion de Productos',
     iconName: 'box',
-    route: '/inventory',
+    route: '/inventory/products',
+  },
+  {
+    displayName: 'Movimientos',
+    iconName: 'arrows-exchange',
+    route: '/inventory/movements',
   },
 ];

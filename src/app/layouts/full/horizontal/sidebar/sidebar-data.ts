@@ -15,43 +15,21 @@ export const navItems: NavItem[] = [
     route: '/authentication/login',
   },
   {
-    navCap: 'Other',
+    navCap: 'Inventory',
   },
   {
-    displayName: 'Menu Level',
-    iconName: 'box-multiple',
-    route: '/menu-level',
-    children: [
-      {
-        displayName: 'Menu 1',
-        iconName: 'point',
-        route: '/menu-1',
-        children: [
-          {
-            displayName: 'Menu 1',
-            iconName: 'point',
-            route: '/menu-1',
-          },
-
-          {
-            displayName: 'Menu 2',
-            iconName: 'point',
-            route: '/menu-2',
-          },
-        ],
-      },
-
-      {
-        displayName: 'Menu 2',
-        iconName: 'point',
-        route: '/menu-2',
-      },
-    ],
+    displayName: 'Dashboard',
+    iconName: 'layout-dashboard',
+    route: '/inventory/dashboard',
   },
   {
-    displayName: 'Disabled',
-    iconName: 'ban',
-    route: '/disabled',
-    disabled: true,
+    displayName: 'Gestion de Productos',
+    iconName: 'box',
+    route: '/inventory/products',
+  },
+  {
+    displayName: 'Movimientos',
+    iconName: 'arrows-exchange',
+    route: '/inventory/movements',
   },
 ];

@@ -170,5 +170,12 @@
   "Add New Category": "Añadir nueva categoría",
   "Enter category name": "Ingresa el nombre de la categoría",
   "Category name is required": "El nombre de la categoría es obligatorio",
-  "At least one category is required": "Se requiere al menos una categoría"
+  "At least one category is required": "Se requiere al menos una categoría",
+  "Dashboard": "Dashboard",
+  "Gestion de Productos": "Gestión de Productos",
+  "Movimientos": "Movimientos",
+  "Search products": "Buscar productos",
+  "Filter by category": "Filtrar por categoría",
+  "All": "Todos",
+  "New category...": "Nueva categoría..."
 }

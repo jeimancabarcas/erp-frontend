@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit, inject, signal, computed, ElementRef, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormControl } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormControl, AbstractControl, ValidationErrors } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -17,6 +17,30 @@ import { TablerIconsModule } from 'angular-tabler-icons';
 import { CategoryFormComponent } from './category-form.component';
 import { MatDialog } from '@angular/material/dialog';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
+
+
+// ── Cross-field validator: minStock must not exceed maxStock ─────────────
+function stockRangeValidator(group: AbstractControl): ValidationErrors | null {
+    const min = group.get('minStock')?.value;
+    const max = group.get('maxStock')?.value;
+    if (min !== null && max !== null && min > max) {
+        group.get('minStock')?.setErrors({ minGreaterThanMax: true });
+        group.get('maxStock')?.setErrors({ maxLessThanMin: true });
+        return { stockRange: true };
+    }
+    // Clear cross-field errors (keep other errors intact)
+    const minCtrl = group.get('minStock');
+    const maxCtrl = group.get('maxStock');
+    if (minCtrl?.hasError('minGreaterThanMax')) {
+        const { minGreaterThanMax, ...rest } = minCtrl.errors!;
+        minCtrl.setErrors(Object.keys(rest).length ? rest : null);
+    }
+    if (maxCtrl?.hasError('maxLessThanMin')) {
+        const { maxLessThanMin, ...rest } = maxCtrl.errors!;
+        maxCtrl.setErrors(Object.keys(rest).length ? rest : null);
+    }
+    return null;
+}
 
 @Component({
     selector: 'app-product-form',
@@ -71,12 +95,14 @@ export class ProductFormComponent implements OnInit {
 
         this.productForm = this.fb.group({
             id: [data?.id || null],
+            sku: [data?.sku || '', [Validators.required]],
             name: [data?.name || '', [Validators.required]],
             description: [data?.description || ''],
-            price: [data?.price || 0, [Validators.required, Validators.min(0)]],
-            stock: [data?.stock || 0, [Validators.required, Validators.min(0)]],
+            stock: [data?.stock ?? null, [Validators.required, Validators.min(0)]],
+            minStock: [data?.minStock ?? null, [Validators.min(0)]],
+            maxStock: [data?.maxStock ?? null, [Validators.min(0)]],
             categories: [this.selectedCategories(), [Validators.required, Validators.minLength(1)]],
-        });
+        }, { validators: stockRangeValidator });
 
         // Initialize available categories if editing
         if (this.isEdit && data.categories) {

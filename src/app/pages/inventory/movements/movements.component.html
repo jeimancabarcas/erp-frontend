@@ -1,0 +1,219 @@
+<mat-card class="cardWithShadow mb-24">
+    <mat-card-content class="p-24">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-4">
+            <mat-card-title>
+                {{ 'Movimientos' | translate }}
+                <span class="text-sm font-normal block text-muted">
+                    {{ 'Historial de entradas y salidas de inventario' | translate }}
+                </span>
+            </mat-card-title>
+            <button mat-flat-button color="primary">
+                <span class="flex items-center">
+                    <i-tabler name="plus" class="size-5 me-2"></i-tabler>
+                    {{ 'Nuevo Movimiento' | translate }}
+                </span>
+            </button>
+        </div>
+
+        <!-- Summary cards -->
+        <div class="grid grid-cols-1  md:grid-cols-2 lg:grid-cols-3 gap-12 mb-12">
+            <!-- Entradas -->
+            <div class="flex items-center gap-16 rounded-xl p-4"
+                style="background:#E8F5E9; border-left: 4px solid #2E7D32">
+                <div class="rounded-lg p-4 flex items-center justify-center flex-shrink-0" style="background:#C8E6C9">
+                    <i-tabler name="arrow-down" style="color:#2E7D32" class="size-7"></i-tabler>
+                </div>
+                <div>
+                    <p class="text-xs font-medium mb-1" style="color:#2E7D32">TOTAL ENTRADAS</p>
+                    <p class="text-3xl font-bold m-0" style="color:#2E7D32">{{ totalEntradas() }}</p>
+                    <p class="text-xs text-muted mt-1">unidades recibidas</p>
+                </div>
+            </div>
+            <!-- Salidas -->
+            <div class="flex items-center gap-16 rounded-xl p-4"
+                style="background:#FFEBEE; border-left: 4px solid #C62828">
+                <div class="rounded-lg p-4 flex items-center justify-center flex-shrink-0" style="background:#FFCDD2">
+                    <i-tabler name="arrow-up" style="color:#C62828" class="size-7"></i-tabler>
+                </div>
+                <div>
+                    <p class="text-xs font-medium mb-1" style="color:#C62828">TOTAL SALIDAS</p>
+                    <p class="text-3xl font-bold m-0" style="color:#C62828">{{ totalSalidas() }}</p>
+                    <p class="text-xs text-muted mt-1">unidades despachadas</p>
+                </div>
+            </div>
+            <!-- Total -->
+            <div class="flex items-center gap-16 rounded-xl p-4"
+                style="background:#EDE7F6; border-left: 4px solid #6A1B9A">
+                <div class="rounded-lg p-4 flex items-center justify-center flex-shrink-0" style="background:#D1C4E9">
+                    <i-tabler name="arrows-exchange" style="color:#6A1B9A" class="size-7"></i-tabler>
+                </div>
+                <div>
+                    <p class="text-xs font-medium mb-1" style="color:#6A1B9A">TOTAL MOVIMIENTOS</p>
+                    <p class="text-3xl font-bold m-0" style="color:#6A1B9A">{{ totalMovements }}</p>
+                    <p class="text-xs text-muted mt-1">registros en total</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-container mt-4">
+            <mat-form-field appearance="outline" class="filter-field">
+                <i-tabler matPrefix name="search" class="p-1 ml-2"></i-tabler>
+                <input matInput [formControl]="searchControl"
+                    placeholder="{{ 'Buscar producto o referencia' | translate }}">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="filter-field">
+                <i-tabler matPrefix name="arrows-exchange" class="p-1 ml-2"></i-tabler>
+                <mat-select [formControl]="directionControl" placeholder="{{ 'Dirección' | translate }}">
+                    @for (opt of directionOptions; track opt.value) {
+                    <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                    }
+                </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="filter-field">
+                <i-tabler matPrefix name="tag" class="p-1 ml-2"></i-tabler>
+                <mat-select [formControl]="typeControl" placeholder="{{ 'Tipo' | translate }}">
+                    @for (opt of typeOptions; track opt.value) {
+                    <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                    }
+                </mat-select>
+            </mat-form-field>
+
+            @if (searchControl.value || directionControl.value || typeControl.value) {
+            <button mat-stroked-button (click)="clearFilters()" class="self-center">
+                <i-tabler name="x" class="size-4 me-1"></i-tabler> Limpiar
+            </button>
+            }
+        </div>
+
+        <!-- Table -->
+        <div class="relative overflow-auto">
+            <mat-table [dataSource]="dataSource" matSort class="min-w-full">
+
+                <!-- Date -->
+                <ng-container matColumnDef="date">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold text-sm ps-0">
+                        Fecha
+                    </mat-header-cell>
+                    <mat-cell class="p-4 ps-0 text-sm" *matCellDef="let row">
+                        {{ row.date | date:'dd/MM/yyyy HH:mm' }}
+                    </mat-cell>
+                </ng-container>
+
+                <!-- Product -->
+                <ng-container matColumnDef="product">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold text-sm">
+                        Producto
+                    </mat-header-cell>
+                    <mat-cell class="p-4" *matCellDef="let row">
+                        <div>
+                            <p class="font-semibold text-sm">{{ row.product }}</p>
+                            <p class="text-xs text-muted">{{ row.sku }}</p>
+                        </div>
+                    </mat-cell>
+                </ng-container>
+
+                <!-- Direction -->
+                <ng-container matColumnDef="direction">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold text-sm">
+                        Dirección
+                    </mat-header-cell>
+                    <mat-cell class="p-4" *matCellDef="let row">
+                        @if (row.direction === 'entrada') {
+                        <span class="badge badge-entrada">
+                            <i-tabler name="arrow-down" class="size-3"></i-tabler> Entrada
+                        </span>
+                        } @else {
+                        <span class="badge badge-salida">
+                            <i-tabler name="arrow-up" class="size-3"></i-tabler> Salida
+                        </span>
+                        }
+                    </mat-cell>
+                </ng-container>
+
+                <!-- Type -->
+                <ng-container matColumnDef="type">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold text-sm">
+                        Tipo
+                    </mat-header-cell>
+                    <mat-cell class="p-4" *matCellDef="let row">
+                        @if (row.type === 'compra') {
+                        <span class="badge badge-compra">
+                            <i-tabler name="shopping-cart" class="size-3"></i-tabler> Compra
+                        </span>
+                        } @else if (row.type === 'venta') {
+                        <span class="badge badge-venta">
+                            <i-tabler name="receipt" class="size-3"></i-tabler> Venta
+                        </span>
+                        } @else {
+                        <span class="badge badge-manual">
+                            <i-tabler name="pencil" class="size-3"></i-tabler> Manual
+                        </span>
+                        }
+                    </mat-cell>
+                </ng-container>
+
+                <!-- Quantity -->
+                <ng-container matColumnDef="quantity">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold text-sm">
+                        Cantidad
+                    </mat-header-cell>
+                    <mat-cell class="p-4 text-sm font-semibold" *matCellDef="let row">
+                        @if (row.direction === 'entrada') {
+                        <span style="color:#2E7D32">+{{ row.quantity }}</span>
+                        } @else {
+                        <span style="color:#C62828">-{{ row.quantity }}</span>
+                        }
+                    </mat-cell>
+                </ng-container>
+
+                <!-- Unit Cost -->
+                <ng-container matColumnDef="unitCost">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold text-sm">
+                        Costo Unit.
+                    </mat-header-cell>
+                    <mat-cell class="p-4 text-sm" *matCellDef="let row">
+                        ${{ row.unitCost | number:'1.2-2' }}
+                    </mat-cell>
+                </ng-container>
+
+                <!-- Reference -->
+                <ng-container matColumnDef="reference">
+                    <mat-header-cell *matHeaderCellDef class="font-semibold text-sm">
+                        Referencia
+                    </mat-header-cell>
+                    <mat-cell class="p-4 text-sm font-mono" *matCellDef="let row">
+                        {{ row.reference }}
+                    </mat-cell>
+                </ng-container>
+
+                <!-- Notes -->
+                <ng-container matColumnDef="notes">
+                    <mat-header-cell *matHeaderCellDef class="font-semibold text-sm pe-0">
+                        Notas
+                    </mat-header-cell>
+                    <mat-cell class="p-4 text-sm text-muted pe-0" *matCellDef="let row">
+                        {{ row.notes || '—' }}
+                    </mat-cell>
+                </ng-container>
+
+                <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+                <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+
+                <tr class="mat-row" *matNoDataRow>
+                    <td class="mat-cell text-center p-24 text-muted" [attr.colspan]="displayedColumns.length">
+                        No se encontraron movimientos con los filtros aplicados.
+                    </td>
+                </tr>
+            </mat-table>
+
+            <mat-paginator [pageSize]="10" [pageSizeOptions]="[5, 10, 25]" showFirstLastButtons>
+            </mat-paginator>
+        </div>
+
+    </mat-card-content>
+</mat-card>

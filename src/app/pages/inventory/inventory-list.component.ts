@@ -49,7 +49,7 @@ export class InventoryListComponent implements OnInit {
     private deleteProductUseCase = inject(DeleteProductUseCase);
     public dialog = inject(MatDialog);
 
-    protected displayedColumns: string[] = ['name', 'category', 'price', 'stock', 'actions'];
+    protected displayedColumns: string[] = ['name', 'sku', 'category', 'stock', 'minStock', 'maxStock', 'actions'];
     protected dataSource = new MatTableDataSource<Product>([]);
     protected categories = signal<string[]>([]);
 

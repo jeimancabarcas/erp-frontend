@@ -170,5 +170,12 @@
   "Add New Category": "Add New Category",
   "Enter category name": "Enter category name",
   "Category name is required": "Category name is required",
-  "At least one category is required": "At least one category is required"
+  "At least one category is required": "At least one category is required",
+  "Dashboard": "Dashboard",
+  "Gestion de Productos": "Product Management",
+  "Movimientos": "Movements",
+  "Search products": "Search products",
+  "Filter by category": "Filter by category",
+  "All": "All",
+  "New category...": "New category..."
 }
