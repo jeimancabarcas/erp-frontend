@@ -6,11 +6,26 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden !important;
+}
+
 body {
   font-family: $font-family;
   line-height: 1.334rem;
-  overflow-x: hidden;
   color: var(--mat-sys-on-background);
+}
+
+.page-container {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 .mainWrapper {

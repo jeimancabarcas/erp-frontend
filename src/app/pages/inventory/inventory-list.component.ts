@@ -1,9 +1,7 @@
 import { Component, OnInit, ViewChild, inject } from '@angular/core';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatTableDataSource } from '@angular/material/table';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatDialog } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import { TranslateModule } from '@ngx-translate/core';
@@ -20,11 +18,6 @@ import { ProductFormComponent } from './product-form.component';
     imports: [
         CommonModule,
         MaterialModule,
-        MatTableModule,
-        MatPaginatorModule,
-        MatButtonModule,
-        MatIconModule,
-        MatDialogModule,
         TablerIconsModule,
         TranslateModule,
     ],

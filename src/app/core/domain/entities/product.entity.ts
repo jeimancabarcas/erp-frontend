@@ -4,6 +4,6 @@ export interface Product {
     description: string;
     price: number;
     stock: number;
-    category: string;
+    categories: string[];
     imagePath?: string;
 }

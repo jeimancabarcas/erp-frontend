@@ -31,7 +31,11 @@
                         {{ 'Category' | translate }}
                     </mat-header-cell>
                     <mat-cell class="p-4" *matCellDef="let element">
-                        <span class="text-sm">{{ element.category }}</span>
+                        <mat-chip-set>
+                            @for (cat of element.categories; track cat) {
+                            <mat-chip class="text-xs">{{ cat }}</mat-chip>
+                            }
+                        </mat-chip-set>
                     </mat-cell>
                 </ng-container>
 

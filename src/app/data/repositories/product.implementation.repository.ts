@@ -8,11 +8,11 @@ import { Injectable } from '@angular/core';
 })
 export class ProductImplementationRepository extends ProductRepository {
     private products: Product[] = [
-        { id: 1, name: 'Laptop Pro', description: 'High performance laptop', price: 1500, stock: 10, category: 'Electronics' },
-        { id: 2, name: 'Smartphone X', description: 'Latest model smartphone', price: 900, stock: 25, category: 'Electronics' },
-        { id: 3, name: 'Wireless Mouse', description: 'Ergonomic wireless mouse', price: 30, stock: 50, category: 'Accessories' },
-        { id: 4, name: 'Mechanical Keyboard', description: 'RGB mechanical keyboard', price: 120, stock: 15, category: 'Accessories' },
-        { id: 5, name: 'Monitor 4K', description: '32-inch 4K monitor', price: 400, stock: 5, category: 'Electronics' },
+        { id: 1, name: 'Laptop Pro', description: 'High performance laptop', price: 1500, stock: 10, categories: ['Electronics', 'Computing'] },
+        { id: 2, name: 'Smartphone X', description: 'Latest model smartphone', price: 900, stock: 25, categories: ['Electronics', 'Mobile'] },
+        { id: 3, name: 'Wireless Mouse', description: 'Ergonomic wireless mouse', price: 30, stock: 50, categories: ['Accessories', 'Computing'] },
+        { id: 4, name: 'Mechanical Keyboard', description: 'RGB mechanical keyboard', price: 120, stock: 15, categories: ['Accessories', 'Computing'] },
+        { id: 5, name: 'Monitor 4K', description: '32-inch 4K monitor', price: 400, stock: 5, categories: ['Electronics', 'Graphics'] },
     ];
 
     getProducts(): Observable<Product[]> {

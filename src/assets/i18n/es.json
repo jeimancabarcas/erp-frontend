@@ -155,10 +155,20 @@
   "Edit Product": "Editar Producto",
   "Enter product name": "Ingresa el nombre del producto",
   "Enter category": "Ingresa la categoría",
+  "Enter price": "Ingresa el precio",
+  "Enter stock": "Ingresa el stock",
+  "Enter description": "Ingresa una descripción",
   "Name is required": "El nombre es obligatorio",
   "Category is required": "La categoría es obligatoria",
   "Cancel": "Cancelar",
   "Update": "Actualizar",
   "Save": "Guardar",
-  "Description": "Descripción"
+  "Description": "Descripción",
+  "Select categories": "Seleccionar categorías",
+  "Search categories": "Buscar categorías",
+  "No categories found": "No se encontraron categorías",
+  "Add New Category": "Añadir nueva categoría",
+  "Enter category name": "Ingresa el nombre de la categoría",
+  "Category name is required": "El nombre de la categoría es obligatorio",
+  "At least one category is required": "Se requiere al menos una categoría"
 }
