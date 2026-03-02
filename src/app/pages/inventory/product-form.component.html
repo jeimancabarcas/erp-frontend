@@ -11,43 +11,39 @@
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="w-full">
-            <mat-select formControlName="categories" multiple placeholder="{{ 'Select categories' | translate }}">
-                <div class="select-header" (click)="$event.stopPropagation()">
-                    <mat-form-field appearance="outline" class="search-field" (click)="$event.stopPropagation()">
-                        <input matInput [formControl]="searchControl"
-                            placeholder="{{ 'Search categories' | translate }}" (keydown)="$event.stopPropagation()">
-                        @if (searchControl.value) {
-                        <button matSuffix mat-icon-button aria-label="Clear" (click)="clearSearch($event)">
-                            <i-tabler name="x" class="size-4"></i-tabler>
-                        </button>
-                        }
-                    </mat-form-field>
-                </div>
-
-                @for (cat of filteredCategories(); track cat) {
-                <mat-option [value]="cat">{{ cat }}</mat-option>
-                }
-
-                @if (filteredCategories().length === 0) {
-                <div class="p-16 text-center text-sm text-gray-500">
-                    {{ 'No categories found' | translate }}
-                </div>
-                }
-
-                <div class="select-footer">
-                    <button mat-button color="primary" class="w-full flex justify-start items-center" type="button"
-                        (click)="addNewCategory()">
-                        <i-tabler name="plus" class="size-4 me-2"></i-tabler>
-                        {{ 'Add New Category' | translate }}
+            <mat-chip-grid #chipGrid aria-label="Category selection">
+                @for (category of selectedCategories(); track category) {
+                <mat-chip-row (removed)="remove(category)">
+                    {{category}}
+                    <button matChipRemove [attr.aria-label]="'remove ' + category">
+                        <i-tabler name="x" class="size-3"></i-tabler>
                     </button>
-                </div>
-            </mat-select>
+                </mat-chip-row>
+                }
+            </mat-chip-grid>
+            <input placeholder="{{ 'New category...' | translate }}" #categoryInput [formControl]="categoryControl"
+                [matChipInputFor]="chipGrid" [matAutocomplete]="auto"
+                [matChipInputSeparatorKeyCodes]="separatorKeysCodes" (matChipInputTokenEnd)="add($event)" />
+            <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)">
+                @for (category of filteredCategories(); track category) {
+                <mat-option [value]="category">{{category}}</mat-option>
+                }
+            </mat-autocomplete>
             @if (productForm.get('categories')?.hasError('required')) {
             <mat-error>
                 {{ 'At least one category is required' | translate }}
             </mat-error>
             }
         </mat-form-field>
+
+        <div class="flex justify-end -mt-2">
+            <button mat-button color="primary" class="text-xs!" type="button" (click)="addNewCategory()">
+                <div class="flex items-center">
+                    <i-tabler name="plus" class="size-4 me-1"></i-tabler>
+                    {{ 'Add New Category' | translate }}
+                </div>
+            </button>
+        </div>
 
         <div class="grid grid-cols-2 gap-4">
             <mat-form-field appearance="outline">

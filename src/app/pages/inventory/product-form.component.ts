@@ -1,20 +1,22 @@
-import { Component, Inject, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, Inject, OnInit, inject, signal, computed, ElementRef, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormControl } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
+import { MatAutocompleteSelectedEvent, MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatChipInputEvent, MatChipsModule } from '@angular/material/chips';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { Product } from '../../core/domain/entities/product.entity';
 import { CreateProductUseCase } from '../../core/application/use-cases/create-product.use-case';
 import { UpdateProductUseCase } from '../../core/application/use-cases/update-product.use-case';
-import { lastValueFrom } from 'rxjs';
+import { lastValueFrom, debounceTime, distinctUntilChanged } from 'rxjs';
 import { MaterialModule } from '../../material.module';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import { CategoryFormComponent } from './category-form.component';
 import { MatDialog } from '@angular/material/dialog';
+import { COMMA, ENTER } from '@angular/cdk/keycodes';
 
 @Component({
     selector: 'app-product-form',
@@ -28,27 +30,8 @@ import { MatDialog } from '@angular/material/dialog';
     ],
     templateUrl: './product-form.component.html',
     styles: [`
-        .select-header {
-            position: sticky;
-            top: 0;
-            background: white;
-            z-index: 10;
-            padding: 8px 16px;
-            border-bottom: 1px solid #efefef;
-        }
-        .select-footer {
-            position: sticky;
-            bottom: 0;
-            background: white;
-            z-index: 10;
-            padding: 8px;
-            border-top: 1px solid #efefef;
-        }
-        .search-field {
+        .category-chip-list {
             width: 100%;
-        }
-        ::ng-deep .mat-mdc-select-panel {
-            padding: 0px !important;
         }
     `]
 })
@@ -60,31 +43,42 @@ export class ProductFormComponent implements OnInit {
 
     protected productForm: FormGroup;
     protected isEdit = false;
-    protected searchControl = new FormControl('');
+    protected categoryControl = new FormControl('');
+    protected separatorKeysCodes: number[] = [ENTER, COMMA];
+    private debouncedSearch = signal('');
 
-    // Mock list of categories - will be replaced by a service later
+    @ViewChild('categoryInput') categoryInput: ElementRef<HTMLInputElement>;
+
+    // Mock list of categories
     protected availableCategories = signal<string[]>(['Electronics', 'Computing', 'Accessories', 'Mobile', 'Graphics', 'Storage']);
 
     protected filteredCategories = computed(() => {
-        const search = this.searchControl.value?.toLowerCase() || '';
-        return this.availableCategories().filter(cat => cat.toLowerCase().includes(search));
+        const search = this.debouncedSearch().toLowerCase();
+        return this.availableCategories().filter(cat =>
+            cat.toLowerCase().includes(search) &&
+            !this.selectedCategories().includes(cat)
+        );
     });
+
+    protected selectedCategories = signal<string[]>([]);
 
     constructor(
         public dialogRef: MatDialogRef<ProductFormComponent>,
         @Inject(MAT_DIALOG_DATA) public data: Product
     ) {
         this.isEdit = !!data;
+        this.selectedCategories.set(data?.categories || []);
+
         this.productForm = this.fb.group({
             id: [data?.id || null],
             name: [data?.name || '', [Validators.required]],
             description: [data?.description || ''],
             price: [data?.price || 0, [Validators.required, Validators.min(0)]],
             stock: [data?.stock || 0, [Validators.required, Validators.min(0)]],
-            categories: [data?.categories || [], [Validators.required, Validators.minLength(1)]],
+            categories: [this.selectedCategories(), [Validators.required, Validators.minLength(1)]],
         });
 
-        // If editing and there are categories not in the mock list, add them
+        // Initialize available categories if editing
         if (this.isEdit && data.categories) {
             data.categories.forEach(cat => {
                 if (!this.availableCategories().includes(cat)) {
@@ -94,7 +88,56 @@ export class ProductFormComponent implements OnInit {
         }
     }
 
-    ngOnInit(): void { }
+    ngOnInit(): void {
+        this.categoryControl.valueChanges.pipe(
+            debounceTime(300),
+            distinctUntilChanged()
+        ).subscribe(value => {
+            this.debouncedSearch.set(value || '');
+        });
+    }
+
+    protected add(event: MatChipInputEvent): void {
+        const value = (event.value || '').trim();
+        if (value) {
+            this.addCategory(value);
+        }
+        event.chipInput!.clear();
+        this.categoryControl.setValue(null);
+    }
+
+    protected remove(category: string): void {
+        this.selectedCategories.update(cats => {
+            const index = cats.indexOf(category);
+            if (index >= 0) {
+                cats.splice(index, 1);
+                return [...cats];
+            }
+            return cats;
+        });
+        this.updateFormCategories();
+    }
+
+    protected selected(event: MatAutocompleteSelectedEvent): void {
+        this.addCategory(event.option.viewValue);
+        this.categoryInput.nativeElement.value = '';
+        this.categoryControl.setValue(null);
+    }
+
+    private addCategory(category: string): void {
+        if (!this.selectedCategories().includes(category)) {
+            this.selectedCategories.update(cats => [...cats, category]);
+            if (!this.availableCategories().includes(category)) {
+                this.availableCategories.update(cats => [...cats, category]);
+            }
+            this.updateFormCategories();
+        }
+    }
+
+    private updateFormCategories() {
+        this.productForm.get('categories')?.setValue(this.selectedCategories());
+        this.productForm.get('categories')?.markAsDirty();
+    }
 
     protected async onSubmit() {
         if (this.productForm.valid) {
@@ -119,20 +162,8 @@ export class ProductFormComponent implements OnInit {
 
         dialogRef.afterClosed().subscribe((newCategory: string) => {
             if (newCategory && newCategory.trim()) {
-                const trimmed = newCategory.trim();
-                if (!this.availableCategories().includes(trimmed)) {
-                    this.availableCategories.update(cats => [...cats, trimmed]);
-                }
-                const currentSelected = this.productForm.get('categories')?.value || [];
-                if (!currentSelected.includes(trimmed)) {
-                    this.productForm.get('categories')?.setValue([...currentSelected, trimmed]);
-                }
+                this.addCategory(newCategory.trim());
             }
         });
-    }
-
-    protected clearSearch(event: Event) {
-        event.stopPropagation();
-        this.searchControl.setValue('');
     }
 }

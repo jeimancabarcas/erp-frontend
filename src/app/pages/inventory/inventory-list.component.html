@@ -1,6 +1,6 @@
 <mat-card class="cardWithShadow">
     <mat-card-content class="p-24">
-        <div class="flex items-center justify-between mb-24">
+        <div class="flex items-center justify-between mb-4">
             <mat-card-title>
                 {{ 'Inventory' | translate }}
                 <span class="text-sm font-normal block text-muted">{{ 'Manage your products here' | translate }}</span>
@@ -12,11 +12,37 @@
             </button>
         </div>
 
+        <div class="filter-container mt-4">
+            <mat-form-field appearance="outline" class="filter-field flex justify-center items-center">
+                <i-tabler matPrefix name="search" class="p-1 ml-2"></i-tabler>
+                <input matInput [(ngModel)]="filterValue" (keyup)="applyFilter()"
+                    placeholder="{{ 'Search products' | translate }}">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="filter-field flex justify-center items-center">
+                <input matInput [formControl]="categorySearchControl" [matAutocomplete]="categoryAuto"
+                    placeholder="{{ 'Filter by category' | translate }}">
+                <i-tabler matPrefix name="filter" class="p-1 ml-2"></i-tabler>
+                @if (categorySearchControl.value) {
+                <button matSuffix mat-icon-button (click)="clearCategoryFilter()">
+                    <i-tabler name="x" class="size-4"></i-tabler>
+                </button>
+                }
+                <mat-autocomplete #categoryAuto="matAutocomplete" (optionSelected)="onCategorySelected($event)">
+                    <mat-option value="">{{ 'All' | translate }}</mat-option>
+                    @for (cat of filteredCategoryOptions(); track cat) {
+                    <mat-option [value]="cat">{{ cat }}</mat-option>
+                    }
+                </mat-autocomplete>
+            </mat-form-field>
+        </div>
+
         <div class="relative overflow-auto">
-            <mat-table [dataSource]="dataSource" class="min-w-full">
+            <mat-table [dataSource]="dataSource" matSort class="min-w-full">
                 <!-- Name Column -->
                 <ng-container matColumnDef="name">
-                    <mat-header-cell *matHeaderCellDef class="font-semibold mat-subtitle-1 text-sm ps-0">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header
+                        class="font-semibold mat-subtitle-1 text-sm ps-0">
                         {{ 'Product Name' | translate }}
                     </mat-header-cell>
                     <mat-cell class="p-4 ps-0" *matCellDef="let element">
@@ -31,17 +57,17 @@
                         {{ 'Category' | translate }}
                     </mat-header-cell>
                     <mat-cell class="p-4" *matCellDef="let element">
-                        <mat-chip-set>
+                        <mat-chip-listbox>
                             @for (cat of element.categories; track cat) {
-                            <mat-chip class="text-xs">{{ cat }}</mat-chip>
+                            <mat-chip-option [selectable]="false" class="text-xs">{{ cat }}</mat-chip-option>
                             }
-                        </mat-chip-set>
+                        </mat-chip-listbox>
                     </mat-cell>
                 </ng-container>
 
                 <!-- Price Column -->
                 <ng-container matColumnDef="price">
-                    <mat-header-cell *matHeaderCellDef class="font-semibold mat-subtitle-1 text-sm">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold mat-subtitle-1 text-sm">
                         {{ 'Price' | translate }}
                     </mat-header-cell>
                     <mat-cell class="p-4 text-sm" *matCellDef="let element">
@@ -51,7 +77,7 @@
 
                 <!-- Stock Column -->
                 <ng-container matColumnDef="stock">
-                    <mat-header-cell *matHeaderCellDef class="font-semibold mat-subtitle-1 text-sm">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold mat-subtitle-1 text-sm">
                         {{ 'Stock' | translate }}
                     </mat-header-cell>
                     <mat-cell class="p-4" *matCellDef="let element">
