@@ -81,4 +81,9 @@ export const navItems: NavItem[] = [
     route: 'https://www.google.com/',
     external: true,
   },
+  {
+    displayName: 'Inventory',
+    iconName: 'box',
+    route: '/inventory',
+  },
 ];

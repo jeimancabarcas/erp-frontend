@@ -1,0 +1,93 @@
+<mat-card class="cardWithShadow">
+    <mat-card-content class="p-24">
+        <div class="flex items-center justify-between mb-24">
+            <mat-card-title>
+                {{ 'Inventory' | translate }}
+                <span class="text-sm font-normal block text-muted">{{ 'Manage your products here' | translate }}</span>
+            </mat-card-title>
+            <button mat-flat-button color="primary" (click)="openProductForm()">
+                <span class="flex items-center">
+                    <i-tabler name="plus" class="size-5 me-2"></i-tabler> {{ 'Add Product' | translate }}
+                </span>
+            </button>
+        </div>
+
+        <div class="relative overflow-auto">
+            <mat-table [dataSource]="dataSource" class="min-w-full">
+                <!-- Name Column -->
+                <ng-container matColumnDef="name">
+                    <mat-header-cell *matHeaderCellDef class="font-semibold mat-subtitle-1 text-sm ps-0">
+                        {{ 'Product Name' | translate }}
+                    </mat-header-cell>
+                    <mat-cell class="p-4 ps-0" *matCellDef="let element">
+                        <h6 class="mat-subtitle-1 text-sm font-semibold truncate">{{ element.name }}</h6>
+                        <span class="text-xs text-muted truncate max-w-xs block">{{ element.description }}</span>
+                    </mat-cell>
+                </ng-container>
+
+                <!-- Category Column -->
+                <ng-container matColumnDef="category">
+                    <mat-header-cell *matHeaderCellDef class="font-semibold mat-subtitle-1 text-sm">
+                        {{ 'Category' | translate }}
+                    </mat-header-cell>
+                    <mat-cell class="p-4" *matCellDef="let element">
+                        <span class="text-sm">{{ element.category }}</span>
+                    </mat-cell>
+                </ng-container>
+
+                <!-- Price Column -->
+                <ng-container matColumnDef="price">
+                    <mat-header-cell *matHeaderCellDef class="font-semibold mat-subtitle-1 text-sm">
+                        {{ 'Price' | translate }}
+                    </mat-header-cell>
+                    <mat-cell class="p-4 text-sm" *matCellDef="let element">
+                        ${{ element.price }}
+                    </mat-cell>
+                </ng-container>
+
+                <!-- Stock Column -->
+                <ng-container matColumnDef="stock">
+                    <mat-header-cell *matHeaderCellDef class="font-semibold mat-subtitle-1 text-sm">
+                        {{ 'Stock' | translate }}
+                    </mat-header-cell>
+                    <mat-cell class="p-4" *matCellDef="let element">
+                        @if(element.stock > 10) {
+                        <span class="bg-light-success text-success rounded-md font-semibold px-2 py-1 text-xs">
+                            {{ element.stock }} (High)
+                        </span>
+                        } @else if (element.stock > 0) {
+                        <span class="bg-light-warning text-warning rounded-md font-semibold px-2 py-1 text-xs">
+                            {{ element.stock }} (Low)
+                        </span>
+                        } @else {
+                        <span class="bg-light-error text-error rounded-md font-semibold px-2 py-1 text-xs">
+                            Out of Stock
+                        </span>
+                        }
+                    </mat-cell>
+                </ng-container>
+
+                <!-- Actions Column -->
+                <ng-container matColumnDef="actions">
+                    <mat-header-cell *matHeaderCellDef class="font-semibold mat-subtitle-1 text-sm text-right pe-0">
+                        {{ 'Actions' | translate }}
+                    </mat-header-cell>
+                    <mat-cell class="p-4 text-right pe-0" *matCellDef="let element">
+                        <button mat-icon-button color="primary" (click)="openProductForm(element)" class="me-1">
+                            <i-tabler name="edit" class="size-5"></i-tabler>
+                        </button>
+                        <button mat-icon-button color="warn" (click)="deleteProduct(element.id)">
+                            <i-tabler name="trash" class="size-5"></i-tabler>
+                        </button>
+                    </mat-cell>
+                </ng-container>
+
+                <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+                <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+            </mat-table>
+
+            <mat-paginator [pageSize]="10" [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons>
+            </mat-paginator>
+        </div>
+    </mat-card-content>
+</mat-card>

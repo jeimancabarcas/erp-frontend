@@ -1,0 +1,48 @@
+<h2 mat-dialog-title>{{ (isEdit ? 'Edit Product' : 'Add Product') | translate }}</h2>
+<mat-dialog-content>
+    <form [formGroup]="productForm" class="flex flex-col gap-4 mt-4">
+        <mat-form-field appearance="outline">
+            <mat-label>{{ 'Product Name' | translate }}</mat-label>
+            <input matInput formControlName="name" placeholder="{{ 'Enter product name' | translate }}">
+            @if (productForm.get('name')?.hasError('required')) {
+            <mat-error>
+                {{ 'Name is required' | translate }}
+            </mat-error>
+            }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>{{ 'Category' | translate }}</mat-label>
+            <input matInput formControlName="category" placeholder="{{ 'Enter category' | translate }}">
+            @if (productForm.get('category')?.hasError('required')) {
+            <mat-error>
+                {{ 'Category is required' | translate }}
+            </mat-error>
+            }
+        </mat-form-field>
+
+        <div class="grid grid-cols-2 gap-4">
+            <mat-form-field appearance="outline">
+                <mat-label>{{ 'Price' | translate }}</mat-label>
+                <input matInput type="number" formControlName="price">
+                <span matPrefix>$&nbsp;</span>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+                <mat-label>{{ 'Stock' | translate }}</mat-label>
+                <input matInput type="number" formControlName="stock">
+            </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline">
+            <mat-label>{{ 'Description' | translate }}</mat-label>
+            <textarea matInput formControlName="description" rows="3"></textarea>
+        </mat-form-field>
+    </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end" class="p-24 pt-0">
+    <button mat-button (click)="onCancel()">{{ 'Cancel' | translate }}</button>
+    <button mat-flat-button color="primary" [disabled]="productForm.invalid" (click)="onSubmit()">
+        {{ (isEdit ? 'Update' : 'Save') | translate }}
+    </button>
+</mat-dialog-actions>

@@ -143,5 +143,22 @@
   "Sign Out": "Cerrar Sesión",
   "My Notes": "Mis Notas",
   "Logout": "Cerrar Sesión",
-  "View Profile": "Ver Perfil"
+  "View Profile": "Ver Perfil",
+  "Inventory": "Inventario",
+  "Manage your products here": "Gestiona tus productos aquí",
+  "Add Product": "Añadir Producto",
+  "Product Name": "Nombre del Producto",
+  "Category": "Categoría",
+  "Price": "Precio",
+  "Stock": "Stock",
+  "Actions": "Acciones",
+  "Edit Product": "Editar Producto",
+  "Enter product name": "Ingresa el nombre del producto",
+  "Enter category": "Ingresa la categoría",
+  "Name is required": "El nombre es obligatorio",
+  "Category is required": "La categoría es obligatoria",
+  "Cancel": "Cancelar",
+  "Update": "Actualizar",
+  "Save": "Guardar",
+  "Description": "Descripción"
 }

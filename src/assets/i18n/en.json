@@ -143,5 +143,22 @@
   "Sign Out": "Sign Out",
   "My Notes": "My Notes",
   "Logout": "Logout",
-  "View Profile": "View Profile"
+  "View Profile": "View Profile",
+  "Inventory": "Inventory",
+  "Manage your products here": "Manage your products here",
+  "Add Product": "Add Product",
+  "Product Name": "Product Name",
+  "Category": "Category",
+  "Price": "Price",
+  "Stock": "Stock",
+  "Actions": "Actions",
+  "Edit Product": "Edit Product",
+  "Enter product name": "Enter product name",
+  "Enter category": "Enter category",
+  "Name is required": "Name is required",
+  "Category is required": "Category is required",
+  "Cancel": "Cancel",
+  "Update": "Update",
+  "Save": "Save",
+  "Description": "Description"
 }

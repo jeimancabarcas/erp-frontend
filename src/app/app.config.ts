@@ -10,6 +10,8 @@ import {
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideClientHydration } from '@angular/platform-browser';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { ProductRepository } from './core/domain/repositories/product.repository';
+import { ProductImplementationRepository } from './data/repositories/product.implementation.repository';
 
 
 // icons
@@ -63,5 +65,9 @@ export const appConfig: ApplicationConfig = {
         },
       })
     ),
+    {
+      provide: ProductRepository,
+      useClass: ProductImplementationRepository,
+    },
   ],
 };
