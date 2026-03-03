@@ -186,10 +186,19 @@ export class ProductFormComponent implements OnInit {
                 }
                 this.dialogRef.close(true);
             } catch (err: any) {
-                const msg = err?.error?.message
-                    ? (Array.isArray(err.error.message) ? err.error.message.join(', ') : err.error.message)
-                    : 'Ocurrió un error al guardar el producto';
-                this.toast.error(msg);
+                const status = err?.status;
+                const errorCode = err?.error?.message?.errorCode ?? err?.error?.errorCode;
+
+                if (status === 409 && errorCode === 'PRODUCT_SKU_DUPLICATE') {
+                    // Mark SKU field as invalid inline — no toast
+                    this.productForm.get('sku')?.setErrors({ duplicate: true });
+                    this.productForm.get('sku')?.markAsTouched();
+                } else {
+                    const msg = err?.error?.message
+                        ? (Array.isArray(err.error.message) ? err.error.message.join(', ') : err.error.message)
+                        : 'Ocurrió un error al guardar el producto';
+                    this.toast.error(typeof msg === 'string' ? msg : JSON.stringify(msg));
+                }
             }
         }
     }

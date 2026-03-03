@@ -15,6 +15,9 @@
             @if (productForm.get('sku')?.hasError('required')) {
             <mat-error>El SKU es obligatorio</mat-error>
             }
+            @if (productForm.get('sku')?.hasError('duplicate')) {
+            <mat-error>Este SKU ya está en uso por otro producto</mat-error>
+            }
         </mat-form-field>
         <div>
             <mat-form-field appearance="outline" class="w-full">
