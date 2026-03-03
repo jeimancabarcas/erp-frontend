@@ -8,7 +8,7 @@ import { inject, Injectable } from '@angular/core';
 export class DeleteProductUseCase {
     private repository = inject(ProductRepository);
 
-    execute(id: number): Observable<void> {
+    execute(id: string): Observable<void> {
         return this.repository.deleteProduct(id);
     }
 }

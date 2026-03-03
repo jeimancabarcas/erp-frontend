@@ -1,12 +1,12 @@
 export interface Product {
-    id: number;
+    id: string;          // UUID from backend
     sku?: string;
     name: string;
     description: string;
-    price: number;
     stock: number;
     minStock?: number;
     maxStock?: number;
     categories: string[];
-    imagePath?: string;
+    createdAt?: string;
+    updatedAt?: string;
 }

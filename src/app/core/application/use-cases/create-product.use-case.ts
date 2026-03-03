@@ -9,7 +9,7 @@ import { inject, Injectable } from '@angular/core';
 export class CreateProductUseCase {
     private repository = inject(ProductRepository);
 
-    execute(product: Product): Observable<Product> {
+    execute(product: Partial<Product>): Observable<Product> {
         return this.repository.createProduct(product);
     }
 }

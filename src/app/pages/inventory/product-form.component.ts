@@ -167,9 +167,14 @@ export class ProductFormComponent implements OnInit {
 
     protected async onSubmit() {
         if (this.productForm.valid) {
-            const productData = this.productForm.value;
+            // Replace null → undefined so optional fields are omitted from the request body
+            const raw = this.productForm.value;
+            const productData = Object.fromEntries(
+                Object.entries(raw).filter(([, v]) => v !== null && v !== undefined)
+            );
+
             if (this.isEdit) {
-                await lastValueFrom(this.updateProductUseCase.execute(productData));
+                await lastValueFrom(this.updateProductUseCase.execute(productData as any));
             } else {
                 await lastValueFrom(this.createProductUseCase.execute(productData));
             }

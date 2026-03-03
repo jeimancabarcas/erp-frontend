@@ -127,7 +127,7 @@ export class InventoryListComponent implements OnInit {
         }
     }
 
-    protected async deleteProduct(id: number) {
+    protected async deleteProduct(id: string) {
         if (confirm('¿Estás seguro de eliminar este producto?')) {
             await lastValueFrom(this.deleteProductUseCase.execute(id));
             this.loadProducts();

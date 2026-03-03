@@ -11,7 +11,7 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { provideClientHydration } from '@angular/platform-browser';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { ProductRepository } from './core/domain/repositories/product.repository';
-import { ProductImplementationRepository } from './data/repositories/product.implementation.repository';
+import { ProductHttpRepository } from './data/repositories/product.http.repository';
 
 
 // icons
@@ -67,7 +67,7 @@ export const appConfig: ApplicationConfig = {
     ),
     {
       provide: ProductRepository,
-      useClass: ProductImplementationRepository,
+      useClass: ProductHttpRepository,
     },
   ],
 };
