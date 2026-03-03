@@ -31,8 +31,9 @@ export class ProductHttpRepository extends ProductRepository {
     }
 
     updateProduct(product: Product): Observable<Product> {
+        const { id, ...body } = product;
         return this.http
-            .put<ApiResponse<Product>>(`${BASE_URL}/${product.id}`, product)
+            .put<ApiResponse<Product>>(`${BASE_URL}/${id}`, body)
             .pipe(map((res) => res.data));
     }
 
