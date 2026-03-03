@@ -17,6 +17,7 @@ import { TablerIconsModule } from 'angular-tabler-icons';
 import { CategoryFormComponent } from './category-form.component';
 import { MatDialog } from '@angular/material/dialog';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
+import { ToastService } from '../../core/services/toast.service';
 
 
 // ── Cross-field validator: minStock must not exceed maxStock ─────────────
@@ -61,6 +62,7 @@ function stockRangeValidator(group: AbstractControl): ValidationErrors | null {
 })
 export class ProductFormComponent implements OnInit {
     private fb = inject(FormBuilder);
+    private toast = inject(ToastService);
     private createProductUseCase = inject(CreateProductUseCase);
     private updateProductUseCase = inject(UpdateProductUseCase);
     private dialog = inject(MatDialog);
@@ -174,13 +176,21 @@ export class ProductFormComponent implements OnInit {
                 Object.entries(rest).filter(([, v]) => v !== null && v !== undefined)
             );
 
-            if (this.isEdit) {
-                // id goes in the URL — never in the body
-                await lastValueFrom(this.updateProductUseCase.execute({ id, ...payload } as any));
-            } else {
-                await lastValueFrom(this.createProductUseCase.execute(payload));
+            try {
+                if (this.isEdit) {
+                    await lastValueFrom(this.updateProductUseCase.execute({ id, ...payload } as any));
+                    this.toast.success('Producto actualizado correctamente');
+                } else {
+                    await lastValueFrom(this.createProductUseCase.execute(payload));
+                    this.toast.success('Producto creado correctamente');
+                }
+                this.dialogRef.close(true);
+            } catch (err: any) {
+                const msg = err?.error?.message
+                    ? (Array.isArray(err.error.message) ? err.error.message.join(', ') : err.error.message)
+                    : 'Ocurrió un error al guardar el producto';
+                this.toast.error(msg);
             }
-            this.dialogRef.close(true);
         }
     }
 

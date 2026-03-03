@@ -1,5 +1,5 @@
 import { ApplicationConfig, importProvidersFrom, provideZoneChangeDetection, } from '@angular/core';
-import { provideHttpClient, HttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClient, HttpClient, withInterceptorsFromDi, withInterceptors } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { routes } from './app.routes';
 import {
@@ -12,6 +12,8 @@ import { provideClientHydration } from '@angular/platform-browser';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { ProductRepository } from './core/domain/repositories/product.repository';
 import { ProductHttpRepository } from './data/repositories/product.http.repository';
+import { loadingInterceptor } from './core/interceptors/loading.interceptor';
+import { ToastrModule, provideToastr } from 'ngx-toastr';
 
 
 // icons
@@ -39,6 +41,7 @@ export function HttpLoaderFactory(http: HttpClient) {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideAnimationsAsync(), // required animations providers
+    provideToastr(),          // ngx-toastr — same as main project
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(
       routes,
@@ -48,11 +51,12 @@ export const appConfig: ApplicationConfig = {
       }),
       withComponentInputBinding()
     ),
-    provideHttpClient(withInterceptorsFromDi()),
+    provideHttpClient(withInterceptorsFromDi(), withInterceptors([loadingInterceptor])),
     provideClientHydration(),
     provideAnimationsAsync(),
     importProvidersFrom(
       FormsModule,
+      ToastrModule.forRoot(),
       ReactiveFormsModule,
       MaterialModule,
       TablerIconsModule.pick(TablerIcons),

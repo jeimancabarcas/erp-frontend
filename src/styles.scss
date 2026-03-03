@@ -1,4 +1,50 @@
 /* You can add global styles to this file, and also import other style files */
+@import 'ngx-toastr/toastr';
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+/* ── HTTP Loading bar ───────────────────────────────────────────────────── */
+.http-loading-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  height: 3px;
+
+  mat-progress-bar {
+    height: 3px;
+  }
+}
+
+/* ── ngx-toastr styles (matches main project pattern) ───────────────────── */
+html {
+  .toast-success {
+    background-color: var(--mat-sys-tertiary, #1b5e20);
+  }
+
+  .toast-error {
+    background-color: var(--mat-sys-error);
+  }
+
+  .toast-warning {
+    background-color: #f59e0b;
+  }
+
+  .toast-info {
+    background-color: var(--mat-sys-primary);
+  }
+
+  .toast-container .ngx-toastr {
+    box-shadow: var(--mat-sys-level2, 0 4px 16px rgba(0, 0, 0, .2));
+    border-radius: 8px;
+  }
+}

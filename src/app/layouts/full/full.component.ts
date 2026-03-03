@@ -1,5 +1,5 @@
 import { BreakpointObserver, MediaMatcher } from '@angular/cdk/layout';
-import { Component, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, inject, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { MatSidenav, MatSidenavContent } from '@angular/material/sidenav';
 import { CoreService } from 'src/app/services/core.service';
@@ -21,6 +21,8 @@ import { AppHorizontalSidebarComponent } from './horizontal/sidebar/sidebar.comp
 import { AppBreadcrumbComponent } from './shared/breadcrumb/breadcrumb.component';
 import { CustomizerComponent } from './shared/customizer/customizer.component';
 import { AppAuthBrandingComponent } from './vertical/sidebar/auth-branding.component';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { LoadingService } from '../../core/services/loading.service';
 
 const MOBILE_VIEW = 'screen and (max-width: 768px)';
 const TABLET_VIEW = 'screen and (min-width: 769px) and (max-width: 1024px)';
@@ -59,6 +61,7 @@ interface quicklinks {
     AppBreadcrumbComponent,
     CustomizerComponent,
     AppAuthBrandingComponent,
+    MatProgressBarModule,
   ],
   templateUrl: './full.component.html',
   styleUrls: [],
@@ -66,6 +69,7 @@ interface quicklinks {
 })
 export class FullComponent implements OnInit {
   navItems = navItems;
+  readonly loadingService = inject(LoadingService);
 
   @ViewChild('leftsidenav')
   public sidenav: MatSidenav;

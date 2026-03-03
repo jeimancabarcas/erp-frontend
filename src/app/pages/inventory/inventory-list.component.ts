@@ -14,6 +14,7 @@ import { lastValueFrom, debounceTime, distinctUntilChanged } from 'rxjs';
 import { ProductFormComponent } from './product-form.component';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import { ToastService } from '../../core/services/toast.service';
 
 @Component({
     selector: 'app-inventory-list',
@@ -47,6 +48,7 @@ import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 export class InventoryListComponent implements OnInit {
     private getProductsUseCase = inject(GetProductsUseCase);
     private deleteProductUseCase = inject(DeleteProductUseCase);
+    private toast = inject(ToastService);
     public dialog = inject(MatDialog);
 
     protected displayedColumns: string[] = ['name', 'sku', 'category', 'stock', 'minStock', 'maxStock', 'actions'];
@@ -129,8 +131,13 @@ export class InventoryListComponent implements OnInit {
 
     protected async deleteProduct(id: string) {
         if (confirm('¿Estás seguro de eliminar este producto?')) {
-            await lastValueFrom(this.deleteProductUseCase.execute(id));
-            this.loadProducts();
+            try {
+                await lastValueFrom(this.deleteProductUseCase.execute(id));
+                this.toast.success('Producto eliminado correctamente');
+                this.loadProducts();
+            } catch (err: any) {
+                this.toast.error('Error al eliminar el producto');
+            }
         }
     }
 

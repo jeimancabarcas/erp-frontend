@@ -3,6 +3,14 @@
   'sidebarNav-horizontal': options.horizontal,
   cardBorder: options.cardBorder,
 }" class="page-container" [dir]="options.dir!">
+
+  <!-- HTTP Loading bar -->
+  <div class="http-loading-bar">
+    @if (loadingService.isLoading()) {
+      <mat-progress-bar mode="indeterminate" color="primary"></mat-progress-bar>
+    }
+  </div>
+
   <!-- ============================================================== -->
   <!-- VerticalHeader -->
   <!-- ============================================================== -->
