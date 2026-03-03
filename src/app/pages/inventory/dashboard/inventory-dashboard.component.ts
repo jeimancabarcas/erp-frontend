@@ -155,6 +155,28 @@ export class InventoryDashboardComponent implements OnInit {
             this.kpis[3].value = stats.recentExits.toString();
             this.kpis[4].value = stats.outOfStockCount.toString();
             this.kpis[5].value = stats.lowStockCount.toString();
+
+            // Update Movement Trend Chart
+            if (stats.movementTrend) {
+                this.movementTrendSeries = [
+                    { name: 'Entradas', data: stats.movementTrend.map(d => d.entries) },
+                    { name: 'Salidas', data: stats.movementTrend.map(d => d.exits) },
+                ];
+                // Update categories for the last 30 days
+                this.movementTrendXaxis = {
+                    ...this.movementTrendXaxis,
+                    categories: stats.movementTrend.map(d => {
+                        const parts = d.date.split('-');
+                        return `${parts[2]}/${parts[1]}`; // dd/mm
+                    })
+                };
+            }
+
+            // Update Movement Types Chart
+            if (stats.movementTypeDistribution) {
+                this.movementTypeSeries = stats.movementTypeDistribution.map(t => t.count);
+                this.movementTypeLabels = stats.movementTypeDistribution.map(t => t.type);
+            }
         });
     }
 
