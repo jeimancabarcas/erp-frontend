@@ -1,6 +1,7 @@
 <mat-card class="cardWithShadow mb-0!">
 
     <mat-tab-group mat-stretch-tabs="false" animationDuration="0ms">
+        <!-- Tab Cuenta -->
         <mat-tab>
             <ng-template mat-tab-label>
                 <div class="flex items-center">
@@ -33,99 +34,113 @@
                             </mat-card-content>
                         </mat-card>
                     </div>
+
                     <div class="sm:col-span-6 col-span-12">
                         <mat-card class="cardWithShadow mb-0!">
                             <mat-card-content>
-                                <mat-card-title>Cambiar Contraseña</mat-card-title>
-                                <mat-card-subtitle class="text-sm">Para cambiar tu contraseña, confírmala
-                                    aquí</mat-card-subtitle>
-                                <form class="mt-6">
-                                    <!-- input -->
-                                    <mat-label class="text-sm font-semibold mb-2 block">Contraseña Actual</mat-label>
-                                    <mat-form-field appearance="outline" class="w-full" color="primary">
-                                        <input matInput type="password" value="password" />
-                                    </mat-form-field>
-                                    <!-- input -->
-                                    <mat-label class="text-sm font-semibold mb-2 block">Nueva Contraseña</mat-label>
-                                    <mat-form-field appearance="outline" class="w-full" color="primary">
-                                        <input matInput type="password" value="password" />
-                                    </mat-form-field>
-                                    <!-- input -->
-                                    <mat-label class="text-sm font-semibold mb-2 block">Confirmar Contraseña</mat-label>
-                                    <mat-form-field appearance="outline" class="w-full hide-hint" color="primary">
-                                        <input matInput type="password" value="password" />
-                                    </mat-form-field>
-                                </form>
-                            </mat-card-content>
-                        </mat-card>
-                    </div>
-                    <div class="col-span-12">
-                        <mat-card class="cardWithShadow mb-0!">
-                            <mat-card-content>
                                 <mat-card-title>Detalles Personales</mat-card-title>
-                                <mat-card-subtitle class="text-sm">Para cambiar tus detalles personales, edita y guarda
-                                    desde aquí</mat-card-subtitle>
-                                <div class="grid grid-cols-12 gap-5 mt-6">
-                                    <div class="sm:col-span-6 col-span-12">
-                                        <!-- input -->
-                                        <mat-label class="text-sm font-semibold mb-2 block">Nombre</mat-label>
-                                        <mat-form-field appearance="outline" class="w-full" color="primary">
-                                            <input matInput type="text"
-                                                [value]="authService.currentUser()?.profile?.fullName" />
-                                        </mat-form-field>
-                                        <!-- input -->
-                                        <mat-label class="text-sm font-semibold mb-2 block">Ubicación</mat-label>
-                                        <mat-form-field appearance="outline" class="w-full">
-                                            <mat-select value="in">
-                                                <mat-option value="in">India</mat-option>
-                                                <mat-option value="us">United States</mat-option>
-                                                <mat-option value="uk">United Kingdom</mat-option>
-                                                <mat-option value="ru">Russia</mat-option>
-                                            </mat-select>
-                                        </mat-form-field>
-                                        <!-- input -->
-                                        <mat-label class="text-sm font-semibold mb-2 block">Correo
-                                            electrónico</mat-label>
-                                        <mat-form-field appearance="outline" class="w-full" color="primary">
-                                            <input matInput type="email" [value]="authService.currentUser()?.email" />
-                                        </mat-form-field>
+                                <mat-card-subtitle class="text-sm">Edita tus detalles personales y guarda los
+                                    cambios</mat-card-subtitle>
+                                <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="mt-6">
+                                    <div class="grid grid-cols-12 gap-5">
+                                        <div class="col-span-12">
+                                            <mat-label class="text-sm font-semibold mb-2 block">Nombre
+                                                Completo</mat-label>
+                                            <mat-form-field appearance="outline" class="w-full" color="primary">
+                                                <input matInput type="text" formControlName="fullName" />
+                                            </mat-form-field>
+                                        </div>
+                                        <div class="col-span-12">
+                                            <mat-label class="text-sm font-semibold mb-2 block">Nombre de Usuario
+                                                (Display)</mat-label>
+                                            <mat-form-field appearance="outline" class="w-full" color="primary">
+                                                <input matInput type="text" formControlName="displayName" />
+                                            </mat-form-field>
+                                        </div>
+                                        <div class="sm:col-span-6 col-span-12">
+                                            <mat-label class="text-sm font-semibold mb-2 block">Teléfono</mat-label>
+                                            <mat-form-field appearance="outline" class="w-full" color="primary">
+                                                <input matInput type="text" formControlName="phone" />
+                                            </mat-form-field>
+                                        </div>
+                                        <div class="sm:col-span-6 col-span-12">
+                                            <mat-label class="text-sm font-semibold mb-2 block">Correo
+                                                electrónico</mat-label>
+                                            <mat-form-field appearance="outline" class="w-full" color="primary">
+                                                <input matInput type="email" [value]="authService.currentUser()?.email"
+                                                    disabled />
+                                            </mat-form-field>
+                                        </div>
+                                        <div class="col-span-12">
+                                            <mat-label class="text-sm font-semibold mb-2 block">Dirección</mat-label>
+                                            <mat-form-field appearance="outline" class="w-full" color="primary">
+                                                <input matInput type="text" formControlName="address" />
+                                            </mat-form-field>
+                                        </div>
                                     </div>
-                                    <div class="sm:col-span-6 col-span-12">
-                                        <!-- input -->
-                                        <mat-label class="text-sm font-semibold mb-2 block">Nombre del Sitio</mat-label>
-                                        <mat-form-field appearance="outline" class="w-full" color="primary">
-                                            <input matInput type="text" value="Maxima Studio" />
-                                        </mat-form-field>
-                                        <!-- input -->
-                                        <mat-label class="text-sm font-semibold mb-2 block">Moneda</mat-label>
-                                        <mat-form-field appearance="outline" class="w-full" color="primary">
-                                            <mat-select value="in">
-                                                <mat-option value="in">India (INR)</mat-option>
-                                                <mat-option value="us">Us Dollar ($)</mat-option>
-                                                <mat-option value="uk">United Kingdom(Pound)</mat-option>
-                                                <mat-option value="ru">Russia (Ruble)</mat-option>
-                                            </mat-select>
-                                        </mat-form-field>
-                                        <!-- input -->
-                                        <mat-label class="text-sm font-semibold mb-2 block">Teléfono</mat-label>
-                                        <mat-form-field appearance="outline" class="w-full" color="primary">
-                                            <input matInput type="text" value="+91 12345 65478" />
-                                        </mat-form-field>
+                                    <div class="text-end mt-4">
+                                        <button mat-flat-button color="primary" type="submit"
+                                            [disabled]="profileForm.invalid">Guardar Perfil</button>
                                     </div>
-                                    <div class="col-span-12">
-                                        <!-- input -->
-                                        <mat-label class="text-sm font-semibold mb-2 block">Dirección</mat-label>
-                                        <mat-form-field appearance="outline" class="w-full" color="primary">
-                                            <input matInput type="text" value="814 Howard Street, 120065, India" />
-                                        </mat-form-field>
-                                    </div>
-                                </div>
+                                </form>
                             </mat-card-content>
                         </mat-card>
                     </div>
                 </div>
             </mat-card-content>
         </mat-tab>
+
+        <!-- Tab Seguridad -->
+        <mat-tab>
+            <ng-template mat-tab-label>
+                <div class="flex items-center">
+                    <mat-icon class="flex! items-center">
+                        <i-tabler name="lock" class="size-5!"></i-tabler>
+                    </mat-icon>
+                    Seguridad
+                </div>
+            </ng-template>
+            <mat-card-content>
+                <div class="max-w-lg mx-auto">
+                    <mat-card class="cardWithShadow mb-0!">
+                        <mat-card-content>
+                            <mat-card-title>Cambiar Contraseña</mat-card-title>
+                            <mat-card-subtitle class="text-sm">Para cambiar tu contraseña, confírmala
+                                aquí</mat-card-subtitle>
+                            <form [formGroup]="securityForm" (ngSubmit)="updatePassword()" class="mt-6">
+                                <mat-label class="text-sm font-semibold mb-2 block">Contraseña Actual</mat-label>
+                                <mat-form-field appearance="outline" class="w-full" color="primary">
+                                    <input matInput type="password" formControlName="currentPassword" />
+                                </mat-form-field>
+
+                                <mat-label class="text-sm font-semibold mb-2 block">Nueva Contraseña</mat-label>
+                                <mat-form-field appearance="outline" class="w-full" color="primary">
+                                    <input matInput type="password" formControlName="newPassword" />
+                                    <mat-hint>Mínimo 8 caracteres</mat-hint>
+                                </mat-form-field>
+
+                                <div class="mt-4"></div>
+
+                                <mat-label class="text-sm font-semibold mb-2 block">Confirmar Contraseña</mat-label>
+                                <mat-form-field appearance="outline" class="w-full hide-hint" color="primary">
+                                    <input matInput type="password" formControlName="confirmPassword" />
+                                    <mat-error *ngIf="securityForm.hasError('mismatch')">
+                                        Las contraseñas no coinciden
+                                    </mat-error>
+                                </mat-form-field>
+
+                                <div class="text-end mt-6">
+                                    <button mat-flat-button color="primary" type="submit"
+                                        [disabled]="securityForm.invalid">Actualizar Contraseña</button>
+                                </div>
+                            </form>
+                        </mat-card-content>
+                    </mat-card>
+                </div>
+            </mat-card-content>
+        </mat-tab>
+
+        <!-- Tabs maquetados -->
         <mat-tab disabled>
             <ng-template mat-tab-label>
                 <div class="flex items-center">
@@ -135,9 +150,7 @@
                     Notificaciones
                 </div>
             </ng-template>
-            <mat-card-content>
-                <!-- Maquetado - disabled as per request function account fields only -->
-            </mat-card-content>
+            <mat-card-content></mat-card-content>
         </mat-tab>
         <mat-tab disabled>
             <ng-template mat-tab-label>
@@ -148,26 +161,7 @@
                     Facturación
                 </div>
             </ng-template>
-            <mat-card-content>
-                <!-- Maquetado -->
-            </mat-card-content>
-        </mat-tab>
-        <mat-tab disabled>
-            <ng-template mat-tab-label>
-                <div class="flex items-center">
-                    <mat-icon class="flex! items-center">
-                        <i-tabler name="lock" class="size-5!"></i-tabler>
-                    </mat-icon>
-                    Seguridad
-                </div>
-            </ng-template>
-            <mat-card-content>
-                <!-- Maquetado -->
-            </mat-card-content>
+            <mat-card-content></mat-card-content>
         </mat-tab>
     </mat-tab-group>
-    <div class="text-end p-6 pt-0">
-        <button mat-flat-button color="primary" class="me-2">Guardar</button>
-        <button mat-flat-button class="bg-error text-white">Cancelar</button>
-    </div>
 </mat-card>

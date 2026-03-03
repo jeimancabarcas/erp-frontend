@@ -8,8 +8,12 @@ export interface User {
     id: string;
     email: string;
     profile: {
+        id: string;
         displayName: string;
         fullName: string;
+        address: string;
+        phone: string;
+        userId: string;
     } | null;
 }
 
@@ -36,6 +40,28 @@ export class AuthService {
             tap((data) => {
                 this.setSession(data);
             })
+        );
+    }
+
+    updateProfile(dto: Partial<User['profile']>): Observable<void> {
+        return this.http.patch<ApiResponse<void>>(`${this.apiUrl}/profile`, dto).pipe(
+            map(() => {
+                const current = this.currentUser();
+                if (current) {
+                    const updatedUser = {
+                        ...current,
+                        profile: { ...current.profile, ...dto } as any
+                    };
+                    localStorage.setItem(this.USER_KEY, JSON.stringify(updatedUser));
+                    this.currentUser.set(updatedUser);
+                }
+            })
+        );
+    }
+
+    changePassword(dto: any): Observable<void> {
+        return this.http.post<ApiResponse<void>>(`${this.apiUrl}/change-password`, dto).pipe(
+            map(response => response.data)
         );
     }
 
