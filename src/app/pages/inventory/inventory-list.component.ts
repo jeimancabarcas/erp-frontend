@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild, inject, signal, computed } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
+import { MatSort, Sort } from '@angular/material/sort';
 import { MatDialog } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
 import { TablerIconsModule } from 'angular-tabler-icons';
@@ -10,7 +10,8 @@ import { MaterialModule } from '../../material.module';
 import { GetProductsUseCase } from '../../core/application/use-cases/get-products.use-case';
 import { DeleteProductUseCase } from '../../core/application/use-cases/delete-product.use-case';
 import { Product } from '../../core/domain/entities/product.entity';
-import { lastValueFrom, debounceTime, distinctUntilChanged } from 'rxjs';
+import { ProductsQuery } from '../../core/domain/repositories/product.repository';
+import { lastValueFrom, debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 import { ProductFormComponent } from './product-form.component';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
@@ -60,9 +61,12 @@ export class InventoryListComponent implements OnInit {
     protected categories = signal<string[]>([]);
     protected isLoading = signal(false);
 
+    // Server-side query state
     protected filterValue = '';
     protected categoryFilter = '';
     protected categorySearchControl = new FormControl('');
+    private currentSort: Pick<ProductsQuery, 'sortBy' | 'sortOrder'> = {};
+    private searchSubject = new Subject<string>();
     private debouncedCategorySearch = signal('');
 
     protected filteredCategoryOptions = computed(() => {
@@ -74,29 +78,36 @@ export class InventoryListComponent implements OnInit {
     @ViewChild(MatSort, { static: true }) protected sort: MatSort;
 
     ngOnInit(): void {
-        this.loadProducts();
-        this.categorySearchControl.valueChanges.pipe(
-            debounceTime(300),
-            distinctUntilChanged()
-        ).subscribe(value => {
+        // Debounce the search input — triggers server call after 350 ms of no typing
+        this.searchSubject.pipe(debounceTime(350), distinctUntilChanged()).subscribe(() => {
+            this.loadProducts();
+        });
+
+        this.categorySearchControl.valueChanges.pipe(debounceTime(300), distinctUntilChanged()).subscribe(value => {
             this.debouncedCategorySearch.set(value || '');
         });
+
+        this.loadProducts();
     }
 
     protected loadProducts() {
         this.isLoading.set(true);
-        this.getProductsUseCase.execute().subscribe({
+
+        const query: ProductsQuery = {};
+        if (this.filterValue.trim()) query.search = this.filterValue.trim();
+        if (this.currentSort.sortBy) query.sortBy = this.currentSort.sortBy;
+        if (this.currentSort.sortOrder) query.sortOrder = this.currentSort.sortOrder;
+
+        this.getProductsUseCase.execute(query).subscribe({
             next: (products) => {
-                this.dataSource.data = products;
+                // Client-side category filter (categories aren't searchable via backend yet)
+                const filtered = this.categoryFilter
+                    ? products.filter(p => p.categories?.includes(this.categoryFilter))
+                    : products;
+
+                this.dataSource.data = filtered;
                 this.dataSource.paginator = this.paginator;
-                this.dataSource.sort = this.sort;
-                this.dataSource.filterPredicate = (data: Product, filter: string) => {
-                    const searchTerms = JSON.parse(filter);
-                    const nameMatch = data.name.toLowerCase().includes(searchTerms.name.toLowerCase());
-                    const categoryMatch = searchTerms.category === '' ||
-                        (data.categories && data.categories.includes(searchTerms.category));
-                    return nameMatch && categoryMatch;
-                };
+
                 const allCats = [...new Set(products.flatMap(p => p.categories ?? []))].sort();
                 this.categories.set(allCats);
                 this.isLoading.set(false);
@@ -108,33 +119,38 @@ export class InventoryListComponent implements OnInit {
     }
 
     protected applyFilter() {
-        this.updateFilter();
+        this.searchSubject.next(this.filterValue);
+    }
+
+    /** Triggered when MatSort header is clicked */
+    protected onSortChange(sort: Sort) {
+        if (sort.active && sort.direction) {
+            const fieldMap: Record<string, ProductsQuery['sortBy']> = {
+                name: 'name',
+                sku: 'sku',
+                stock: 'stock',
+                minStock: 'minStock',
+                maxStock: 'maxStock',
+            };
+            this.currentSort = {
+                sortBy: fieldMap[sort.active],
+                sortOrder: sort.direction as 'asc' | 'desc',
+            };
+        } else {
+            this.currentSort = {};
+        }
+        this.loadProducts();
     }
 
     protected onCategorySelected(event: MatAutocompleteSelectedEvent): void {
         this.categoryFilter = event.option.value as string;
-        this.updateFilter();
+        this.loadProducts();
     }
 
     protected clearCategoryFilter(): void {
         this.categorySearchControl.setValue('');
         this.categoryFilter = '';
-        this.updateFilter();
-    }
-
-    protected applyCategoryFilter() {
-        this.updateFilter();
-    }
-
-    private updateFilter() {
-        const filterValues = {
-            name: this.filterValue,
-            category: this.categoryFilter
-        };
-        this.dataSource.filter = JSON.stringify(filterValues);
-        if (this.dataSource.paginator) {
-            this.dataSource.paginator.firstPage();
-        }
+        this.loadProducts();
     }
 
     protected async deleteProduct(id: string) {

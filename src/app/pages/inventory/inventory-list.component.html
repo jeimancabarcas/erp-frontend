@@ -38,7 +38,7 @@
         </div>
 
         <div class="relative overflow-auto">
-            <mat-table [dataSource]="dataSource" matSort class="min-w-full">
+            <mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)" class="min-w-full">
                 <!-- Name Column -->
                 <ng-container matColumnDef="name">
                     <mat-header-cell *matHeaderCellDef mat-sort-header
@@ -56,7 +56,7 @@
 
                 <!-- SKU Column -->
                 <ng-container matColumnDef="sku">
-                    <mat-header-cell *matHeaderCellDef class="font-semibold mat-subtitle-1 text-sm">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold mat-subtitle-1 text-sm">
                         SKU
                     </mat-header-cell>
                     <mat-cell class="p-4 text-xs text-muted" *matCellDef="let element">
@@ -103,7 +103,7 @@
 
                 <!-- Min Stock Column -->
                 <ng-container matColumnDef="minStock">
-                    <mat-header-cell *matHeaderCellDef class="font-semibold mat-subtitle-1 text-sm">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold mat-subtitle-1 text-sm">
                         Mín.
                     </mat-header-cell>
                     <mat-cell class="p-4 text-sm text-muted" *matCellDef="let element">
@@ -113,7 +113,7 @@
 
                 <!-- Max Stock Column -->
                 <ng-container matColumnDef="maxStock">
-                    <mat-header-cell *matHeaderCellDef class="font-semibold mat-subtitle-1 text-sm">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold mat-subtitle-1 text-sm">
                         Máx.
                     </mat-header-cell>
                     <mat-cell class="p-4 text-sm text-muted" *matCellDef="let element">

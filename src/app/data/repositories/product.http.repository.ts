@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { Product } from '../../core/domain/entities/product.entity';
-import { ProductRepository } from '../../core/domain/repositories/product.repository';
+import { ProductRepository, ProductsQuery } from '../../core/domain/repositories/product.repository';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../core/interfaces/api-response.interface';
 
@@ -12,9 +12,14 @@ const BASE_URL = `${environment.apiBaseUrl}/inventory/products`;
 export class ProductHttpRepository extends ProductRepository {
     private http = inject(HttpClient);
 
-    getProducts(): Observable<Product[]> {
+    getProducts(query?: ProductsQuery): Observable<Product[]> {
+        let params = new HttpParams();
+        if (query?.search) params = params.set('search', query.search);
+        if (query?.sortBy) params = params.set('sortBy', query.sortBy);
+        if (query?.sortOrder) params = params.set('sortOrder', query.sortOrder);
+
         return this.http
-            .get<ApiResponse<Product[]>>(BASE_URL)
+            .get<ApiResponse<Product[]>>(BASE_URL, { params })
             .pipe(map((res) => res.data));
     }
 
