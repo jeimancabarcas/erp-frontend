@@ -1,64 +1,67 @@
-<!-- ── Header del Dashboard ──────────────────────────────────────── -->
-<div class="flex items-center justify-end mb-4">
-    @if (alertsCount > 0) {
-    <!-- Botón alertas de stock -->
-    <button matButton="elevated" [matMenuTriggerFor]="alertsMenu">
-        <div class="flex items-center justify-center gap-2">
-            <div [class]="alertsCount > 0 ? 'text-red-700' : 'text-green-700'">Alertas de stock</div>
+<mat-card class="cardWithShadow">
+    <!-- ── Header del Dashboard ──────────────────────────────────────── -->
 
-            <span class="bg-red-700 text-white rounded-full px-2">{{ alertsCount }}</span>
+    <div class="flex items-center justify-end my-4">
+        @if (alertsCount > 0) {
+        <!-- Botón alertas de stock -->
+        <button matButton="elevated" [matMenuTriggerFor]="alertsMenu">
+            <div class="flex items-center justify-center gap-2">
+                <div [class]="alertsCount > 0 ? 'text-red-700' : 'text-green-700'">Alertas de stock</div>
 
-        </div>
-    </button>
+                <span class="bg-red-700 text-white rounded-full px-2">{{ alertsCount }}</span>
 
-    <mat-menu #alertsMenu="matMenu" xPosition="before" class="alerts-menu">
-        <!-- Header azul -->
-        <div class="alerts-header" (click)="$event.stopPropagation()">
-            <p class="text-base font-bold text-white m-0">Alertas de Stock</p>
-            <p class="text-xs text-white opacity-80 mt-1 m-0">Tienes {{ lowStockProducts.length }} alertas de inventario
-            </p>
-        </div>
-
-        <!-- Lista (máx 5) -->
-        @for (p of lowStockProducts.slice(0, 5); track p.sku) {
-        <div class="alert-item" (click)="$event.stopPropagation()">
-            <div class="alert-icon" [style.background]="p.stock === 0 ? '#FFEBEE' : '#FFF3E0'">
-                <i-tabler [name]="p.stock === 0 ? 'alert-circle' : 'alert-triangle'"
-                    [style.color]="p.stock === 0 ? '#C62828' : '#E65100'" class="size-5">
-                </i-tabler>
             </div>
-            <div class="alert-text">
-                <p class="text-sm font-semibold m-0">{{ p.name }}</p>
-                <p class="text-xs text-muted m-0"
-                    [matTooltip]="'Disponible: ' + p.stock + ' | Mín: ' + p.minStock + (p.maxStock ? ' | Máx: ' + p.maxStock : '')">
-                    @if (p.stock === 0) { Agotado — reposición urgente }
-                    @else { {{ p.stock }} uds disponibles (mín. {{ p.minStock }}) }
+        </button>
+
+        <mat-menu #alertsMenu="matMenu" xPosition="before" class="alerts-menu">
+            <!-- Header azul -->
+            <div class="alerts-header" (click)="$event.stopPropagation()">
+                <p class="text-base font-bold text-white m-0">Alertas de Stock</p>
+                <p class="text-xs text-white opacity-80 mt-1 m-0">Tienes {{ lowStockProducts.length }} alertas de
+                    inventario
                 </p>
             </div>
-            <span class="alert-badge" [style.background]="p.stock === 0 ? '#FFEBEE' : '#FFF3E0'"
-                [style.color]="p.stock === 0 ? '#C62828' : '#E65100'">
-                {{ p.stock }}
-            </span>
-        </div>
+
+            <!-- Lista (máx 5) -->
+            @for (p of lowStockProducts.slice(0, 5); track p.sku) {
+            <div class="alert-item" (click)="$event.stopPropagation()">
+                <div class="alert-icon" [style.background]="p.stock === 0 ? '#FFEBEE' : '#FFF3E0'">
+                    <i-tabler [name]="p.stock === 0 ? 'alert-circle' : 'alert-triangle'"
+                        [style.color]="p.stock === 0 ? '#C62828' : '#E65100'" class="size-5">
+                    </i-tabler>
+                </div>
+                <div class="alert-text">
+                    <p class="text-sm font-semibold m-0">{{ p.name }}</p>
+                    <p class="text-xs text-muted m-0"
+                        [matTooltip]="'Disponible: ' + p.stock + ' | Mín: ' + p.minStock + (p.maxStock ? ' | Máx: ' + p.maxStock : '')">
+                        @if (p.stock === 0) { Agotado — reposición urgente }
+                        @else { {{ p.stock }} uds disponibles (mín. {{ p.minStock }}) }
+                    </p>
+                </div>
+                <span class="alert-badge" [style.background]="p.stock === 0 ? '#FFEBEE' : '#FFF3E0'"
+                    [style.color]="p.stock === 0 ? '#C62828' : '#E65100'">
+                    {{ p.stock }}
+                </span>
+            </div>
+            }
+
+            <!-- CTA -->
+            <div class="alerts-footer" (click)="$event.stopPropagation()">
+                <button mat-flat-button color="primary" style="border-radius:999px; width:100%"
+                    (click)="goToStockAlerts()">
+                    Ver todas las alertas
+                </button>
+            </div>
+        </mat-menu>
         }
+    </div>
 
-        <!-- CTA -->
-        <div class="alerts-footer" (click)="$event.stopPropagation()">
-            <button mat-flat-button color="primary" style="border-radius:999px; width:100%" (click)="goToStockAlerts()">
-                Ver todas las alertas
-            </button>
-        </div>
-    </mat-menu>
-    }
-</div>
+    <!-- ── Grid principal ────────────────────────────────────────────── -->
+    <div class="grid grid-cols-12 gap-4 bg-white rounded-xl p-4">
 
-<!-- ── Grid principal ────────────────────────────────────────────── -->
-<div class="grid grid-cols-12 gap-4">
-
-    <!-- ── KPI Cards (3 por fila) ───────────────────────────────────── -->
-    @for (kpi of kpis; track kpi.label) {
-    <div class="col-span-12 sm:col-span-6 xl:col-span-4">
-        <div class="kpi-card rounded-xl p-12" [style.background]="kpi.bg">
+        <!-- ── KPI Cards (3 por fila) ───────────────────────────────────── -->
+        @for (kpi of kpis; track kpi.label) {
+        <div class="kpi-card rounded-xl p-4 col-span-4 shadow-xs border border-gray-100" [style.background]="kpi.bg">
             <div class="kpi-icon" [style.background]="kpi.iconBg">
                 <i-tabler [name]="kpi.icon" [style.color]="kpi.color" class="size-5"></i-tabler>
             </div>
@@ -68,85 +71,46 @@
                 <p class="text-xs text-muted mt-1">{{ kpi.sub }}</p>
             </div>
         </div>
-    </div>
-    }
+        }
 
-    <!-- ── Movement Trend (area) ─────────────────────────────────────── -->
-    <div class="col-span-12 xl:col-span-8">
-        <mat-card class="cardWithShadow h-full">
-            <mat-card-content class="p-20">
-                <div class="flex items-center justify-between mb-12">
-                    <div>
-                        <h6 class="mat-subtitle-1 font-semibold">Tendencia de Movimientos</h6>
-                        <p class="text-xs text-muted">Entradas vs Salidas — últimos 30 días</p>
+        <!-- ── Movement Trend (area) ─────────────────────────────────────── -->
+        <div class="col-span-12 xl:col-span-8">
+            <mat-card class="cardWithShadow h-full">
+                <mat-card-content class="p-20">
+                    <div class="flex items-center justify-between mb-12">
+                        <div>
+                            <h6 class="mat-subtitle-1 font-semibold">Tendencia de Movimientos</h6>
+                            <p class="text-xs text-muted">Entradas vs Salidas — últimos 30 días</p>
+                        </div>
+                        <i-tabler name="chart-area-line" class="size-5 text-muted"></i-tabler>
                     </div>
-                    <i-tabler name="chart-area-line" class="size-5 text-muted"></i-tabler>
-                </div>
-                <apx-chart [series]="movementTrendSeries" [chart]="movementTrendChart" [stroke]="movementTrendStroke"
-                    [fill]="movementTrendFill" [colors]="movementTrendColors" [xaxis]="movementTrendXaxis"
-                    [yaxis]="movementTrendYaxis" [legend]="movementTrendLegend" [tooltip]="movementTrendTooltip"
-                    [grid]="movementTrendGrid">
-                </apx-chart>
-            </mat-card-content>
-        </mat-card>
-    </div>
+                    <apx-chart [series]="movementTrendSeries" [chart]="movementTrendChart"
+                        [stroke]="movementTrendStroke" [fill]="movementTrendFill" [colors]="movementTrendColors"
+                        [xaxis]="movementTrendXaxis" [yaxis]="movementTrendYaxis" [legend]="movementTrendLegend"
+                        [tooltip]="movementTrendTooltip" [grid]="movementTrendGrid">
+                    </apx-chart>
+                </mat-card-content>
+            </mat-card>
+        </div>
 
-    <!-- ── Movement Types Donut ──────────────────────────────────────── -->
-    <div class="col-span-12 xl:col-span-4">
-        <mat-card class="cardWithShadow h-full">
-            <mat-card-content class="p-20">
-                <div class="flex items-center justify-between mb-12">
-                    <div>
-                        <h6 class="mat-subtitle-1 font-semibold">Por Tipo de Movimiento</h6>
-                        <p class="text-xs text-muted">Distribución compra / venta / manual</p>
+        <!-- ── Movement Types Donut ──────────────────────────────────────── -->
+        <div class="col-span-12 xl:col-span-4">
+            <mat-card class="cardWithShadow h-full">
+                <mat-card-content class="p-20">
+                    <div class="flex items-center justify-between mb-12">
+                        <div>
+                            <h6 class="mat-subtitle-1 font-semibold">Por Tipo de Movimiento</h6>
+                            <p class="text-xs text-muted">Distribución compra / venta / manual</p>
+                        </div>
+                        <i-tabler name="chart-donut" class="size-5 text-muted"></i-tabler>
                     </div>
-                    <i-tabler name="chart-donut" class="size-5 text-muted"></i-tabler>
-                </div>
-                <apx-chart [series]="movementTypeSeries" [chart]="movementTypeChart" [labels]="movementTypeLabels"
-                    [colors]="movementTypeColors" [legend]="movementTypeLegend" [plotOptions]="movementTypePlotOptions"
-                    [dataLabels]="movementTypeDataLabels" [tooltip]="movementTypeTooltip">
-                </apx-chart>
-            </mat-card-content>
-        </mat-card>
+                    <apx-chart [series]="movementTypeSeries" [chart]="movementTypeChart" [labels]="movementTypeLabels"
+                        [colors]="movementTypeColors" [legend]="movementTypeLegend"
+                        [plotOptions]="movementTypePlotOptions" [dataLabels]="movementTypeDataLabels"
+                        [tooltip]="movementTypeTooltip">
+                    </apx-chart>
+                </mat-card-content>
+            </mat-card>
+        </div>
     </div>
-
-    <!-- ── Stock by Category ─────────────────────────────────────────── -->
-    <div class="col-span-12 xl:col-span-6">
-        <mat-card class="cardWithShadow h-full">
-            <mat-card-content class="p-20">
-                <div class="flex items-center justify-between mb-12">
-                    <div>
-                        <h6 class="mat-subtitle-1 font-semibold">Stock por Categoría</h6>
-                        <p class="text-xs text-muted">Unidades totales disponibles</p>
-                    </div>
-                    <i-tabler name="chart-bar" class="size-5 text-muted"></i-tabler>
-                </div>
-                <apx-chart [series]="stockByCatSeries" [chart]="stockByCatChart" [plotOptions]="stockByCatPlotOptions"
-                    [colors]="stockByCatColors" [xaxis]="stockByCatXaxis" [yaxis]="stockByCatYaxis"
-                    [dataLabels]="stockByCatDataLabels" [grid]="stockByCatGrid">
-                </apx-chart>
-            </mat-card-content>
-        </mat-card>
-    </div>
-
-    <!-- ── Monthly Balance Bar ───────────────────────────────────────── -->
-    <div class="col-span-12 xl:col-span-6">
-        <mat-card class="cardWithShadow h-full">
-            <mat-card-content class="p-20">
-                <div class="flex items-center justify-between mb-12">
-                    <div>
-                        <h6 class="mat-subtitle-1 font-semibold">Balance Mensual</h6>
-                        <p class="text-xs text-muted">Entradas vs Salidas por mes</p>
-                    </div>
-                    <i-tabler name="chart-bar" class="size-5 text-muted"></i-tabler>
-                </div>
-                <apx-chart [series]="monthlyBalanceSeries" [chart]="monthlyBalanceChart"
-                    [plotOptions]="monthlyBalancePlotOptions" [colors]="monthlyBalanceColors"
-                    [xaxis]="monthlyBalanceXaxis" [yaxis]="monthlyBalanceYaxis" [legend]="monthlyBalanceLegend"
-                    [dataLabels]="monthlyBalanceDataLabels" [grid]="monthlyBalanceGrid">
-                </apx-chart>
-            </mat-card-content>
-        </mat-card>
-    </div>
-
-</div>
+</mat-card>

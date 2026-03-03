@@ -20,6 +20,7 @@ import {
     ApexDataLabels,
 } from 'ng-apexcharts';
 import { GetStockAlertsUseCase } from '../../../core/application/use-cases/get-stock-alerts.use-case';
+import { GetDashboardStatsUseCase } from '../../../core/application/use-cases/get-dashboard-stats.use-case';
 import { Product } from '../../../core/domain/entities/product.entity';
 
 @Component({
@@ -66,6 +67,7 @@ import { Product } from '../../../core/domain/entities/product.entity';
 })
 export class InventoryDashboardComponent implements OnInit {
     private getStockAlertsUseCase = inject(GetStockAlertsUseCase);
+    private getDashboardStatsUseCase = inject(GetDashboardStatsUseCase);
     private router = inject(Router);
 
     // ── Alert State ─────────────────────────────────────────────────────────────
@@ -142,6 +144,18 @@ export class InventoryDashboardComponent implements OnInit {
 
     ngOnInit(): void {
         this.loadAlerts();
+        this.loadStats();
+    }
+
+    private loadStats() {
+        this.getDashboardStatsUseCase.execute().subscribe(stats => {
+            this.kpis[0].value = stats.totalProducts.toString();
+            this.kpis[1].value = stats.totalStock.toLocaleString();
+            this.kpis[2].value = stats.recentEntries.toString();
+            this.kpis[3].value = stats.recentExits.toString();
+            this.kpis[4].value = stats.outOfStockCount.toString();
+            this.kpis[5].value = stats.lowStockCount.toString();
+        });
     }
 
     private loadAlerts() {

@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { Product } from '../../core/domain/entities/product.entity';
+import { DashboardStats } from '../../core/domain/entities/dashboard-stats.entity';
 import { ProductRepository, ProductsQuery } from '../../core/domain/repositories/product.repository';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../core/interfaces/api-response.interface';
@@ -32,6 +33,12 @@ export class ProductHttpRepository extends ProductRepository {
     getStockAlerts(): Observable<any> {
         return this.http
             .get<ApiResponse<any>>(`${BASE_URL}/alerts`)
+            .pipe(map((res) => res.data));
+    }
+
+    getDashboardStats(): Observable<DashboardStats> {
+        return this.http
+            .get<ApiResponse<DashboardStats>>(`${BASE_URL}/stats`)
             .pipe(map((res) => res.data));
     }
 
