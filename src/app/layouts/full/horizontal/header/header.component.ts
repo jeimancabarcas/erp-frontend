@@ -75,10 +75,9 @@ export class AppHorizontalHeaderComponent {
   showFiller = false;
 
   public selectedLanguage: any = {
-    language: 'English',
-    code: 'en',
-    type: 'US',
-    icon: '/assets/images/flag/icon-flag-en.svg',
+    language: 'Español',
+    code: 'es',
+    icon: '/assets/images/flag/icon-flag-es.svg',
   };
 
   public languages: any[] = [
@@ -115,7 +114,8 @@ export class AppHorizontalHeaderComponent {
     public dialog: MatDialog,
     private translate: TranslateService
   ) {
-    translate.setDefaultLang('en');
+    translate.setDefaultLang('es');
+    translate.use('es');
   }
 
   openDialog() {
