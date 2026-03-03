@@ -10,6 +10,8 @@ import { BrandingComponent } from '../../vertical/sidebar/branding.component';
 import { FormsModule } from '@angular/forms';
 import { AppSettings } from 'src/app/config';
 import { TranslateModule } from '@ngx-translate/core';
+import { AuthService } from 'src/app/core/services/auth.service';
+import { Router } from '@angular/router';
 
 
 interface notifications {
@@ -112,10 +114,17 @@ export class AppHorizontalHeaderComponent {
     private settings: CoreService,
     private vsidenav: CoreService,
     public dialog: MatDialog,
-    private translate: TranslateService
+    private translate: TranslateService,
+    public authService: AuthService,
+    private router: Router
   ) {
     translate.setDefaultLang('es');
     translate.use('es');
+  }
+
+  logout() {
+    this.authService.logout();
+    this.router.navigate(['/authentication/login']);
   }
 
   openDialog() {
@@ -229,32 +238,11 @@ export class AppHorizontalHeaderComponent {
   profiledd: profiledd[] = [
     {
       id: 1,
-      title: 'My Profile',
-      link: '/',
-    },
-    {
-      id: 2,
-      title: 'My Projects',
-      link: '/',
-    },
-    {
-      id: 3,
-      title: 'Inbox',
-      new: true,
-      link: '/',
-    },
-    {
-      id: 4,
-      title: ' Mode',
-      link: '/',
-    },
-    {
-      id: 5,
       title: ' Account Settings',
       link: '/',
     },
     {
-      id: 6,
+      id: 2,
       title: 'Sign Out',
       link: '/authentication/login',
     },

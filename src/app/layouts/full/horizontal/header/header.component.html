@@ -264,15 +264,26 @@
           <img src="/assets/images/profile/user-1.jpg" class="rounded-full" width="56" />
           <div>
             <h6 class="text-sm font-semibold flex items-center">
-              Markarn Doe
+              {{ authService.currentUser()?.profile?.fullName || 'User' }}
               <span class="text-sm block text-success mx-1">Pro</span>
             </h6>
-            <span class="text-muted">markrarn@wrappixel.com</span>
+            <span class="text-muted">{{ authService.currentUser()?.email }}</span>
           </div>
         </div>
       </div>
       <div class="p-4">
         @for(profile of profiledd; track profile.title) {
+        @if(profile.title === 'Sign Out') {
+        <button
+          class="w-full text-left p-2 no-underline block text-hover-primary bg-transparent border-0 cursor-pointer"
+          (click)="logout()">
+          <div class="flex items-center">
+            <h5 class="text-sm font-semibold hover-text">
+              {{ profile.title | translate }}
+            </h5>
+          </div>
+        </button>
+        } @else {
         <a class="p-2 no-underline block text-hover-primary" [routerLink]="[profile.link]">
           <div class="flex items-center">
             <h5 class="text-sm font-semibold hover-text">
@@ -283,6 +294,7 @@
             }
           </div>
         </a>
+        }
         }
       </div>
     </mat-menu>

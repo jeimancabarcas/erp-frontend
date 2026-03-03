@@ -10,16 +10,6 @@ export const navItems: NavItem[] = [
     route: '/starter',
   },
   {
-    displayName: 'Login',
-    iconName: 'lock',
-    route: '/authentication/login',
-  },
-  {
-    displayName: 'Register',
-    iconName: 'user-edit',
-    route: '/authentication/register',
-  },
-  {
     navCap: 'Inventory',
   },
   {

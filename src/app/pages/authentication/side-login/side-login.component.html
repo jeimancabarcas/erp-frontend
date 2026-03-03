@@ -12,45 +12,45 @@
     <div class="xl:col-span-4 lg:col-span-5 col-span-12 sm:px-12 p-5">
       <div class="flex lg:h-screen items-center lg:px-3 lg:justify-start justify-center">
         <div class="max-w-[420px] w-full mx-auto">
-          <h4 class="font-bold text-2xl m-0">Welcome to Materialpro</h4>
-          <span class="block text-sm mt-2">Your Admin Dashboard</span>
+          <h4 class="font-bold text-2xl m-0">Bienvenido a Materialpro</h4>
+          <span class="block text-sm mt-2">Tu Panel de Administración</span>
 
           <form class="mt-8" [formGroup]="form" (ngSubmit)="submit()">
-            <mat-label class="text-sm font-semibold mb-3 block">Email</mat-label>
+            <mat-label class="text-sm font-semibold mb-3 block">Correo electrónico</mat-label>
             <mat-form-field appearance="outline" class="w-full" color="primary">
-              <input matInput formControlName="email" type="email" placeholder="example@example.com" />
+              <input matInput formControlName="email" type="email" placeholder="ejemplo@correo.com" />
               @if(f['email'].touched && f['email'].invalid) {
               <mat-hint class="mb-4 absolute -top-[19px] right-[3px]">
                 @if(f['email'].errors && f['email'].errors['required']) {
-                <div class="text-error">Email is required.</div>
+                <div class="text-error">El correo es obligatorio.</div>
                 } @if(f['email'].errors && f['email'].errors['email']) {
-                <div class="text-error">Please enter a valid email.</div>
+                <div class="text-error">Ingresa un correo válido.</div>
                 }
               </mat-hint>
               }
             </mat-form-field>
 
             <!-- password -->
-            <mat-label class="text-sm font-semibold mb-3 block">Password</mat-label>
+            <mat-label class="text-sm font-semibold mb-3 block">Contraseña</mat-label>
             <mat-form-field appearance="outline" class="w-full" color="primary">
               <input matInput type="password" formControlName="password" />
               @if(f['password'].touched && f['password'].invalid) {
               <mat-hint class="mb-4 absolute -top-[19px] right-[3px]">
                 @if( f['password'].errors && f['password'].errors['required'])
                 {
-                <div class="text-error">Password is required.</div>
+                <div class="text-error">La contraseña es obligatoria.</div>
                 }
               </mat-hint>
               }
             </mat-form-field>
 
             <div class="flex items-center mb-3">
-              <mat-checkbox color="primary">Remember this Device</mat-checkbox>
-              <a [routerLink]="['/starter']" class="text-primary font-semibold no-underline ms-auto text-sm">Forgot
-                Password ?</a>
+              <mat-checkbox color="primary">Recordar este dispositivo</mat-checkbox>
+              <a [routerLink]="['/starter']" class="text-primary font-semibold no-underline ms-auto text-sm">¿Olvidaste
+                tu contraseña?</a>
             </div>
             <button mat-flat-button color="primary" class="w-full" [disabled]="!form.valid">
-              Sign In
+              Iniciar sesión
             </button>
             <!-- input -->
           </form>

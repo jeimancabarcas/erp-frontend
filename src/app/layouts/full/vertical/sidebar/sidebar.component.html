@@ -9,44 +9,9 @@
     <!-- Profile - style you can find in header.scss -->
     <!-- ============================================================== -->
     <div class="profile-text pt-1">
-      <a href="javascript:void(0)" [matMenuTriggerFor]="sdprofile"
-        class="no-underline flex items-center justify-between text-white! w-full text-base">
+      <a href="javascript:void(0)" class="no-underline flex items-center justify-between text-white! w-full text-base">
         Markarn Doe
-        <i-tabler name="chevron-down"></i-tabler>
       </a>
     </div>
-
-    <mat-menu #sdprofile="matMenu" class="cardWithShadow profile-dd" xPosition="before">
-      <button class="flex items-center gap-2 px-4 py-2.5" mat-menu-item>
-        <mat-icon class="flex items-center m-0!">
-          <i-tabler name="user-circle"></i-tabler>
-        </mat-icon>
-        <span>{{ "My Profile" | translate }}</span>
-      </button>
-      <button class="flex items-center gap-2 px-4 py-2.5" mat-menu-item>
-        <mat-icon class="flex items-center m-0!"> <i-tabler name="note"></i-tabler></mat-icon>
-        <span>{{ "My Notes" | translate }}</span>
-      </button>
-      <button class="flex items-center gap-2 px-4 py-2.5" mat-menu-item>
-        <mat-icon class="flex items-center m-0!"><i-tabler name="mail"></i-tabler></mat-icon>
-        <span>{{ "Inbox" | translate }}</span>
-      </button>
-      <mat-divider></mat-divider>
-      <button class="flex items-center gap-2 px-4 py-2.5" mat-menu-item>
-        <mat-icon class="flex items-center m-0!"><i-tabler name="settings"></i-tabler></mat-icon>
-        <span>{{ "Account Setting" | translate }}</span>
-      </button>
-      <mat-divider></mat-divider>
-      <button class="flex items-center gap-2 px-4 py-2.5" mat-menu-item>
-        <mat-icon class="flex items-center m-0!"><i-tabler name="login"></i-tabler></mat-icon>
-        <span>{{ "Logout" | translate }}</span>
-      </button>
-      <mat-divider></mat-divider>
-      <div class="p-2">
-        <button mat-flat-button color="primary" class="w-full shadow-none!">
-          {{ "View Profile" | translate }}
-        </button>
-      </div>
-    </mat-menu>
   </div>
 </div>
