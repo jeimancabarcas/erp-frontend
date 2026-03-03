@@ -1,0 +1,173 @@
+<mat-card class="cardWithShadow mb-0!">
+
+    <mat-tab-group mat-stretch-tabs="false" animationDuration="0ms">
+        <mat-tab>
+            <ng-template mat-tab-label>
+                <div class="flex items-center">
+                    <mat-icon class="flex! items-center">
+                        <i-tabler name="user-circle" class="size-5!"></i-tabler>
+                    </mat-icon>
+                    Cuenta
+                </div>
+            </ng-template>
+            <mat-card-content>
+                <div class="grid grid-cols-12 gap-6">
+                    <div class="sm:col-span-6 col-span-12">
+                        <mat-card class="cardWithShadow mb-0!">
+                            <mat-card-content>
+                                <mat-card-title>Cambiar Perfil</mat-card-title>
+                                <mat-card-subtitle class="text-sm">Cambia tu foto de perfil desde
+                                    aquí</mat-card-subtitle>
+                                <div class="text-center mt-8">
+                                    <img src="/assets/images/profile/user-1.jpg" class="rounded-full mx-auto"
+                                        width="120" />
+                                    <div class="mt-6">
+                                        <button mat-flat-button color="primary" class="me-2">
+                                            Subir
+                                        </button>
+                                        <button mat-stroked-button color="warn">Restablecer</button>
+                                    </div>
+                                    <span class="text-sm mt-6 block">Permitido JPG, GIF o PNG. Tamaño máximo de
+                                        800K</span>
+                                </div>
+                            </mat-card-content>
+                        </mat-card>
+                    </div>
+                    <div class="sm:col-span-6 col-span-12">
+                        <mat-card class="cardWithShadow mb-0!">
+                            <mat-card-content>
+                                <mat-card-title>Cambiar Contraseña</mat-card-title>
+                                <mat-card-subtitle class="text-sm">Para cambiar tu contraseña, confírmala
+                                    aquí</mat-card-subtitle>
+                                <form class="mt-6">
+                                    <!-- input -->
+                                    <mat-label class="text-sm font-semibold mb-2 block">Contraseña Actual</mat-label>
+                                    <mat-form-field appearance="outline" class="w-full" color="primary">
+                                        <input matInput type="password" value="password" />
+                                    </mat-form-field>
+                                    <!-- input -->
+                                    <mat-label class="text-sm font-semibold mb-2 block">Nueva Contraseña</mat-label>
+                                    <mat-form-field appearance="outline" class="w-full" color="primary">
+                                        <input matInput type="password" value="password" />
+                                    </mat-form-field>
+                                    <!-- input -->
+                                    <mat-label class="text-sm font-semibold mb-2 block">Confirmar Contraseña</mat-label>
+                                    <mat-form-field appearance="outline" class="w-full hide-hint" color="primary">
+                                        <input matInput type="password" value="password" />
+                                    </mat-form-field>
+                                </form>
+                            </mat-card-content>
+                        </mat-card>
+                    </div>
+                    <div class="col-span-12">
+                        <mat-card class="cardWithShadow mb-0!">
+                            <mat-card-content>
+                                <mat-card-title>Detalles Personales</mat-card-title>
+                                <mat-card-subtitle class="text-sm">Para cambiar tus detalles personales, edita y guarda
+                                    desde aquí</mat-card-subtitle>
+                                <div class="grid grid-cols-12 gap-5 mt-6">
+                                    <div class="sm:col-span-6 col-span-12">
+                                        <!-- input -->
+                                        <mat-label class="text-sm font-semibold mb-2 block">Nombre</mat-label>
+                                        <mat-form-field appearance="outline" class="w-full" color="primary">
+                                            <input matInput type="text"
+                                                [value]="authService.currentUser()?.profile?.fullName" />
+                                        </mat-form-field>
+                                        <!-- input -->
+                                        <mat-label class="text-sm font-semibold mb-2 block">Ubicación</mat-label>
+                                        <mat-form-field appearance="outline" class="w-full">
+                                            <mat-select value="in">
+                                                <mat-option value="in">India</mat-option>
+                                                <mat-option value="us">United States</mat-option>
+                                                <mat-option value="uk">United Kingdom</mat-option>
+                                                <mat-option value="ru">Russia</mat-option>
+                                            </mat-select>
+                                        </mat-form-field>
+                                        <!-- input -->
+                                        <mat-label class="text-sm font-semibold mb-2 block">Correo
+                                            electrónico</mat-label>
+                                        <mat-form-field appearance="outline" class="w-full" color="primary">
+                                            <input matInput type="email" [value]="authService.currentUser()?.email" />
+                                        </mat-form-field>
+                                    </div>
+                                    <div class="sm:col-span-6 col-span-12">
+                                        <!-- input -->
+                                        <mat-label class="text-sm font-semibold mb-2 block">Nombre del Sitio</mat-label>
+                                        <mat-form-field appearance="outline" class="w-full" color="primary">
+                                            <input matInput type="text" value="Maxima Studio" />
+                                        </mat-form-field>
+                                        <!-- input -->
+                                        <mat-label class="text-sm font-semibold mb-2 block">Moneda</mat-label>
+                                        <mat-form-field appearance="outline" class="w-full" color="primary">
+                                            <mat-select value="in">
+                                                <mat-option value="in">India (INR)</mat-option>
+                                                <mat-option value="us">Us Dollar ($)</mat-option>
+                                                <mat-option value="uk">United Kingdom(Pound)</mat-option>
+                                                <mat-option value="ru">Russia (Ruble)</mat-option>
+                                            </mat-select>
+                                        </mat-form-field>
+                                        <!-- input -->
+                                        <mat-label class="text-sm font-semibold mb-2 block">Teléfono</mat-label>
+                                        <mat-form-field appearance="outline" class="w-full" color="primary">
+                                            <input matInput type="text" value="+91 12345 65478" />
+                                        </mat-form-field>
+                                    </div>
+                                    <div class="col-span-12">
+                                        <!-- input -->
+                                        <mat-label class="text-sm font-semibold mb-2 block">Dirección</mat-label>
+                                        <mat-form-field appearance="outline" class="w-full" color="primary">
+                                            <input matInput type="text" value="814 Howard Street, 120065, India" />
+                                        </mat-form-field>
+                                    </div>
+                                </div>
+                            </mat-card-content>
+                        </mat-card>
+                    </div>
+                </div>
+            </mat-card-content>
+        </mat-tab>
+        <mat-tab disabled>
+            <ng-template mat-tab-label>
+                <div class="flex items-center">
+                    <mat-icon class="flex! items-center">
+                        <i-tabler name="bell" class="size-5!"></i-tabler>
+                    </mat-icon>
+                    Notificaciones
+                </div>
+            </ng-template>
+            <mat-card-content>
+                <!-- Maquetado - disabled as per request function account fields only -->
+            </mat-card-content>
+        </mat-tab>
+        <mat-tab disabled>
+            <ng-template mat-tab-label>
+                <div class="flex items-center">
+                    <mat-icon class="flex! items-center">
+                        <i-tabler name="receipt" class="size-5!"></i-tabler>
+                    </mat-icon>
+                    Facturación
+                </div>
+            </ng-template>
+            <mat-card-content>
+                <!-- Maquetado -->
+            </mat-card-content>
+        </mat-tab>
+        <mat-tab disabled>
+            <ng-template mat-tab-label>
+                <div class="flex items-center">
+                    <mat-icon class="flex! items-center">
+                        <i-tabler name="lock" class="size-5!"></i-tabler>
+                    </mat-icon>
+                    Seguridad
+                </div>
+            </ng-template>
+            <mat-card-content>
+                <!-- Maquetado -->
+            </mat-card-content>
+        </mat-tab>
+    </mat-tab-group>
+    <div class="text-end p-6 pt-0">
+        <button mat-flat-button color="primary" class="me-2">Guardar</button>
+        <button mat-flat-button class="bg-error text-white">Cancelar</button>
+    </div>
+</mat-card>

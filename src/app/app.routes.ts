@@ -16,6 +16,14 @@ export const routes: Routes = [
         pathMatch: 'full',
       },
       {
+        path: 'account',
+        loadComponent: () =>
+          import('./pages/account/account.component').then((m) => m.AppAccountSettingComponent),
+        data: {
+          title: 'Configuración de Cuenta',
+        },
+      },
+      {
         path: 'starter',
         loadChildren: () =>
           import('./pages/pages.routes').then((m) => m.PagesRoutes),

@@ -239,7 +239,7 @@ export class AppHorizontalHeaderComponent {
     {
       id: 1,
       title: ' Account Settings',
-      link: '/',
+      link: '/account',
     },
     {
       id: 2,
