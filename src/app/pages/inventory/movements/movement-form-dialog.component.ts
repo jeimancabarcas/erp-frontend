@@ -63,8 +63,8 @@ export class MovementFormDialogComponent implements OnInit {
 
     ngOnInit() {
         // Load existing products to map in the select dropdown
-        this.getProductsUseCase.execute().subscribe({
-            next: (data) => this.products.set(data),
+        this.getProductsUseCase.execute({ limit: 1000 }).subscribe({
+            next: (res) => this.products.set(res.products),
             error: () => this.toast.error('Error cargando los productos disponibles')
         });
     }

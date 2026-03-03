@@ -1,15 +1,14 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Movement } from '../../domain/entities/movement.entity';
-import { MovementRepository } from '../../domain/repositories/movement.repository';
+import { MovementRepository, MovementsQuery, MovementsListResponse } from '../../domain/repositories/movement.repository';
 
 @Injectable({
     providedIn: 'root'
 })
 export class GetMovementsUseCase {
-    private repository = inject(MovementRepository);
+    constructor(private movementRepository: MovementRepository) { }
 
-    execute(): Observable<Movement[]> {
-        return this.repository.getMovements();
+    execute(query?: MovementsQuery): Observable<MovementsListResponse> {
+        return this.movementRepository.getMovements(query);
     }
 }

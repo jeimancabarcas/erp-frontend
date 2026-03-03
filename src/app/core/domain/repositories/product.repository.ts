@@ -6,6 +6,13 @@ export interface ProductsQuery {
     search?: string;
     sortBy?: 'name' | 'sku' | 'stock' | 'minStock' | 'maxStock' | 'createdAt';
     sortOrder?: 'asc' | 'desc';
+    page?: number;
+    limit?: number;
+}
+
+export interface ProductsListResponse {
+    products: Product[];
+    total: number;
 }
 
 export interface StockAlerts {
@@ -15,7 +22,7 @@ export interface StockAlerts {
 }
 
 export abstract class ProductRepository {
-    abstract getProducts(query?: ProductsQuery): Observable<Product[]>;
+    abstract getProducts(query?: ProductsQuery): Observable<ProductsListResponse>;
     abstract getProductById(id: string): Observable<Product>;
     abstract getStockAlerts(): Observable<StockAlerts>;
     abstract getDashboardStats(): Observable<DashboardStats>;

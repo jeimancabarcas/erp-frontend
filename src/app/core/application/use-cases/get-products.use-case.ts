@@ -1,6 +1,5 @@
 import { Observable } from 'rxjs';
-import { Product } from '../../domain/entities/product.entity';
-import { ProductRepository, ProductsQuery } from '../../domain/repositories/product.repository';
+import { ProductRepository, ProductsQuery, ProductsListResponse } from '../../domain/repositories/product.repository';
 import { inject, Injectable } from '@angular/core';
 
 @Injectable({
@@ -9,7 +8,7 @@ import { inject, Injectable } from '@angular/core';
 export class GetProductsUseCase {
     private repository = inject(ProductRepository);
 
-    execute(query?: ProductsQuery): Observable<Product[]> {
+    execute(query?: ProductsQuery): Observable<ProductsListResponse> {
         return this.repository.getProducts(query);
     }
 }

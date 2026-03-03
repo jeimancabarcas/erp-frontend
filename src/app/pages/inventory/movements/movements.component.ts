@@ -1,15 +1,17 @@
-import { Component, OnInit, ViewChild, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, ViewChild, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
+import { MatSort, Sort } from '@angular/material/sort';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { MaterialModule } from '../../../material.module';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import { TranslateModule } from '@ngx-translate/core';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { GetMovementsUseCase } from '../../../core/application/use-cases/get-movements.use-case';
+import { GetMovementsMonthlyStatsUseCase } from '../../../core/application/use-cases/get-movements-monthly-stats.use-case';
 import { Movement, MovementDirection, MovementType } from '../../../core/domain/entities/movement.entity';
+import { MovementsQuery, MovementsListResponse } from '../../../core/domain/repositories/movement.repository';
 import { ToastService } from '../../../core/services/toast.service';
 import { MatDialog } from '@angular/material/dialog';
 import { MovementFormDialogComponent } from './movement-form-dialog.component';
@@ -52,20 +54,27 @@ import { TableEmptyComponent } from '../../../shared/components/table-empty/tabl
 })
 export class MovementsComponent implements OnInit {
     private getMovementsUseCase = inject(GetMovementsUseCase);
+    private getMonthlyStatsUseCase = inject(GetMovementsMonthlyStatsUseCase);
     private toast = inject(ToastService);
     public dialog = inject(MatDialog);
 
     protected displayedColumns = ['date', 'productId', 'direction', 'type', 'quantity', 'reference', 'notes'];
     protected dataSource = new MatTableDataSource<Movement>([]);
 
-    // filter state
+    // filter state (Server-side)
     protected searchControl = new FormControl('');
     protected directionControl = new FormControl('');
     protected typeControl = new FormControl('');
 
-    private debouncedSearch = signal('');
-    protected directionFilter = signal('');
-    protected typeFilter = signal('');
+    // Pagination state
+    protected totalElements = signal(0);
+    protected currentPage = signal(0);
+    protected pageSize = signal(10);
+
+    private currentSort: Pick<MovementsQuery, 'sortBy' | 'sortOrder'> = {
+        sortBy: 'date',
+        sortOrder: 'desc'
+    };
 
     protected directionOptions: { value: MovementDirection | '', label: string }[] = [
         { value: '', label: 'Todas' },
@@ -86,47 +95,56 @@ export class MovementsComponent implements OnInit {
 
     protected isLoading = signal(false);
 
-    @ViewChild(MatPaginator, { static: true }) protected paginator: MatPaginator;
-    @ViewChild(MatSort, { static: true }) protected sort: MatSort;
+    @ViewChild(MatPaginator) protected paginator: MatPaginator;
+    @ViewChild(MatSort) protected sort: MatSort;
 
     ngOnInit(): void {
-        this.dataSource.paginator = this.paginator;
-        this.dataSource.sort = this.sort;
-
-        this.dataSource.filterPredicate = (data: Movement, filter: string) => {
-            const f = JSON.parse(filter);
-            const searchStr = (f.search || '').toLowerCase();
-            const productName = (data.productName || '').toLowerCase();
-            const productSku = (data.productSku || '').toLowerCase();
-            const reference = (data.reference || '').toLowerCase();
-
-            const searchMatch = !f.search ||
-                productName.includes(searchStr) ||
-                productSku.includes(searchStr) ||
-                reference.includes(searchStr);
-
-            const directionMatch = !f.direction || data.direction === f.direction;
-            const typeMatch = !f.type || data.type === f.type;
-            return !!(searchMatch && directionMatch && typeMatch);
-        };
-
         this.loadMovements();
+        this.loadStats();
 
-        this.searchControl.valueChanges.pipe(debounceTime(300), distinctUntilChanged())
-            .subscribe(v => { this.debouncedSearch.set(v?.toLowerCase() || ''); this.applyFilters(); });
+        this.searchControl.valueChanges.pipe(debounceTime(350), distinctUntilChanged())
+            .subscribe(() => {
+                this.currentPage.set(0);
+                this.loadMovements();
+            });
 
-        this.directionControl.valueChanges.subscribe(v => { this.directionFilter.set(v || ''); this.applyFilters(); });
-        this.typeControl.valueChanges.subscribe(v => { this.typeFilter.set(v || ''); this.applyFilters(); });
+        this.directionControl.valueChanges.subscribe(() => {
+            this.currentPage.set(0);
+            this.loadMovements();
+        });
+        this.typeControl.valueChanges.subscribe(() => {
+            this.currentPage.set(0);
+            this.loadMovements();
+        });
     }
 
-    private loadMovements() {
+    private loadStats() {
+        this.getMonthlyStatsUseCase.execute().subscribe({
+            next: (stats) => {
+                this.totalMovements.set(stats.totalMovements);
+                this.totalEntradas.set(stats.totalEntradas);
+                this.totalSalidas.set(stats.totalSalidas);
+            }
+        });
+    }
+
+    protected loadMovements() {
         this.isLoading.set(true);
-        this.getMovementsUseCase.execute().subscribe({
-            next: (data: Movement[]) => {
-                this.dataSource.data = data;
-                this.totalMovements.set(data.length);
-                this.totalEntradas.set(data.filter((m: Movement) => m.direction === 'entrada').reduce((acc: number, m: Movement) => acc + m.quantity, 0));
-                this.totalSalidas.set(data.filter((m: Movement) => m.direction === 'salida').reduce((acc: number, m: Movement) => acc + m.quantity, 0));
+
+        const query: MovementsQuery = {
+            search: this.searchControl.value || undefined,
+            direction: (this.directionControl.value as any) || undefined,
+            type: (this.typeControl.value as any) || undefined,
+            sortBy: this.currentSort.sortBy,
+            sortOrder: this.currentSort.sortOrder,
+            page: this.currentPage() + 1, // backend is 1-indexed
+            limit: this.pageSize()
+        };
+
+        this.getMovementsUseCase.execute(query).subscribe({
+            next: (data: MovementsListResponse) => {
+                this.dataSource.data = data.movements;
+                this.totalElements.set(data.total);
                 this.isLoading.set(false);
             },
             error: () => {
@@ -136,19 +154,37 @@ export class MovementsComponent implements OnInit {
         });
     }
 
-    protected applyFilters(): void {
-        this.dataSource.filter = JSON.stringify({
-            search: this.debouncedSearch(),
-            direction: this.directionFilter(),
-            type: this.typeFilter(),
-        });
-        if (this.dataSource.paginator) this.dataSource.paginator.firstPage();
+    protected onPageChange(event: PageEvent) {
+        this.currentPage.set(event.pageIndex);
+        this.pageSize.set(event.pageSize);
+        this.loadMovements();
+    }
+
+    protected onSortChange(sort: Sort) {
+        if (sort.active && sort.direction) {
+            const fieldMap: Record<string, MovementsQuery['sortBy']> = {
+                date: 'date',
+                productId: 'productName',
+                direction: 'date',
+                type: 'date',
+                quantity: 'quantity',
+            };
+            this.currentSort = {
+                sortBy: fieldMap[sort.active] || 'date',
+                sortOrder: sort.direction as 'asc' | 'desc',
+            };
+        } else {
+            this.currentSort = { sortBy: 'date', sortOrder: 'desc' };
+        }
+        this.loadMovements();
     }
 
     protected clearFilters(): void {
         this.searchControl.setValue('');
         this.directionControl.setValue('');
         this.typeControl.setValue('');
+        this.currentPage.set(0);
+        this.loadMovements();
     }
 
     protected openMovementForm() {
@@ -159,6 +195,7 @@ export class MovementsComponent implements OnInit {
         dialogRef.afterClosed().subscribe(result => {
             if (result) {
                 this.loadMovements();
+                this.loadStats();
             }
         });
     }

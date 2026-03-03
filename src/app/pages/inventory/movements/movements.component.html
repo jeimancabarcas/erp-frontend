@@ -61,7 +61,7 @@
         <div class="filter-container mt-4">
             <mat-form-field appearance="outline" class="filter-field flex justify-center items-center">
                 <i-tabler matPrefix name="search" class="p-1 ml-2"></i-tabler>
-                <input matInput [formControl]="searchControl" (keyup)="applyFilters()"
+                <input matInput [formControl]="searchControl"
                     placeholder="{{ 'Buscar producto o referencia' | translate }}">
             </mat-form-field>
 
@@ -91,7 +91,7 @@
         </div>
 
         <div class="relative overflow-auto">
-            <mat-table [dataSource]="dataSource" matSort class="min-w-full">
+            <mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)" class="min-w-full">
 
                 <!-- Date -->
                 <ng-container matColumnDef="date">
@@ -214,7 +214,8 @@
                 icon="search-off"></app-table-empty>
             }
 
-            <mat-paginator [pageSize]="10" [pageSizeOptions]="[5, 10, 25]" showFirstLastButtons>
+            <mat-paginator [length]="totalElements()" [pageSize]="pageSize()" [pageIndex]="currentPage()"
+                [pageSizeOptions]="[5, 10, 25, 50]" (page)="onPageChange($event)" showFirstLastButtons>
             </mat-paginator>
         </div>
 

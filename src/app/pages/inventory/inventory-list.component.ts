@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild, inject, signal, computed } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginator } from '@angular/material/paginator';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSort, Sort } from '@angular/material/sort';
 import { MatDialog } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
@@ -61,6 +61,9 @@ export class InventoryListComponent implements OnInit {
     protected dataSource = new MatTableDataSource<Product>([]);
     protected categories = signal<{ id: string; name: string }[]>([]);
     protected isLoading = signal(false);
+    protected totalElements = signal(0);
+    protected pageSize = signal(10);
+    protected currentPage = signal(0);
 
     // Server-side query state
     protected filterValue = '';
@@ -107,20 +110,25 @@ export class InventoryListComponent implements OnInit {
     protected loadProducts() {
         this.isLoading.set(true);
 
-        const query: ProductsQuery = {};
+        const query: ProductsQuery = {
+            page: this.currentPage() + 1,
+            limit: this.pageSize()
+        };
+
         if (this.filterValue.trim()) query.search = this.filterValue.trim();
         if (this.currentSort.sortBy) query.sortBy = this.currentSort.sortBy;
         if (this.currentSort.sortOrder) query.sortOrder = this.currentSort.sortOrder;
 
         this.getProductsUseCase.execute(query).subscribe({
-            next: (products) => {
+            next: (response) => {
+                const products = response.products;
                 // Client-side category filter (categories aren't searchable via backend yet)
                 const filtered = this.categoryFilter
                     ? products.filter(p => p.categories?.some(c => c.id === this.categoryFilter))
                     : products;
 
                 this.dataSource.data = filtered;
-                this.dataSource.paginator = this.paginator;
+                this.totalElements.set(response.total);
 
                 const allCatsMap = new Map<string, { id: string; name: string }>();
                 products.forEach(p => p.categories?.forEach(c => allCatsMap.set(c.id, c)));
@@ -135,7 +143,14 @@ export class InventoryListComponent implements OnInit {
     }
 
     protected applyFilter() {
+        this.currentPage.set(0);
         this.searchSubject.next(this.filterValue);
+    }
+
+    protected onPageChange(event: PageEvent) {
+        this.currentPage.set(event.pageIndex);
+        this.pageSize.set(event.pageSize);
+        this.loadProducts();
     }
 
     /** Triggered when MatSort header is clicked */
@@ -155,6 +170,7 @@ export class InventoryListComponent implements OnInit {
         } else {
             this.currentSort = {};
         }
+        this.currentPage.set(0);
         this.loadProducts();
     }
 
@@ -170,6 +186,7 @@ export class InventoryListComponent implements OnInit {
     protected clearCategoryFilter(): void {
         this.categorySearchControl.setValue('');
         this.categoryFilter = '';
+        this.currentPage.set(0);
         this.loadProducts();
     }
 
