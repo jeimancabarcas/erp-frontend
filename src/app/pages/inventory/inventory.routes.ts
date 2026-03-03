@@ -50,4 +50,18 @@ export const InventoryRoutes: Routes = [
             ],
         },
     },
+    {
+        path: 'settings',
+        loadComponent: () =>
+            import('./settings/inventory-settings.component').then(
+                (m) => m.InventorySettingsComponent
+            ),
+        data: {
+            title: 'Configuración de Inventario',
+            urls: [
+                { title: 'Inventario', url: '/inventory' },
+                { title: 'Configuración' },
+            ],
+        },
+    },
 ];

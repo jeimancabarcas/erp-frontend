@@ -37,4 +37,9 @@ export const navItems: NavItem[] = [
     iconName: 'arrows-exchange',
     route: '/inventory/movements',
   },
+  {
+    displayName: 'Configuración',
+    iconName: 'settings',
+    route: '/inventory/settings',
+  },
 ];
