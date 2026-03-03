@@ -23,9 +23,9 @@
             <mat-form-field appearance="outline" class="w-full">
                 <mat-label>Categorías</mat-label>
                 <mat-chip-grid #chipGrid aria-label="Category selection">
-                    @for (category of selectedCategories(); track category) {
+                    @for (category of selectedCategories(); track category.id) {
                     <mat-chip-row (removed)="remove(category)">
-                        {{category}}
+                        {{category.name}}
                         <button matChipRemove [attr.aria-label]="'remove ' + category">
                             <i-tabler name="x" class="size-3"></i-tabler>
                         </button>
@@ -35,14 +35,12 @@
                 <input placeholder="Ej. Periféricos..." #categoryInput [formControl]="categoryControl"
                     [matChipInputFor]="chipGrid" [matAutocomplete]="auto"
                     [matChipInputSeparatorKeyCodes]="separatorKeysCodes" (matChipInputTokenEnd)="add($event)" />
-                <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)">
-                    @for (category of filteredCategories(); track category) {
-                    <mat-option [value]="category">{{category}}</mat-option>
+                <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)"
+                    [displayWith]="displayCategory">
+                    @for (category of filteredCategories(); track category.id) {
+                    <mat-option [value]="category">{{category.name}}</mat-option>
                     }
                 </mat-autocomplete>
-                @if (productForm.get('categories')?.hasError('required')) {
-                <mat-error>Selecciona al menos una categoría</mat-error>
-                }
             </mat-form-field>
             <div class="flex justify-end -mt-5">
                 <button mat-button color="primary" class="text-xs!" type="button" (click)="addNewCategory()">

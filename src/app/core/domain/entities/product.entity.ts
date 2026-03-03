@@ -6,7 +6,7 @@ export interface Product {
     stock: number;
     minStock?: number;
     maxStock?: number;
-    categories: string[];
+    categories: { id: string; name: string }[];
     createdAt?: string;
     updatedAt?: string;
 }

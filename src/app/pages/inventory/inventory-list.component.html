@@ -28,10 +28,11 @@
                     <i-tabler name="x" class="size-4"></i-tabler>
                 </button>
                 }
-                <mat-autocomplete #categoryAuto="matAutocomplete" (optionSelected)="onCategorySelected($event)">
-                    <mat-option value="">{{ 'All' | translate }}</mat-option>
-                    @for (cat of filteredCategoryOptions(); track cat) {
-                    <mat-option [value]="cat">{{ cat }}</mat-option>
+                <mat-autocomplete #categoryAuto="matAutocomplete" (optionSelected)="onCategorySelected($event)"
+                    [displayWith]="displayCategory">
+                    <mat-option [value]="{id: '', name: 'Todos'}">{{ 'All' | translate }}</mat-option>
+                    @for (cat of filteredCategoryOptions(); track cat.id) {
+                    <mat-option [value]="cat">{{ cat.name }}</mat-option>
                     }
                 </mat-autocomplete>
             </mat-form-field>
@@ -71,8 +72,8 @@
                     </mat-header-cell>
                     <mat-cell class="p-4" *matCellDef="let element">
                         <mat-chip-listbox>
-                            @for (cat of element.categories; track cat) {
-                            <mat-chip-option [selectable]="false" class="text-xs">{{ cat }}</mat-chip-option>
+                            @for (cat of element.categories; track cat.id) {
+                            <mat-chip-option [selectable]="false" class="text-xs">{{ cat.name }}</mat-chip-option>
                             }
                         </mat-chip-listbox>
                     </mat-cell>

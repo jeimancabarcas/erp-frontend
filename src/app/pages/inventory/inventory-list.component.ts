@@ -58,7 +58,7 @@ export class InventoryListComponent implements OnInit {
 
     protected displayedColumns: string[] = ['name', 'sku', 'category', 'stock', 'minStock', 'maxStock', 'actions'];
     protected dataSource = new MatTableDataSource<Product>([]);
-    protected categories = signal<string[]>([]);
+    protected categories = signal<{ id: string; name: string }[]>([]);
     protected isLoading = signal(false);
 
     // Server-side query state
@@ -71,7 +71,7 @@ export class InventoryListComponent implements OnInit {
 
     protected filteredCategoryOptions = computed(() => {
         const search = this.debouncedCategorySearch().toLowerCase();
-        return this.categories().filter(c => c.toLowerCase().includes(search));
+        return this.categories().filter(c => c.name.toLowerCase().includes(search));
     });
 
     @ViewChild(MatPaginator, { static: true }) protected paginator: MatPaginator;
@@ -102,13 +102,15 @@ export class InventoryListComponent implements OnInit {
             next: (products) => {
                 // Client-side category filter (categories aren't searchable via backend yet)
                 const filtered = this.categoryFilter
-                    ? products.filter(p => p.categories?.includes(this.categoryFilter))
+                    ? products.filter(p => p.categories?.some(c => c.id === this.categoryFilter))
                     : products;
 
                 this.dataSource.data = filtered;
                 this.dataSource.paginator = this.paginator;
 
-                const allCats = [...new Set(products.flatMap(p => p.categories ?? []))].sort();
+                const allCatsMap = new Map<string, { id: string; name: string }>();
+                products.forEach(p => p.categories?.forEach(c => allCatsMap.set(c.id, c)));
+                const allCats = Array.from(allCatsMap.values()).sort((a, b) => a.name.localeCompare(b.name));
                 this.categories.set(allCats);
                 this.isLoading.set(false);
             },
@@ -143,8 +145,12 @@ export class InventoryListComponent implements OnInit {
     }
 
     protected onCategorySelected(event: MatAutocompleteSelectedEvent): void {
-        this.categoryFilter = event.option.value as string;
+        this.categoryFilter = event.option.value?.id || '';
         this.loadProducts();
+    }
+
+    displayCategory(category: { id: string; name: string }): string {
+        return category && category.name && category.id !== '' ? category.name : '';
     }
 
     protected clearCategoryFilter(): void {
