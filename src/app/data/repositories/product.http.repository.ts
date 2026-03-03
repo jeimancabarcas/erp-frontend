@@ -29,6 +29,12 @@ export class ProductHttpRepository extends ProductRepository {
             .pipe(map((res) => res.data));
     }
 
+    getStockAlerts(): Observable<any> {
+        return this.http
+            .get<ApiResponse<any>>(`${BASE_URL}/alerts`)
+            .pipe(map((res) => res.data));
+    }
+
     createProduct(product: Partial<Product>): Observable<Product> {
         return this.http
             .post<ApiResponse<Product>>(BASE_URL, product)

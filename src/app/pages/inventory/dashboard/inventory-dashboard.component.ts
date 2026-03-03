@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../../material.module';
 import { TablerIconsModule } from 'angular-tabler-icons';
@@ -18,6 +19,8 @@ import {
     ApexPlotOptions,
     ApexDataLabels,
 } from 'ng-apexcharts';
+import { GetStockAlertsUseCase } from '../../../core/application/use-cases/get-stock-alerts.use-case';
+import { Product } from '../../../core/domain/entities/product.entity';
 
 @Component({
     selector: 'app-inventory-dashboard',
@@ -34,11 +37,8 @@ import {
         }
         .kpi-icon {
             border-radius: 50%;
-            width: 52px;
-            height: 52px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 52px; height: 52px;
+            display: flex; align-items: center; justify-content: center;
             flex-shrink: 0;
         }
         .low-stock-row { border-left: 3px solid #f44336; }
@@ -65,6 +65,12 @@ import {
     `]
 })
 export class InventoryDashboardComponent implements OnInit {
+    private getStockAlertsUseCase = inject(GetStockAlertsUseCase);
+    private router = inject(Router);
+
+    // ── Alert State ─────────────────────────────────────────────────────────────
+    protected lowStockProducts: Product[] = [];
+    protected alertsCount = 0;
 
     // ── KPI data ────────────────────────────────────────────────────────────────
     kpis = [
@@ -72,8 +78,8 @@ export class InventoryDashboardComponent implements OnInit {
         { label: 'Unidades en Stock', value: '3,240', sub: 'En todos los productos', icon: 'packages', bg: '#E3F2FD', iconBg: '#BBDEFB', color: '#1565C0' },
         { label: 'Entradas (30d)', value: '312', sub: '8 movimientos', icon: 'arrow-down', bg: '#E8F5E9', iconBg: '#C8E6C9', color: '#2E7D32' },
         { label: 'Salidas (30d)', value: '189', sub: '12 movimientos', icon: 'arrow-up', bg: '#FFEBEE', iconBg: '#FFCDD2', color: '#C62828' },
-        { label: 'Productos Agotados', value: '5', sub: 'Requieren reposición', icon: 'alert-circle', bg: '#FFF3E0', iconBg: '#FFE0B2', color: '#E65100' },
-        { label: 'Stock Bajo', value: '11', sub: 'Menos de 10 uds', icon: 'alert-triangle', bg: '#FFFDE7', iconBg: '#FFF9C4', color: '#F57F17' },
+        { label: 'Productos Agotados', value: '0', sub: 'Requieren reposición', icon: 'alert-circle', bg: '#FFF3E0', iconBg: '#FFE0B2', color: '#E65100' },
+        { label: 'Stock Bajo', value: '0', sub: 'Menos del mínimo', icon: 'alert-triangle', bg: '#FFFDE7', iconBg: '#FFF9C4', color: '#F57F17' },
     ];
 
     // ── Recent Movements ────────────────────────────────────────────────────────
@@ -83,15 +89,6 @@ export class InventoryDashboardComponent implements OnInit {
         { date: '02/03/2026 12:00', product: 'Hub USB-C', sku: 'HUB-USC-04', direction: 'salida', type: 'venta', qty: -10 },
         { date: '02/03/2026 10:30', product: 'SSD 1TB', sku: 'SSD-1TB-07', direction: 'entrada', type: 'compra', qty: +30 },
         { date: '02/03/2026 09:00', product: 'Monitor 4K 27"', sku: 'MON-4K-27', direction: 'salida', type: 'venta', qty: -4 },
-    ];
-
-    // ── Low Stock ───────────────────────────────────────────────────────────────
-    lowStockProducts = [
-        { name: 'Webcam HD', sku: 'CAM-HD-03', stock: 3, min: 10 },
-        { name: 'Auriculares BT', sku: 'AUR-BT-05', stock: 5, min: 10 },
-        { name: 'Hub USB-C', sku: 'HUB-USC-04', stock: 0, min: 5 },
-        { name: 'Cable HDMI 2m', sku: 'CAB-HD-01', stock: 2, min: 20 },
-        { name: 'Soporte de Monitor', sku: 'SOP-MON-02', stock: 1, min: 5 },
     ];
 
     // ── Movement Trend Chart (30 days, line) ────────────────────────────────────
@@ -143,7 +140,26 @@ export class InventoryDashboardComponent implements OnInit {
     monthlyBalanceDataLabels: ApexDataLabels = { enabled: false };
     monthlyBalanceGrid: ApexGrid = { borderColor: '#f1f1f1' };
 
-    ngOnInit(): void { }
+    ngOnInit(): void {
+        this.loadAlerts();
+    }
+
+    private loadAlerts() {
+        this.getStockAlertsUseCase.execute().subscribe(alerts => {
+            this.lowStockProducts = alerts.latestAlerts;
+            this.alertsCount = alerts.outOfStockCount + alerts.lowStockCount;
+
+            // Update KPIs with real data
+            this.kpis[4].value = alerts.outOfStockCount.toString();
+            this.kpis[5].value = alerts.lowStockCount.toString();
+        });
+    }
+
+    protected goToStockAlerts() {
+        this.router.navigate(['/inventory/products'], {
+            queryParams: { sortBy: 'stock', sortOrder: 'asc' }
+        });
+    }
 
     stockPercent(stock: number, min: number): number {
         return Math.min(100, Math.round((stock / min) * 100));

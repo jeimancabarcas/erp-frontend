@@ -1,11 +1,13 @@
 <!-- ── Header del Dashboard ──────────────────────────────────────── -->
 <div class="flex items-center justify-end mb-4">
-
+    @if (alertsCount > 0) {
     <!-- Botón alertas de stock -->
-    <button matButton="elevated" matBadge="4" [matMenuTriggerFor]="alertsMenu">
-        <div class="flex items-center justify-center gap-8">
-            <div>Alertas de stock</div>
-            <i-tabler name="alert-triangle" class="size-5"></i-tabler>
+    <button matButton="elevated" [matMenuTriggerFor]="alertsMenu">
+        <div class="flex items-center justify-center gap-2">
+            <div [class]="alertsCount > 0 ? 'text-red-700' : 'text-green-700'">Alertas de stock</div>
+
+            <span class="bg-red-700 text-white rounded-full px-2">{{ alertsCount }}</span>
+
         </div>
     </button>
 
@@ -27,9 +29,10 @@
             </div>
             <div class="alert-text">
                 <p class="text-sm font-semibold m-0">{{ p.name }}</p>
-                <p class="text-xs text-muted m-0">
+                <p class="text-xs text-muted m-0"
+                    [matTooltip]="'Disponible: ' + p.stock + ' | Mín: ' + p.minStock + (p.maxStock ? ' | Máx: ' + p.maxStock : '')">
                     @if (p.stock === 0) { Agotado — reposición urgente }
-                    @else { {{ p.stock }} uds disponibles (mín. {{ p.min }}) }
+                    @else { {{ p.stock }} uds disponibles (mín. {{ p.minStock }}) }
                 </p>
             </div>
             <span class="alert-badge" [style.background]="p.stock === 0 ? '#FFEBEE' : '#FFF3E0'"
@@ -41,11 +44,12 @@
 
         <!-- CTA -->
         <div class="alerts-footer" (click)="$event.stopPropagation()">
-            <button mat-flat-button color="primary" style="border-radius:999px; width:100%">
+            <button mat-flat-button color="primary" style="border-radius:999px; width:100%" (click)="goToStockAlerts()">
                 Ver todas las alertas
             </button>
         </div>
     </mat-menu>
+    }
 </div>
 
 <!-- ── Grid principal ────────────────────────────────────────────── -->

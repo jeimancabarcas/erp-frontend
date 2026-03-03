@@ -18,6 +18,7 @@ import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { ToastService } from '../../core/services/toast.service';
 import { TableLoadingComponent } from '../../shared/components/table-loading/table-loading.component';
 import { TableEmptyComponent } from '../../shared/components/table-empty/table-empty.component';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
     selector: 'app-inventory-list',
@@ -77,7 +78,20 @@ export class InventoryListComponent implements OnInit {
     @ViewChild(MatPaginator, { static: true }) protected paginator: MatPaginator;
     @ViewChild(MatSort, { static: true }) protected sort: MatSort;
 
+    private route = inject(ActivatedRoute);
+
     ngOnInit(): void {
+        const queryParams = this.route.snapshot.queryParams;
+        if (queryParams['sortBy'] && queryParams['sortOrder']) {
+            this.currentSort = {
+                sortBy: queryParams['sortBy'],
+                sortOrder: queryParams['sortOrder'],
+            };
+            // Set initial sort for UI visual indicator
+            this.sort.active = queryParams['sortBy'];
+            this.sort.direction = queryParams['sortOrder'];
+        }
+
         // Debounce the search input — triggers server call after 350 ms of no typing
         this.searchSubject.pipe(debounceTime(350), distinctUntilChanged()).subscribe(() => {
             this.loadProducts();
