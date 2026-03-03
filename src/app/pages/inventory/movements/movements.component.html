@@ -9,7 +9,7 @@
                     {{ 'Historial de entradas y salidas de inventario' | translate }}
                 </span>
             </mat-card-title>
-            <button mat-flat-button color="primary">
+            <button mat-flat-button color="primary" (click)="openMovementForm()">
                 <span class="flex items-center">
                     <i-tabler name="plus" class="size-5 me-2"></i-tabler>
                     {{ 'Nuevo Movimiento' | translate }}
@@ -51,7 +51,7 @@
                 </div>
                 <div>
                     <p class="text-xs font-medium mb-1" style="color:#6A1B9A">TOTAL MOVIMIENTOS</p>
-                    <p class="text-3xl font-bold m-0" style="color:#6A1B9A">{{ totalMovements }}</p>
+                    <p class="text-3xl font-bold m-0" style="color:#6A1B9A">{{ totalMovements() }}</p>
                     <p class="text-xs text-muted mt-1">registros en total</p>
                 </div>
             </div>
@@ -59,13 +59,13 @@
 
         <!-- Filters -->
         <div class="filter-container mt-4">
-            <mat-form-field appearance="outline" class="filter-field">
+            <mat-form-field appearance="outline" class="filter-field flex justify-center items-center">
                 <i-tabler matPrefix name="search" class="p-1 ml-2"></i-tabler>
-                <input matInput [formControl]="searchControl"
+                <input matInput [formControl]="searchControl" (keyup)="applyFilters()"
                     placeholder="{{ 'Buscar producto o referencia' | translate }}">
             </mat-form-field>
 
-            <mat-form-field appearance="outline" class="filter-field">
+            <mat-form-field appearance="outline" class="filter-field flex justify-center items-center">
                 <i-tabler matPrefix name="arrows-exchange" class="p-1 ml-2"></i-tabler>
                 <mat-select [formControl]="directionControl" placeholder="{{ 'Dirección' | translate }}">
                     @for (opt of directionOptions; track opt.value) {
@@ -74,7 +74,7 @@
                 </mat-select>
             </mat-form-field>
 
-            <mat-form-field appearance="outline" class="filter-field">
+            <mat-form-field appearance="outline" class="filter-field flex justify-center items-center">
                 <i-tabler matPrefix name="tag" class="p-1 ml-2"></i-tabler>
                 <mat-select [formControl]="typeControl" placeholder="{{ 'Tipo' | translate }}">
                     @for (opt of typeOptions; track opt.value) {
@@ -90,7 +90,6 @@
             }
         </div>
 
-        <!-- Table -->
         <div class="relative overflow-auto">
             <mat-table [dataSource]="dataSource" matSort class="min-w-full">
 
@@ -105,14 +104,16 @@
                 </ng-container>
 
                 <!-- Product -->
-                <ng-container matColumnDef="product">
+                <ng-container matColumnDef="productId">
                     <mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold text-sm">
                         Producto
                     </mat-header-cell>
                     <mat-cell class="p-4" *matCellDef="let row">
-                        <div>
-                            <p class="font-semibold text-sm">{{ row.product }}</p>
-                            <p class="text-xs text-muted">{{ row.sku }}</p>
+                        <div class="truncate">
+                            <h6 class="mat-subtitle-1 text-sm font-semibold">{{ row.productName || 'Producto
+                                Desconocido' }}</h6>
+                            <span class="text-xs text-muted truncate max-w-xs block">SKU: {{ row.productSku || '—'
+                                }}</span>
                         </div>
                     </mat-cell>
                 </ng-container>
@@ -149,6 +150,10 @@
                         <span class="badge badge-venta">
                             <i-tabler name="receipt" class="size-3"></i-tabler> Venta
                         </span>
+                        } @else if (row.type === 'sistema') {
+                        <span class="badge badge-sistema">
+                            <i-tabler name="settings" class="size-3"></i-tabler> Sistema
+                        </span>
                         } @else {
                         <span class="badge badge-manual">
                             <i-tabler name="pencil" class="size-3"></i-tabler> Manual
@@ -171,15 +176,6 @@
                     </mat-cell>
                 </ng-container>
 
-                <!-- Unit Cost -->
-                <ng-container matColumnDef="unitCost">
-                    <mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold text-sm">
-                        Costo Unit.
-                    </mat-header-cell>
-                    <mat-cell class="p-4 text-sm" *matCellDef="let row">
-                        ${{ row.unitCost | number:'1.2-2' }}
-                    </mat-cell>
-                </ng-container>
 
                 <!-- Reference -->
                 <ng-container matColumnDef="reference">
@@ -203,13 +199,20 @@
 
                 <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
                 <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
-
-                <tr class="mat-row" *matNoDataRow>
-                    <td class="mat-cell text-center p-24 text-muted" [attr.colspan]="displayedColumns.length">
-                        No se encontraron movimientos con los filtros aplicados.
-                    </td>
-                </tr>
             </mat-table>
+
+            @if (isLoading()) {
+            <app-table-loading message="Cargando movimientos…"></app-table-loading>
+            }
+            @if (!isLoading() && dataSource.data.length === 0 && !searchControl.value && !directionControl.value &&
+            !typeControl.value) {
+            <app-table-empty message="No hay movimientos registrados" icon="arrows-exchange-2"></app-table-empty>
+            }
+            @if (!isLoading() && dataSource.data.length === 0 && (searchControl.value || directionControl.value ||
+            typeControl.value)) {
+            <app-table-empty message="No se encontraron movimientos con los filtros aplicados."
+                icon="search-off"></app-table-empty>
+            }
 
             <mat-paginator [pageSize]="10" [pageSizeOptions]="[5, 10, 25]" showFirstLastButtons>
             </mat-paginator>

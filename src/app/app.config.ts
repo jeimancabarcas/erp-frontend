@@ -14,6 +14,8 @@ import { ProductRepository } from './core/domain/repositories/product.repository
 import { ProductHttpRepository } from './data/repositories/product.http.repository';
 import { CategoryRepository } from './core/domain/repositories/category.repository';
 import { CategoryHttpRepository } from './data/repositories/category.http.repository';
+import { MovementRepository } from './core/domain/repositories/movement.repository';
+import { MovementHttpRepository } from './data/repositories/movement.http.repository';
 import { loadingInterceptor } from './core/interceptors/loading.interceptor';
 import { ToastrModule, provideToastr } from 'ngx-toastr';
 
@@ -78,6 +80,10 @@ export const appConfig: ApplicationConfig = {
     {
       provide: CategoryRepository,
       useClass: CategoryHttpRepository,
+    },
+    {
+      provide: MovementRepository,
+      useClass: MovementHttpRepository,
     },
   ],
 };
