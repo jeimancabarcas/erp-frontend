@@ -46,8 +46,11 @@
                         {{ 'Product Name' | translate }}
                     </mat-header-cell>
                     <mat-cell class="p-4 ps-0" *matCellDef="let element">
-                        <h6 class="mat-subtitle-1 text-sm font-semibold truncate">{{ element.name }}</h6>
-                        <span class="text-xs text-muted truncate max-w-xs block">{{ element.description }}</span>
+                        <div class="truncate">
+                            <h6 class="mat-subtitle-1 text-sm font-semibold">{{ element.name }}</h6>
+                            <span class="text-xs text-muted truncate max-w-xs block" [matTooltip]="element.description"
+                                matTooltipPosition="below">{{ element.description }}</span>
+                        </div>
                     </mat-cell>
                 </ng-container>
 
