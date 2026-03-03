@@ -15,6 +15,8 @@ import { ProductFormComponent } from './product-form.component';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { ToastService } from '../../core/services/toast.service';
+import { TableLoadingComponent } from '../../shared/components/table-loading/table-loading.component';
+import { TableEmptyComponent } from '../../shared/components/table-empty/table-empty.component';
 
 @Component({
     selector: 'app-inventory-list',
@@ -26,6 +28,8 @@ import { ToastService } from '../../core/services/toast.service';
         TranslateModule,
         FormsModule,
         ReactiveFormsModule,
+        TableLoadingComponent,
+        TableEmptyComponent,
     ],
     templateUrl: './inventory-list.component.html',
     styles: [`
@@ -54,6 +58,7 @@ export class InventoryListComponent implements OnInit {
     protected displayedColumns: string[] = ['name', 'sku', 'category', 'stock', 'minStock', 'maxStock', 'actions'];
     protected dataSource = new MatTableDataSource<Product>([]);
     protected categories = signal<string[]>([]);
+    protected isLoading = signal(false);
 
     protected filterValue = '';
     protected categoryFilter = '';
@@ -78,25 +83,28 @@ export class InventoryListComponent implements OnInit {
         });
     }
 
-    async loadProducts() {
-        const products = await lastValueFrom(this.getProductsUseCase.execute()) as Product[];
-        this.dataSource.data = products;
-        this.dataSource.paginator = this.paginator;
-        this.dataSource.sort = this.sort;
-
-        // Extract unique categories for filter
-        const allCats = new Set<string>();
-        products.forEach(p => p.categories?.forEach(c => allCats.add(c)));
-        this.categories.set(Array.from(allCats).sort());
-
-        // Setup custom filter
-        this.dataSource.filterPredicate = (data: Product, filter: string) => {
-            const searchTerms = JSON.parse(filter);
-            const nameMatch = data.name.toLowerCase().includes(searchTerms.name.toLowerCase());
-            const categoryMatch = searchTerms.category === '' ||
-                (data.categories && data.categories.includes(searchTerms.category));
-            return nameMatch && categoryMatch;
-        };
+    protected loadProducts() {
+        this.isLoading.set(true);
+        this.getProductsUseCase.execute().subscribe({
+            next: (products) => {
+                this.dataSource.data = products;
+                this.dataSource.paginator = this.paginator;
+                this.dataSource.sort = this.sort;
+                this.dataSource.filterPredicate = (data: Product, filter: string) => {
+                    const searchTerms = JSON.parse(filter);
+                    const nameMatch = data.name.toLowerCase().includes(searchTerms.name.toLowerCase());
+                    const categoryMatch = searchTerms.category === '' ||
+                        (data.categories && data.categories.includes(searchTerms.category));
+                    return nameMatch && categoryMatch;
+                };
+                const allCats = [...new Set(products.flatMap(p => p.categories ?? []))].sort();
+                this.categories.set(allCats);
+                this.isLoading.set(false);
+            },
+            error: () => {
+                this.isLoading.set(false);
+            },
+        });
     }
 
     protected applyFilter() {
