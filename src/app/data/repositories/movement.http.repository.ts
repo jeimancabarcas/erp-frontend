@@ -14,7 +14,7 @@ import { HttpParams } from '@angular/common/http';
 })
 export class MovementHttpRepository extends MovementRepository {
     private http = inject(HttpClient);
-    private apiUrl = `${environment.apiBaseUrl}/inventory/movements`;
+    private apiUrl = `${environment.apiUrl}/inventory/movements`;
 
     getMovements(query?: MovementsQuery): Observable<MovementsListResponse> {
         let params = new HttpParams();

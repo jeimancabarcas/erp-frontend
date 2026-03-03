@@ -6,7 +6,7 @@ import { CategoryRepository } from '../../core/domain/repositories/category.repo
 import { ApiResponse } from '../../core/interfaces/api-response.interface';
 import { environment } from '../../../environments/environment';
 
-const BASE_URL = `${environment.apiBaseUrl}/inventory/categories`;
+const BASE_URL = `${environment.apiUrl}/inventory/categories`;
 
 @Injectable({ providedIn: 'root' })
 export class CategoryHttpRepository extends CategoryRepository {

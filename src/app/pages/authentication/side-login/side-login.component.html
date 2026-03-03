@@ -15,40 +15,16 @@
           <h4 class="font-bold text-2xl m-0">Welcome to Materialpro</h4>
           <span class="block text-sm mt-2">Your Admin Dashboard</span>
 
-          <div class="grid grid-cols-12 gap-6 mt-6">
-            <div class="col-span-6">
-              <button mat-stroked-button class="w-full">
-                <div class="flex items-center gap-2">
-                  <i class="iconify text-xl" data-icon="devicon:google"></i>
-                  Google
-                </div>
-              </button>
-            </div>
-            <div class="col-span-6">
-              <button mat-stroked-button class="w-full flex items-center">
-                <div class="flex items-center gap-2">
-                  <i class="iconify text-xl" data-icon="logos:facebook"></i>
-                  Facebook
-                </div>
-              </button>
-            </div>
-          </div>
-
-          <div
-            class="or-border relative text-center before:content-[''] before:absolute before:left-0 before:top-1/2 
-            before:w-[120px] before:h-px before:bg-(--mat-sys-outline) after:content-[''] after:absolute after:right-0 after:top-1/2 after:w-[120px] after:h-px after:bg-(--mat-sys-outline) mt-8">
-            or sign in with</div>
-
           <form class="mt-8" [formGroup]="form" (ngSubmit)="submit()">
-            <mat-label class="text-sm font-semibold mb-3 block">Username</mat-label>
+            <mat-label class="text-sm font-semibold mb-3 block">Email</mat-label>
             <mat-form-field appearance="outline" class="w-full" color="primary">
-              <input matInput formControlName="uname" />
-              @if(f['uname'].touched && f['uname'].invalid) {
+              <input matInput formControlName="email" type="email" placeholder="example@example.com" />
+              @if(f['email'].touched && f['email'].invalid) {
               <mat-hint class="mb-4 absolute -top-[19px] right-[3px]">
-                @if(f['uname'].errors && f['uname'].errors['required']) {
-                <div class="text-error">Name is required.</div>
-                } @if(f['uname'].errors && f['uname'].errors['minlength']) {
-                <div class="text-error">Name should be 6 character.</div>
+                @if(f['email'].errors && f['email'].errors['required']) {
+                <div class="text-error">Email is required.</div>
+                } @if(f['email'].errors && f['email'].errors['email']) {
+                <div class="text-error">Please enter a valid email.</div>
                 }
               </mat-hint>
               }
@@ -78,10 +54,6 @@
             </button>
             <!-- input -->
           </form>
-          <span class="font-medium block mt-6">New to Materialpro?
-            <a [routerLink]="['/authentication/register']" class="no-underline text-primary font-medium text-sm">
-              Create an account</a>
-          </span>
         </div>
       </div>
     </div>

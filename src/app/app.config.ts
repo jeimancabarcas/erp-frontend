@@ -17,6 +17,7 @@ import { CategoryHttpRepository } from './data/repositories/category.http.reposi
 import { MovementRepository } from './core/domain/repositories/movement.repository';
 import { MovementHttpRepository } from './data/repositories/movement.http.repository';
 import { loadingInterceptor } from './core/interceptors/loading.interceptor';
+import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { ToastrModule, provideToastr } from 'ngx-toastr';
 
 
@@ -55,7 +56,7 @@ export const appConfig: ApplicationConfig = {
       }),
       withComponentInputBinding()
     ),
-    provideHttpClient(withInterceptorsFromDi(), withInterceptors([loadingInterceptor])),
+    provideHttpClient(withInterceptorsFromDi(), withInterceptors([loadingInterceptor, authInterceptor])),
     provideClientHydration(),
     provideAnimationsAsync(),
     importProvidersFrom(

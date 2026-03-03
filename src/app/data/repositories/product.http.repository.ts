@@ -7,7 +7,7 @@ import { ProductRepository, ProductsQuery, ProductsListResponse } from '../../co
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../core/interfaces/api-response.interface';
 
-const BASE_URL = `${environment.apiBaseUrl}/inventory/products`;
+const BASE_URL = `${environment.apiUrl}/inventory/products`;
 
 @Injectable({ providedIn: 'root' })
 export class ProductHttpRepository extends ProductRepository {
