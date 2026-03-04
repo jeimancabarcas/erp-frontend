@@ -1,0 +1,158 @@
+<h2 mat-dialog-title class="m-0 text-lg font-medium">{{ isEditMode ? 'Editar' : 'Nuevo' }} Producto de Facturación</h2>
+
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <mat-dialog-content class="mat-typography pt-6 pb-2">
+        <div class="flex flex-col gap-4">
+
+            <div class="flex flex-col sm:flex-row gap-4 mb-4">
+                <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Código Estándar</mat-label>
+                    <input matInput formControlName="standardCode" placeholder="Ej: 12000000">
+                    <mat-hint class="text-xs text-muted">Añade el código UNSPSC para facturación electrónica. <a
+                            href="https://www.colombiacompra.gov.co/secop/consulta-codigo-unspsc" target="_blank"
+                            class="text-primary hover:underline">Consultar aquí</a>.</mat-hint>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Código Interno (SKU)</mat-label>
+                    <input matInput formControlName="internalCode" placeholder="Ej. SKU-001">
+                    @if (form.get('internalCode')?.hasError('required')) {
+                    <mat-error>El código interno es requerido</mat-error>
+                    }
+                </mat-form-field>
+            </div>
+
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Nombre del Producto</mat-label>
+                <input matInput formControlName="name" placeholder="Ej. Licencia Anual Uso Software">
+                @if (form.get('name')?.hasError('required')) {
+                <mat-error>El nombre es requerido</mat-error>
+                }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Precio de Venta</mat-label>
+                <span matTextPrefix class="me-2">$</span>
+                <input matInput type="number" formControlName="price" placeholder="0.00">
+                @if (form.get('price')?.hasError('required')) {
+                <mat-error>El precio es requerido</mat-error>
+                }
+                @if (form.get('price')?.hasError('min')) {
+                <mat-error>El precio no puede ser negativo</mat-error>
+                }
+            </mat-form-field>
+
+            <div class="p-4 bg-hover rounded-md border border-divider">
+                <div class="flex justify-between items-center bg-hover mb-4">
+                    <div>
+                        <h4 class="m-0 text-sm font-semibold">Enlazar a Inventario</h4>
+                        <p class="m-0 text-xs text-muted">Opcional. Permite vincular este producto de facturación
+                            a un artículo físico existente en tu inventario para fines referenciales.</p>
+                    </div>
+                </div>
+
+                <!-- Si ya hay uno seleccionado -->
+                @if (selectedInventoryProduct()) {
+                <div class="flex items-center justify-between p-3 bg-white border border-divider rounded-md">
+                    <div class="flex items-center gap-3">
+                        <div class="h-10 w-10 bg-primary/10 text-primary rounded-md flex items-center justify-center">
+                            <i-tabler name="box" class="size-6"></i-tabler>
+                        </div>
+                        <div>
+                            <p class="m-0 font-semibold text-sm">{{ selectedInventoryProduct()?.name }}</p>
+                            <p class="m-0 text-xs text-muted font-mono">SKU: {{ selectedInventoryProduct()?.sku }}</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button mat-icon-button color="primary" type="button" (click)="toggleInventoryTable()"
+                            matTooltip="Cambiar producto">
+                            <i-tabler name="replace" class="size-5"></i-tabler>
+                        </button>
+                        <button mat-icon-button color="warn" type="button" (click)="unlinkInventoryProduct()"
+                            matTooltip="Quitar enlace">
+                            <i-tabler name="x" class="size-5"></i-tabler>
+                        </button>
+                    </div>
+                </div>
+                }
+                <!-- Botón inicial para enlazar -->
+                @else if (!showInventoryTable()) {
+                <button mat-stroked-button color="primary" type="button" class="w-full"
+                    (click)="toggleInventoryTable()">
+                    <span class="flex items-center justify-center gap-2">
+                        <i-tabler name="link" class="size-5"></i-tabler> Enlazar producto existente
+                    </span>
+                </button>
+                }
+
+                <!-- Tabla de búsqueda -->
+                @if (showInventoryTable()) {
+                <div class="mt-4 border border-divider rounded-md bg-white overflow-hidden">
+                    <div class="p-4 border-b border-divider flex items-center justify-between">
+                        <h5 class="m-0 text-sm font-semibold">Seleccionar producto</h5>
+                        <button mat-icon-button type="button" (click)="toggleInventoryTable()"
+                            class="h-8 w-8 text-muted">
+                            <i-tabler name="x" class="size-4"></i-tabler>
+                        </button>
+                    </div>
+
+                    <div class="p-4 pb-0">
+                        <mat-form-field appearance="outline" class="w-full mb-0">
+                            <mat-label>Buscar por nombre o SKU...</mat-label>
+                            <input type="text" matInput formControlName="inventorySearch">
+                            <mat-icon matSuffix class="text-muted">search</mat-icon>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="relative overflow-auto" style="max-height: 250px;">
+                        <mat-table [dataSource]="filteredInventoryProducts()" class="w-full">
+                            <ng-container matColumnDef="sku">
+                                <mat-header-cell *matHeaderCellDef class="font-semibold text-xs ps-4"
+                                    style="flex: 0 0 100px;">SKU</mat-header-cell>
+                                <mat-cell class="p-4 ps-4 font-mono text-xs" *matCellDef="let item"
+                                    style="flex: 0 0 100px;">{{ item.sku }}</mat-cell>
+                            </ng-container>
+                            <ng-container matColumnDef="name">
+                                <mat-header-cell *matHeaderCellDef
+                                    class="font-semibold text-xs">Nombre</mat-header-cell>
+                                <mat-cell class="p-4 text-xs font-medium" *matCellDef="let item">{{ item.name
+                                    }}</mat-cell>
+                            </ng-container>
+                            <ng-container matColumnDef="select">
+                                <mat-header-cell *matHeaderCellDef class="font-semibold text-xs text-right pe-4"
+                                    style="flex: 0 0 80px;">Acción</mat-header-cell>
+                                <mat-cell class="p-2 text-right pe-4 justify-end" *matCellDef="let item"
+                                    style="flex: 0 0 80px;">
+                                    <button mat-flat-button color="primary" type="button" class="!px-3 !min-w-0"
+                                        style="height: 28px; font-size: 12px;" (click)="selectInventoryProduct(item)">
+                                        Elegir
+                                    </button>
+                                </mat-cell>
+                            </ng-container>
+
+                            <mat-header-row *matHeaderRowDef="inventoryColumns" class="min-h-[40px]"></mat-header-row>
+                            <mat-row *matRowDef="let row; columns: inventoryColumns" class="min-h-[48px]"></mat-row>
+
+                            <!-- Empty row state -->
+                            <tr class="mat-row" *matNoDataRow>
+                                <td class="mat-cell text-center py-4 text-muted text-xs" colspan="3">
+                                    {{ isSearchingInventory() ? 'Buscando...' : 'No se encontraron productos' }}
+                                </td>
+                            </tr>
+                        </mat-table>
+                    </div>
+                    <mat-paginator [length]="totalInventoryProducts()" [pageSize]="5" [hidePageSize]="true"
+                        (page)="onPageChange($event)">
+                    </mat-paginator>
+                </div>
+                }
+            </div>
+
+        </div>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end" class="px-6 pb-6 pt-2">
+        <button mat-button type="button" mat-dialog-close>Cancelar</button>
+        <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid">Guardar</button>
+    </mat-dialog-actions>
+</form>

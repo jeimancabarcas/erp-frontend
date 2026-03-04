@@ -8,6 +8,7 @@ export interface ProductsQuery {
     sortOrder?: 'asc' | 'desc';
     page?: number;
     limit?: number;
+    excludeBillingLinked?: boolean;
 }
 
 export interface ProductsListResponse {

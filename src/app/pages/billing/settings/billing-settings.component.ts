@@ -1,6 +1,6 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatTabsModule } from '@angular/material/tabs';
+import { MatTabsModule, MatTabChangeEvent } from '@angular/material/tabs';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,12 +9,20 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import { TranslateModule } from '@ngx-translate/core';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { BillingProduct } from '../../../core/domain/entities/billing-product.entity';
+import { GetBillingProductsUseCase } from '../../../core/application/use-cases/get-billing-products.use-case';
+import { DeleteBillingProductUseCase } from '../../../core/application/use-cases/delete-billing-product.use-case';
+import { BillingProductFormComponent } from './billing-product-form/billing-product-form.component';
+import { ToastService } from '../../../core/services/toast.service';
+import { lastValueFrom } from 'rxjs';
+import { TableEmptyComponent } from '../../../shared/components/table-empty/table-empty.component';
+import { TableLoadingComponent } from '../../../shared/components/table-loading/table-loading.component';
 
 export interface Client { id: string; name: string; email: string; phone: string; status: string; }
 export interface PaymentMethod { id: string; name: string; details: string; status: string; }
 export interface Tax { id: string; name: string; rate: number; }
 export interface Service { id: string; name: string; price: number; }
-export interface BillingProduct { id: string; name: string; price: number; linkedToInventory: boolean; inventorySku?: string; }
 
 @Component({
     selector: 'app-billing-settings',
@@ -29,11 +37,19 @@ export interface BillingProduct { id: string; name: string; price: number; linke
         MatTooltipModule,
         TablerIconsModule,
         TranslateModule,
-        MatSlideToggleModule
+        MatSlideToggleModule,
+        MatDialogModule,
+        TableEmptyComponent,
+        TableLoadingComponent
     ],
     templateUrl: './billing-settings.component.html'
 })
-export class BillingSettingsComponent {
+export class BillingSettingsComponent implements OnInit {
+
+    private getBillingProductsUseCase = inject(GetBillingProductsUseCase);
+    private deleteBillingProductUseCase = inject(DeleteBillingProductUseCase);
+    private toast = inject(ToastService);
+    public dialog = inject(MatDialog);
 
     // Mock Data
     public clients = signal<Client[]>([
@@ -60,21 +76,72 @@ export class BillingSettingsComponent {
         { id: '3', name: 'Capacitación', price: 300000 }
     ]);
 
-    public products = signal<BillingProduct[]>([
-        { id: '1', name: 'Licencia Software Base', price: 1200000, linkedToInventory: true, inventorySku: 'LIC-001' },
-        { id: '2', name: 'Módulo de Analítica', price: 800000, linkedToInventory: false },
-        { id: '3', name: 'Hardware TPV', price: 2500000, linkedToInventory: true, inventorySku: 'HW-TPV-05' }
-    ]);
+    public products = signal<BillingProduct[]>([]);
+    public isProductsLoading = signal(false);
+    private isProductsLoaded = false;
 
     // Columns
     public clientColumns = ['name', 'email', 'phone', 'status', 'actions'];
     public paymentColumns = ['name', 'details', 'status', 'actions'];
     public taxColumns = ['name', 'rate', 'actions'];
     public serviceColumns = ['name', 'price', 'actions'];
-    public productColumns = ['name', 'price', 'inventoryLink', 'actions'];
+    public productColumns = ['name', 'codes', 'price', 'inventoryLink', 'actions'];
+
+    ngOnInit() {
+        // No pre-loading, petitions are intentionally lazy-loaded on tab change
+    }
+
+    onTabChange(event: MatTabChangeEvent) {
+        // Tab index 4 is the "Productos" tab
+        if (event.index === 4 && !this.isProductsLoaded) {
+            this.loadProducts();
+            this.isProductsLoaded = true;
+        }
+    }
+
+    private loadProducts() {
+        this.isProductsLoading.set(true);
+        this.getBillingProductsUseCase.execute().subscribe({
+            next: (data) => {
+                this.products.set(data);
+                this.isProductsLoading.set(false);
+            },
+            error: (err) => {
+                this.toast.error('Error al cargar productos de facturación');
+                console.error(err);
+                this.isProductsLoading.set(false);
+            }
+        });
+    }
 
     // Placeholder actions
     edit(item: any) { console.log('Edit', item); }
     delete(item: any) { console.log('Delete', item); }
     linkInventory(item: BillingProduct) { console.log('Link to inventory', item); }
+
+    // Real Action for Products
+    openProductForm(product?: BillingProduct) {
+        const dialogRef = this.dialog.open(BillingProductFormComponent, {
+            width: '500px',
+            data: product,
+        });
+
+        dialogRef.afterClosed().subscribe((result) => {
+            if (result) {
+                this.loadProducts();
+            }
+        });
+    }
+
+    async deleteProduct(product: BillingProduct) {
+        if (confirm(`¿Estás seguro de eliminar el producto "${product.name}"?`)) {
+            try {
+                await lastValueFrom(this.deleteBillingProductUseCase.execute(product.id));
+                this.toast.success('Producto eliminado correctamente');
+                this.loadProducts();
+            } catch (err: any) {
+                this.toast.error('Error al eliminar el producto');
+            }
+        }
+    }
 }
