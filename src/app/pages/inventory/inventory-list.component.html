@@ -39,14 +39,15 @@
         </div>
 
         <div class="relative overflow-auto">
-            <mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)" class="min-w-full">
+            <mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)" class="w-full"
+                style="min-width: max-content;">
                 <!-- Name Column -->
                 <ng-container matColumnDef="name">
-                    <mat-header-cell *matHeaderCellDef mat-sort-header
-                        class="font-semibold mat-subtitle-1 text-sm ps-0">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold mat-subtitle-1 text-sm ps-0"
+                        style="min-width: 250px;">
                         {{ 'Product Name' | translate }}
                     </mat-header-cell>
-                    <mat-cell class="p-4 ps-0" *matCellDef="let element">
+                    <mat-cell class="p-4 ps-0" *matCellDef="let element" style="min-width: 250px;">
                         <div class="truncate">
                             <h6 class="mat-subtitle-1 text-sm font-semibold">{{ element.name }}</h6>
                             <span class="text-xs text-muted truncate max-w-xs block" [matTooltip]="element.description"
@@ -57,20 +58,22 @@
 
                 <!-- SKU Column -->
                 <ng-container matColumnDef="sku">
-                    <mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold mat-subtitle-1 text-sm">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold mat-subtitle-1 text-sm"
+                        style="min-width: 120px;">
                         SKU
                     </mat-header-cell>
-                    <mat-cell class="p-4 text-xs text-muted" *matCellDef="let element">
+                    <mat-cell class="p-4 text-xs text-muted" *matCellDef="let element" style="min-width: 120px;">
                         {{ element.sku || '—' }}
                     </mat-cell>
                 </ng-container>
 
                 <!-- Category Column -->
                 <ng-container matColumnDef="category">
-                    <mat-header-cell *matHeaderCellDef class="font-semibold mat-subtitle-1 text-sm">
+                    <mat-header-cell *matHeaderCellDef class="font-semibold mat-subtitle-1 text-sm"
+                        style="min-width: 150px;">
                         {{ 'Category' | translate }}
                     </mat-header-cell>
-                    <mat-cell class="p-4" *matCellDef="let element">
+                    <mat-cell class="p-4" *matCellDef="let element" style="min-width: 150px;">
                         <mat-chip-listbox>
                             @for (cat of element.categories; track cat.id) {
                             <mat-chip-option [selectable]="false" class="text-xs">{{ cat.name }}</mat-chip-option>
@@ -81,10 +84,11 @@
 
                 <!-- Stock Column -->
                 <ng-container matColumnDef="stock">
-                    <mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold mat-subtitle-1 text-sm">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold mat-subtitle-1 text-sm"
+                        style="min-width: 120px;">
                         Stock
                     </mat-header-cell>
-                    <mat-cell class="p-4" *matCellDef="let element">
+                    <mat-cell class="p-4" *matCellDef="let element" style="min-width: 120px;">
                         @let threshold = element.minStock ?? 10;
                         @if (element.stock === 0) {
                         <span class="bg-light-error text-error rounded-md font-semibold px-2 py-1 text-xs">
@@ -104,30 +108,33 @@
 
                 <!-- Min Stock Column -->
                 <ng-container matColumnDef="minStock">
-                    <mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold mat-subtitle-1 text-sm">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold mat-subtitle-1 text-sm"
+                        style="min-width: 80px;">
                         Mín.
                     </mat-header-cell>
-                    <mat-cell class="p-4 text-sm text-muted" *matCellDef="let element">
+                    <mat-cell class="p-4 text-sm text-muted" *matCellDef="let element" style="min-width: 80px;">
                         {{ element.minStock ?? '—' }}
                     </mat-cell>
                 </ng-container>
 
                 <!-- Max Stock Column -->
                 <ng-container matColumnDef="maxStock">
-                    <mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold mat-subtitle-1 text-sm">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold mat-subtitle-1 text-sm"
+                        style="min-width: 80px;">
                         Máx.
                     </mat-header-cell>
-                    <mat-cell class="p-4 text-sm text-muted" *matCellDef="let element">
+                    <mat-cell class="p-4 text-sm text-muted" *matCellDef="let element" style="min-width: 80px;">
                         {{ element.maxStock ?? '—' }}
                     </mat-cell>
                 </ng-container>
 
                 <!-- Actions Column -->
                 <ng-container matColumnDef="actions">
-                    <mat-header-cell *matHeaderCellDef class="font-semibold mat-subtitle-1 text-sm text-right pe-0">
+                    <mat-header-cell *matHeaderCellDef class="font-semibold mat-subtitle-1 text-sm text-right pe-0"
+                        style="min-width: 100px;">
                         {{ 'Actions' | translate }}
                     </mat-header-cell>
-                    <mat-cell class="p-4 text-right pe-0" *matCellDef="let element">
+                    <mat-cell class="p-4 text-right pe-0" *matCellDef="let element" style="min-width: 100px;">
                         <button mat-icon-button color="primary" (click)="openProductForm(element)" class="me-1">
                             <i-tabler name="edit" class="size-5"></i-tabler>
                         </button>

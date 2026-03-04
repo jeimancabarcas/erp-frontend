@@ -61,7 +61,8 @@
 
         <!-- ── KPI Cards (3 por fila) ───────────────────────────────────── -->
         @for (kpi of kpis; track kpi.label) {
-        <div class="kpi-card rounded-xl p-4 col-span-4 shadow-xs border border-gray-100" [style.background]="kpi.bg">
+        <div class="kpi-card rounded-xl p-4 md:col-span-4 sm:col-span-6 col-span-12 shadow-xs border border-gray-100"
+            [style.background]="kpi.bg">
             <div class="kpi-icon" [style.background]="kpi.iconBg">
                 <i-tabler [name]="kpi.icon" [style.color]="kpi.color" class="size-5"></i-tabler>
             </div>

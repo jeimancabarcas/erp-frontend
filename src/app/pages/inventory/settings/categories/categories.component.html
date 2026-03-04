@@ -32,24 +32,26 @@
 
         <!-- Table -->
         <div class="relative overflow-auto">
-            <mat-table [dataSource]="categories()" class="min-w-full">
+            <mat-table [dataSource]="categories()" class="w-full" style="min-width: max-content;">
 
                 <!-- Name -->
                 <ng-container matColumnDef="name">
-                    <mat-header-cell *matHeaderCellDef class="font-semibold mat-subtitle-1 text-sm ps-0">
+                    <mat-header-cell *matHeaderCellDef class="font-semibold mat-subtitle-1 text-sm ps-0"
+                        style="min-width: 250px;">
                         Nombre
                     </mat-header-cell>
-                    <mat-cell class="p-4 ps-0 font-medium" *matCellDef="let cat">
+                    <mat-cell class="p-4 ps-0 font-medium" *matCellDef="let cat" style="min-width: 250px;">
                         {{ cat.name }}
                     </mat-cell>
                 </ng-container>
 
                 <!-- Description -->
                 <ng-container matColumnDef="description">
-                    <mat-header-cell *matHeaderCellDef class="font-semibold mat-subtitle-1 text-sm">
+                    <mat-header-cell *matHeaderCellDef class="font-semibold mat-subtitle-1 text-sm"
+                        style="min-width: 300px;">
                         Descripción
                     </mat-header-cell>
-                    <mat-cell class="p-4 text-sm text-muted" *matCellDef="let cat">
+                    <mat-cell class="p-4 text-sm text-muted" *matCellDef="let cat" style="min-width: 300px;">
                         <span [matTooltip]="cat.description" matTooltipPosition="below" class="truncate max-w-xs block">
                             {{ cat.description || '—' }}
                         </span>
@@ -58,10 +60,11 @@
 
                 <!-- Actions -->
                 <ng-container matColumnDef="actions">
-                    <mat-header-cell *matHeaderCellDef class="font-semibold mat-subtitle-1 text-sm text-right pe-0">
+                    <mat-header-cell *matHeaderCellDef class="font-semibold mat-subtitle-1 text-sm text-right pe-0"
+                        style="min-width: 100px;">
                         Acciones
                     </mat-header-cell>
-                    <mat-cell class="p-4 text-right pe-0" *matCellDef="let cat">
+                    <mat-cell class="p-4 text-right pe-0" *matCellDef="let cat" style="min-width: 100px;">
                         <button mat-icon-button color="primary" (click)="openEdit(cat)" class="me-1" matTooltip="Editar"
                             matTooltipPosition="below">
                             <i-tabler name="edit" class="size-5"></i-tabler>
