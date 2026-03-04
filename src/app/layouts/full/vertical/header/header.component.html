@@ -106,7 +106,8 @@
       <!-- --------------------------------------------------------------- -->
       <button mat-icon-button [matMenuTriggerFor]="profilemenu" aria-label="Profile"
         class="flex justify-center items-center p-0!">
-        <img src="/assets/images/profile/user-1.jpg" class="rounded-full object-cover size-9!" width="36" />
+        <img [src]="authService.currentUser()?.profile?.avatarUrl || '/assets/images/profile/user-1.jpg'"
+          class="rounded-full object-cover size-9!" width="36" />
       </button>
     </div>
   </div>
@@ -163,12 +164,14 @@
   <!-- --------------------------------------------------------------- -->
   <button mat-icon-button [matMenuTriggerFor]="profilemenu" aria-label="Profile"
     class="hidden! lg:flex! justify-center items-center p-0!">
-    <img src="/assets/images/profile/user-1.jpg" class="rounded-full object-cover size-9!" width="36" />
+    <img [src]="authService.currentUser()?.profile?.avatarUrl || '/assets/images/profile/user-1.jpg'"
+      class="rounded-full object-cover size-9!" width="36" />
   </button>
   <mat-menu #profilemenu="matMenu" class="topbar-dd cardWithShadow" xPosition="before">
     <div class="px-5 py-4 border-b border-border">
       <div class="flex gap-4 items-center">
-        <img src="/assets/images/profile/user-1.jpg" class="rounded-full" width="56" />
+        <img [src]="authService.currentUser()?.profile?.avatarUrl || '/assets/images/profile/user-1.jpg'"
+          class="rounded-full object-cover size-14!" width="56" />
         <div>
           <h6 class="text-sm font-semibold flex items-center">
             {{ authService.currentUser()?.profile?.fullName || 'User' }}

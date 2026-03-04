@@ -13,6 +13,7 @@ export interface User {
         fullName: string;
         address: string;
         phone: string;
+        avatarUrl: string | null;
         userId: string;
     } | null;
 }
@@ -48,9 +49,13 @@ export class AuthService {
             map(() => {
                 const current = this.currentUser();
                 if (current) {
+                    let avatarUrl = dto?.avatarUrl;
+                    if (avatarUrl && !avatarUrl.startsWith('http')) {
+                        avatarUrl = `${environment.apiUrl}${avatarUrl}`;
+                    }
                     const updatedUser = {
                         ...current,
-                        profile: { ...current.profile, ...dto } as any
+                        profile: { ...current.profile, ...dto, avatarUrl: avatarUrl !== undefined ? avatarUrl : current.profile?.avatarUrl } as any
                     };
                     localStorage.setItem(this.USER_KEY, JSON.stringify(updatedUser));
                     this.currentUser.set(updatedUser);
@@ -62,6 +67,27 @@ export class AuthService {
     changePassword(dto: any): Observable<void> {
         return this.http.post<ApiResponse<void>>(`${this.apiUrl}/change-password`, dto).pipe(
             map(response => response.data)
+        );
+    }
+
+    uploadAvatar(file: File): Observable<{ url: string }> {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        return this.http.post<ApiResponse<{ url: string }>>(`${this.apiUrl}/upload-avatar`, formData).pipe(
+            map(response => response.data),
+            tap((data) => {
+                const current = this.currentUser();
+                if (current) {
+                    const fullUrl = data.url.startsWith('http') ? data.url : `${environment.apiUrl}${data.url}`;
+                    const updatedUser = {
+                        ...current,
+                        profile: { ...current.profile, avatarUrl: fullUrl } as any
+                    };
+                    localStorage.setItem(this.USER_KEY, JSON.stringify(updatedUser));
+                    this.currentUser.set(updatedUser);
+                }
+            })
         );
     }
 
@@ -80,13 +106,21 @@ export class AuthService {
     }
 
     private setSession(authResult: AuthResponse): void {
+        if (authResult.user.profile?.avatarUrl && !authResult.user.profile.avatarUrl.startsWith('http')) {
+            authResult.user.profile.avatarUrl = `${environment.apiUrl}${authResult.user.profile.avatarUrl}`;
+        }
         localStorage.setItem(this.TOKEN_KEY, authResult.accessToken);
         localStorage.setItem(this.USER_KEY, JSON.stringify(authResult.user));
         this.currentUser.set(authResult.user);
     }
 
     private getUserFromStorage(): User | null {
-        const user = localStorage.getItem(this.USER_KEY);
-        return user ? JSON.parse(user) : null;
+        const userStr = localStorage.getItem(this.USER_KEY);
+        if (!userStr) return null;
+        const user = JSON.parse(userStr);
+        if (user.profile?.avatarUrl && !user.profile.avatarUrl.startsWith('http')) {
+            user.profile.avatarUrl = `${environment.apiUrl}${user.profile.avatarUrl}`;
+        }
+        return user;
     }
 }

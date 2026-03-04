@@ -20,13 +20,17 @@
                                 <mat-card-subtitle class="text-sm">Cambia tu foto de perfil desde
                                     aquí</mat-card-subtitle>
                                 <div class="text-center mt-8">
-                                    <img src="/assets/images/profile/user-1.jpg" class="rounded-full mx-auto"
-                                        width="120" />
+                                    <img [src]="authService.currentUser()?.profile?.avatarUrl || '/assets/images/profile/user-1.jpg'"
+                                        class="rounded-full mx-auto object-cover size-[120px]" />
                                     <div class="mt-6">
-                                        <button mat-flat-button color="primary" class="me-2">
+                                        <input type="file" #fileInput (change)="onFileSelected($event)" hidden
+                                            accept="image/*" />
+                                        <button mat-flat-button color="primary" class="me-2"
+                                            (click)="fileInput.click()">
                                             Subir
                                         </button>
-                                        <button mat-stroked-button color="warn">Restablecer</button>
+                                        <button mat-stroked-button color="warn"
+                                            (click)="resetAvatar()">Restablecer</button>
                                     </div>
                                     <span class="text-sm mt-6 block">Permitido JPG, GIF o PNG. Tamaño máximo de
                                         800K</span>

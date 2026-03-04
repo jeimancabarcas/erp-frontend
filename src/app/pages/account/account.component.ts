@@ -79,6 +79,36 @@ export class AppAccountSettingComponent implements OnInit {
         });
     }
 
+    onFileSelected(event: any) {
+        const file: File = event.target.files[0];
+        if (!file) return;
+
+        if (file.size > 800 * 1024) {
+            this.snackBar.open('El archivo es demasiado grande (máximo 800KB)', 'Cerrar', { duration: 3000 });
+            return;
+        }
+
+        this.authService.uploadAvatar(file).subscribe({
+            next: () => {
+                this.snackBar.open('Foto de perfil actualizada', 'Cerrar', { duration: 3000 });
+            },
+            error: (err) => {
+                this.snackBar.open(err.error?.message || 'Error al subir imagen', 'Cerrar', { duration: 3000 });
+            }
+        });
+    }
+
+    resetAvatar() {
+        this.authService.updateProfile({ avatarUrl: null } as any).subscribe({
+            next: () => {
+                this.snackBar.open('Foto de perfil restablecida', 'Cerrar', { duration: 3000 });
+            },
+            error: (err) => {
+                this.snackBar.open(err.error?.message || 'Error al restablecer imagen', 'Cerrar', { duration: 3000 });
+            }
+        });
+    }
+
     updatePassword() {
         if (this.securityForm.invalid) return;
 

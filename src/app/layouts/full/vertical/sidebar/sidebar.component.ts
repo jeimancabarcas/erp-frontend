@@ -1,7 +1,8 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, inject, Input, OnInit, Output } from '@angular/core';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import { MaterialModule } from 'src/app/material.module';
 import { TranslateModule } from '@ngx-translate/core';
+import { AuthService } from 'src/app/core/services/auth.service';
 
 
 @Component({
@@ -11,6 +12,7 @@ import { TranslateModule } from '@ngx-translate/core';
   templateUrl: './sidebar.component.html',
 })
 export class SidebarComponent implements OnInit {
+  authService = inject(AuthService);
   constructor() { }
   @Input() showToggle = true;
   @Output() toggleMobileNav = new EventEmitter<void>();

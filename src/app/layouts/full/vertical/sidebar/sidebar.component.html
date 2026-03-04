@@ -2,7 +2,8 @@
   <div class="user-profile profile-bar w-full bg-[url('assets/images/backgrounds/user-info.jpg')] bg-no-repeat">
     <!-- User profile image -->
     <div class="profile-img">
-      <img src="assets/images/profile/user-1.jpg" alt="user" width="50" class="rounded-full" />
+      <img [src]="authService.currentUser()?.profile?.avatarUrl || 'assets/images/profile/user-1.jpg'" alt="user"
+        width="50" style="height: 50px;" class="rounded-full object-cover" />
     </div>
     <!-- User profile text-->
     <!-- ============================================================== -->
@@ -10,7 +11,8 @@
     <!-- ============================================================== -->
     <div class="profile-text pt-1">
       <a href="javascript:void(0)" class="no-underline flex items-center justify-between text-white! w-full text-base">
-        Markarn Doe
+        {{ authService.currentUser()?.profile?.displayName || authService.currentUser()?.profile?.fullName || 'Usuario'
+        }}
       </a>
     </div>
   </div>
