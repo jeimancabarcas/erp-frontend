@@ -1,0 +1,344 @@
+<mat-card class="cardWithShadow mb-0!">
+    <mat-tab-group mat-stretch-tabs="false" animationDuration="0ms">
+
+        <!-- ── TAB: Clientes ───────────────────────────────────── -->
+        <mat-tab>
+            <ng-template mat-tab-label>
+                <div class="flex items-center gap-2">
+                    <mat-icon class="flex! items-center">
+                        <i-tabler name="users" class="size-5!"></i-tabler>
+                    </mat-icon>
+                    Clientes
+                </div>
+            </ng-template>
+
+            <mat-card-content class="p-6">
+                <!-- Header Actions -->
+                <div class="flex items-center flex-wrap justify-between mb-6">
+                    <div>
+                        <mat-card-title class="mb-1">Directorio de Clientes</mat-card-title>
+                        <mat-card-subtitle class="text-sm">
+                            Gestiona tu base de clientes para la emisión rápida de facturas.
+                        </mat-card-subtitle>
+                    </div>
+                    <button mat-flat-button color="primary">
+                        <span class="flex items-center gap-2">
+                            <i-tabler name="plus" class="size-5"></i-tabler> Nuevo Cliente
+                        </span>
+                    </button>
+                </div>
+
+                <!-- Table -->
+                <div class="relative overflow-auto">
+                    <mat-table [dataSource]="clients()" class="w-full" style="min-width: max-content;">
+                        <ng-container matColumnDef="name">
+                            <mat-header-cell *matHeaderCellDef class="font-semibold text-sm ps-0"
+                                style="min-width: 250px;">Nombre</mat-header-cell>
+                            <mat-cell class="p-4 ps-0 font-medium text-sm" *matCellDef="let item"
+                                style="min-width: 250px;">{{ item.name }}</mat-cell>
+                        </ng-container>
+                        <ng-container matColumnDef="email">
+                            <mat-header-cell *matHeaderCellDef class="font-semibold text-sm"
+                                style="min-width: 200px;">Correo</mat-header-cell>
+                            <mat-cell class="p-4 text-sm text-muted" *matCellDef="let item" style="min-width: 200px;">{{
+                                item.email }}</mat-cell>
+                        </ng-container>
+                        <ng-container matColumnDef="phone">
+                            <mat-header-cell *matHeaderCellDef class="font-semibold text-sm"
+                                style="min-width: 150px;">Teléfono</mat-header-cell>
+                            <mat-cell class="p-4 text-sm text-muted" *matCellDef="let item" style="min-width: 150px;">{{
+                                item.phone }}</mat-cell>
+                        </ng-container>
+                        <ng-container matColumnDef="status">
+                            <mat-header-cell *matHeaderCellDef class="font-semibold text-sm"
+                                style="min-width: 100px;">Estado</mat-header-cell>
+                            <mat-cell class="p-4 text-sm" *matCellDef="let item" style="min-width: 100px;">
+                                <span
+                                    [class]="item.status === 'Activo' ? 'bg-light-success text-success rounded-md px-2 py-1 text-xs font-semibold' : 'bg-light-error text-error rounded-md px-2 py-1 text-xs font-semibold'">
+                                    {{ item.status }}
+                                </span>
+                            </mat-cell>
+                        </ng-container>
+                        <ng-container matColumnDef="actions">
+                            <mat-header-cell *matHeaderCellDef class="font-semibold text-sm text-right pe-0"
+                                style="min-width: 100px;">Acciones</mat-header-cell>
+                            <mat-cell class="p-4 text-right pe-0" *matCellDef="let item" style="min-width: 100px;">
+                                <button mat-icon-button color="primary" (click)="edit(item)"><i-tabler name="edit"
+                                        class="size-5"></i-tabler></button>
+                                <button mat-icon-button color="warn" (click)="delete(item)"><i-tabler name="trash"
+                                        class="size-5"></i-tabler></button>
+                            </mat-cell>
+                        </ng-container>
+                        <mat-header-row *matHeaderRowDef="clientColumns"></mat-header-row>
+                        <mat-row *matRowDef="let row; columns: clientColumns"></mat-row>
+                    </mat-table>
+                </div>
+            </mat-card-content>
+        </mat-tab>
+
+        <!-- ── TAB: Medios de Pago ───────────────────────────────────── -->
+        <mat-tab>
+            <ng-template mat-tab-label>
+                <div class="flex items-center gap-2">
+                    <mat-icon class="flex! items-center">
+                        <i-tabler name="wallet" class="size-5!"></i-tabler>
+                    </mat-icon>
+                    Medios de Pago
+                </div>
+            </ng-template>
+
+            <mat-card-content class="p-6">
+                <!-- Header Actions -->
+                <div class="flex items-center flex-wrap justify-between mb-6">
+                    <div>
+                        <mat-card-title class="mb-1">Canales de Ingreso</mat-card-title>
+                        <mat-card-subtitle class="text-sm">
+                            Configura las cuentas bancarias o servicios utilizados para recibir pagos.
+                        </mat-card-subtitle>
+                    </div>
+                    <button mat-flat-button color="primary">
+                        <span class="flex items-center gap-2">
+                            <i-tabler name="plus" class="size-5"></i-tabler> Agregar Medio
+                        </span>
+                    </button>
+                </div>
+
+                <!-- Table -->
+                <div class="relative overflow-auto">
+                    <mat-table [dataSource]="paymentMethods()" class="w-full" style="min-width: max-content;">
+                        <ng-container matColumnDef="name">
+                            <mat-header-cell *matHeaderCellDef class="font-semibold text-sm ps-0"
+                                style="min-width: 250px;">Método</mat-header-cell>
+                            <mat-cell class="p-4 ps-0 font-medium text-sm" *matCellDef="let item"
+                                style="min-width: 250px;">{{ item.name }}</mat-cell>
+                        </ng-container>
+                        <ng-container matColumnDef="details">
+                            <mat-header-cell *matHeaderCellDef class="font-semibold text-sm"
+                                style="min-width: 300px;">Detalles / Cuenta</mat-header-cell>
+                            <mat-cell class="p-4 text-sm text-muted" *matCellDef="let item" style="min-width: 300px;">{{
+                                item.details }}</mat-cell>
+                        </ng-container>
+                        <ng-container matColumnDef="status">
+                            <mat-header-cell *matHeaderCellDef class="font-semibold text-sm"
+                                style="min-width: 100px;">Estado</mat-header-cell>
+                            <mat-cell class="p-4 text-sm" *matCellDef="let item" style="min-width: 100px;">
+                                <span
+                                    class="bg-light-success text-success rounded-md px-2 py-1 text-xs font-semibold">{{
+                                    item.status }}</span>
+                            </mat-cell>
+                        </ng-container>
+                        <ng-container matColumnDef="actions">
+                            <mat-header-cell *matHeaderCellDef class="font-semibold text-sm text-right pe-0"
+                                style="min-width: 100px;">Acciones</mat-header-cell>
+                            <mat-cell class="p-4 text-right pe-0" *matCellDef="let item" style="min-width: 100px;">
+                                <button mat-icon-button color="primary" (click)="edit(item)"><i-tabler name="edit"
+                                        class="size-5"></i-tabler></button>
+                                <button mat-icon-button color="warn" (click)="delete(item)"><i-tabler name="trash"
+                                        class="size-5"></i-tabler></button>
+                            </mat-cell>
+                        </ng-container>
+                        <mat-header-row *matHeaderRowDef="paymentColumns"></mat-header-row>
+                        <mat-row *matRowDef="let row; columns: paymentColumns"></mat-row>
+                    </mat-table>
+                </div>
+            </mat-card-content>
+        </mat-tab>
+
+        <!-- ── TAB: Impuestos ───────────────────────────────────── -->
+        <mat-tab>
+            <ng-template mat-tab-label>
+                <div class="flex items-center gap-2">
+                    <mat-icon class="flex! items-center">
+                        <i-tabler name="receipt-tax" class="size-5!"></i-tabler>
+                    </mat-icon>
+                    Impuestos
+                </div>
+            </ng-template>
+
+            <mat-card-content class="p-6">
+                <!-- Header Actions -->
+                <div class="flex items-center flex-wrap justify-between mb-6">
+                    <div>
+                        <mat-card-title class="mb-1">Configuración Fiscal</mat-card-title>
+                        <mat-card-subtitle class="text-sm">
+                            Tasas de impuestos y retenciones aplicables a las facturas.
+                        </mat-card-subtitle>
+                    </div>
+                    <button mat-flat-button color="primary">
+                        <span class="flex items-center gap-2">
+                            <i-tabler name="plus" class="size-5"></i-tabler> Nuevo Impuesto
+                        </span>
+                    </button>
+                </div>
+
+                <!-- Table -->
+                <div class="relative overflow-auto">
+                    <mat-table [dataSource]="taxes()" class="w-full" style="min-width: max-content;">
+                        <ng-container matColumnDef="name">
+                            <mat-header-cell *matHeaderCellDef class="font-semibold text-sm ps-0"
+                                style="min-width: 300px;">Nombre</mat-header-cell>
+                            <mat-cell class="p-4 ps-0 font-medium text-sm" *matCellDef="let item"
+                                style="min-width: 300px;">{{ item.name }}</mat-cell>
+                        </ng-container>
+                        <ng-container matColumnDef="rate">
+                            <mat-header-cell *matHeaderCellDef class="font-semibold text-sm"
+                                style="min-width: 150px;">Porcentaje (%)</mat-header-cell>
+                            <mat-cell class="p-4 text-sm font-semibold" *matCellDef="let item"
+                                style="min-width: 150px;">
+                                <span [class]="item.rate > 0 ? 'text-error' : 'text-success'">
+                                    {{ item.rate > 0 ? '+' : ''}}{{ item.rate }}%
+                                </span>
+                            </mat-cell>
+                        </ng-container>
+                        <ng-container matColumnDef="actions">
+                            <mat-header-cell *matHeaderCellDef class="font-semibold text-sm text-right pe-0"
+                                style="min-width: 100px;">Acciones</mat-header-cell>
+                            <mat-cell class="p-4 text-right pe-0" *matCellDef="let item" style="min-width: 100px;">
+                                <button mat-icon-button color="primary" (click)="edit(item)"><i-tabler name="edit"
+                                        class="size-5"></i-tabler></button>
+                                <button mat-icon-button color="warn" (click)="delete(item)"><i-tabler name="trash"
+                                        class="size-5"></i-tabler></button>
+                            </mat-cell>
+                        </ng-container>
+                        <mat-header-row *matHeaderRowDef="taxColumns"></mat-header-row>
+                        <mat-row *matRowDef="let row; columns: taxColumns"></mat-row>
+                    </mat-table>
+                </div>
+            </mat-card-content>
+        </mat-tab>
+
+        <!-- ── TAB: Servicios ───────────────────────────────────── -->
+        <mat-tab>
+            <ng-template mat-tab-label>
+                <div class="flex items-center gap-2">
+                    <mat-icon class="flex! items-center">
+                        <i-tabler name="briefcase" class="size-5!"></i-tabler>
+                    </mat-icon>
+                    Servicios
+                </div>
+            </ng-template>
+
+            <mat-card-content class="p-6">
+                <!-- Header Actions -->
+                <div class="flex items-center flex-wrap justify-between mb-6">
+                    <div>
+                        <mat-card-title class="mb-1">Catálogo de Servicios</mat-card-title>
+                        <mat-card-subtitle class="text-sm">
+                            Añade servicios intangibles para que el área de ventas pueda facturarlos.
+                        </mat-card-subtitle>
+                    </div>
+                    <button mat-flat-button color="primary">
+                        <span class="flex items-center gap-2">
+                            <i-tabler name="plus" class="size-5"></i-tabler> Nuevo Servicio
+                        </span>
+                    </button>
+                </div>
+
+                <!-- Table -->
+                <div class="relative overflow-auto">
+                    <mat-table [dataSource]="services()" class="w-full" style="min-width: max-content;">
+                        <ng-container matColumnDef="name">
+                            <mat-header-cell *matHeaderCellDef class="font-semibold text-sm ps-0"
+                                style="min-width: 300px;">Nombre</mat-header-cell>
+                            <mat-cell class="p-4 ps-0 font-medium text-sm" *matCellDef="let item"
+                                style="min-width: 300px;">{{ item.name }}</mat-cell>
+                        </ng-container>
+                        <ng-container matColumnDef="price">
+                            <mat-header-cell *matHeaderCellDef class="font-semibold text-sm"
+                                style="min-width: 200px;">Precio Base</mat-header-cell>
+                            <mat-cell class="p-4 text-sm font-semibold" *matCellDef="let item"
+                                style="min-width: 200px;">{{ item.price | currency }}</mat-cell>
+                        </ng-container>
+                        <ng-container matColumnDef="actions">
+                            <mat-header-cell *matHeaderCellDef class="font-semibold text-sm text-right pe-0"
+                                style="min-width: 100px;">Acciones</mat-header-cell>
+                            <mat-cell class="p-4 text-right pe-0" *matCellDef="let item" style="min-width: 100px;">
+                                <button mat-icon-button color="primary" (click)="edit(item)"><i-tabler name="edit"
+                                        class="size-5"></i-tabler></button>
+                                <button mat-icon-button color="warn" (click)="delete(item)"><i-tabler name="trash"
+                                        class="size-5"></i-tabler></button>
+                            </mat-cell>
+                        </ng-container>
+                        <mat-header-row *matHeaderRowDef="serviceColumns"></mat-header-row>
+                        <mat-row *matRowDef="let row; columns: serviceColumns"></mat-row>
+                    </mat-table>
+                </div>
+            </mat-card-content>
+        </mat-tab>
+
+        <!-- ── TAB: Productos ───────────────────────────────────── -->
+        <mat-tab>
+            <ng-template mat-tab-label>
+                <div class="flex items-center gap-2">
+                    <mat-icon class="flex! items-center">
+                        <i-tabler name="box" class="size-5!"></i-tabler>
+                    </mat-icon>
+                    Productos
+                </div>
+            </ng-template>
+
+            <mat-card-content class="p-6">
+                <!-- Header Actions -->
+                <div class="flex items-center flex-wrap justify-between mb-6">
+                    <div>
+                        <mat-card-title class="mb-1">Productos para Facturación</mat-card-title>
+                        <mat-card-subtitle class="text-sm">
+                            Artículos disponibles para venta. Puedes enlazarlos a ítems de tu Inventario.
+                        </mat-card-subtitle>
+                    </div>
+                    <button mat-flat-button color="primary">
+                        <span class="flex items-center gap-2">
+                            <i-tabler name="plus" class="size-5"></i-tabler> Nuevo Producto
+                        </span>
+                    </button>
+                </div>
+
+                <!-- Table -->
+                <div class="relative overflow-auto">
+                    <mat-table [dataSource]="products()" class="w-full" style="min-width: max-content;">
+                        <ng-container matColumnDef="name">
+                            <mat-header-cell *matHeaderCellDef class="font-semibold text-sm ps-0"
+                                style="min-width: 300px;">Nombre Facturación</mat-header-cell>
+                            <mat-cell class="p-4 ps-0 font-medium text-sm" *matCellDef="let item"
+                                style="min-width: 300px;">{{ item.name }}</mat-cell>
+                        </ng-container>
+                        <ng-container matColumnDef="price">
+                            <mat-header-cell *matHeaderCellDef class="font-semibold text-sm"
+                                style="min-width: 150px;">Precio de Venta</mat-header-cell>
+                            <mat-cell class="p-4 text-sm font-semibold" *matCellDef="let item"
+                                style="min-width: 150px;">{{ item.price | currency }}</mat-cell>
+                        </ng-container>
+                        <ng-container matColumnDef="inventoryLink">
+                            <mat-header-cell *matHeaderCellDef class="font-semibold text-sm"
+                                style="min-width: 200px;">Enlace c/ Inventario</mat-header-cell>
+                            <mat-cell class="p-4" *matCellDef="let item" style="min-width: 200px;">
+                                @if(item.linkedToInventory) {
+                                <span
+                                    class="bg-light-success text-success rounded-md font-semibold px-2 py-1 text-xs me-2">Vinculado</span>
+                                <span class="text-xs text-muted">SKU: {{ item.inventorySku }}</span>
+                                } @else {
+                                <button mat-stroked-button color="accent" (click)="linkInventory(item)"
+                                    style="height: 30px; line-height: 28px; padding: 0 12px; font-size: 12px;">Enlazar
+                                    Inventario</button>
+                                }
+                            </mat-cell>
+                        </ng-container>
+                        <ng-container matColumnDef="actions">
+                            <mat-header-cell *matHeaderCellDef class="font-semibold text-sm text-right pe-0"
+                                style="min-width: 100px;">Acciones</mat-header-cell>
+                            <mat-cell class="p-4 text-right pe-0" *matCellDef="let item" style="min-width: 100px;">
+                                <button mat-icon-button color="primary" (click)="edit(item)"><i-tabler name="edit"
+                                        class="size-5"></i-tabler></button>
+                                <button mat-icon-button color="warn" (click)="delete(item)"><i-tabler name="trash"
+                                        class="size-5"></i-tabler></button>
+                            </mat-cell>
+                        </ng-container>
+                        <mat-header-row *matHeaderRowDef="productColumns"></mat-header-row>
+                        <mat-row *matRowDef="let row; columns: productColumns"></mat-row>
+                    </mat-table>
+                </div>
+            </mat-card-content>
+        </mat-tab>
+
+    </mat-tab-group>
+</mat-card>

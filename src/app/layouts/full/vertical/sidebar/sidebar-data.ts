@@ -32,4 +32,17 @@ export const navItems: NavItem[] = [
     iconName: 'settings',
     route: '/inventory/settings',
   },
+  {
+    navCap: 'Facturación',
+  },
+  {
+    displayName: 'Ventas',
+    iconName: 'file-invoice',
+    route: '/billing/sales',
+  },
+  {
+    displayName: 'Configuración',
+    iconName: 'settings',
+    route: '/billing/settings',
+  },
 ];

@@ -40,6 +40,13 @@ export const routes: Routes = [
             (m) => m.InventoryRoutes
           ),
       },
+      {
+        path: 'billing',
+        loadChildren: () =>
+          import('./pages/billing/billing.routes').then(
+            (m) => m.BillingRoutes
+          ),
+      },
     ],
   },
   {
