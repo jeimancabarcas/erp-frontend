@@ -18,14 +18,31 @@ import { BillingServiceFormComponent } from './billing-service-form/billing-serv
 import { BillingService } from '../../../core/domain/entities/billing-service.entity';
 import { GetBillingServicesUseCase } from '../../../core/application/use-cases/get-billing-services.use-case';
 import { DeleteBillingServiceUseCase } from '../../../core/application/use-cases/delete-billing-service.use-case';
+
+// -- Taxes --
+import { BillingTaxFormComponent } from './billing-tax-form/billing-tax-form.component';
+import { BillingTax } from '../../../core/domain/entities/billing-tax.entity';
+import { GetBillingTaxesUseCase } from '../../../core/application/use-cases/get-billing-taxes.use-case';
+import { DeleteBillingTaxUseCase } from '../../../core/application/use-cases/delete-billing-tax.use-case';
+
+// -- Payment Methods --
+import { BillingPaymentMethodFormComponent } from './billing-payment-method-form/billing-payment-method-form.component';
+import { BillingPaymentMethod } from '../../../core/domain/entities/billing-payment-method.entity';
+import { GetBillingPaymentMethodsUseCase } from '../../../core/application/use-cases/get-billing-payment-methods.use-case';
+import { DeleteBillingPaymentMethodUseCase } from '../../../core/application/use-cases/delete-billing-payment-method.use-case';
+
 import { ToastService } from '../../../core/services/toast.service';
 import { lastValueFrom } from 'rxjs';
 import { TableEmptyComponent } from '../../../shared/components/table-empty/table-empty.component';
 import { TableLoadingComponent } from '../../../shared/components/table-loading/table-loading.component';
 
-export interface Client { id: string; name: string; email: string; phone: string; status: string; }
-export interface PaymentMethod { id: string; name: string; details: string; status: string; }
-export interface Tax { id: string; name: string; rate: number; }
+// -- Clients --
+import { BillingClientFormComponent } from './billing-client-form/billing-client-form.component';
+import { BillingClient } from '../../../core/domain/entities/billing-client.entity';
+import { GetBillingClientsUseCase } from '../../../core/application/use-cases/billing-client/get-billing-clients.use-case';
+import { CreateBillingClientUseCase } from '../../../core/application/use-cases/billing-client/create-billing-client.use-case';
+import { UpdateBillingClientUseCase } from '../../../core/application/use-cases/billing-client/update-billing-client.use-case';
+import { DeleteBillingClientUseCase } from '../../../core/application/use-cases/billing-client/delete-billing-client.use-case';
 
 @Component({
     selector: 'app-billing-settings',
@@ -53,28 +70,34 @@ export class BillingSettingsComponent implements OnInit {
     private deleteBillingProductUseCase = inject(DeleteBillingProductUseCase);
     private getBillingServicesUseCase = inject(GetBillingServicesUseCase);
     private deleteBillingServiceUseCase = inject(DeleteBillingServiceUseCase);
+    private getBillingTaxesUseCase = inject(GetBillingTaxesUseCase);
+    private deleteBillingTaxUseCase = inject(DeleteBillingTaxUseCase);
+    private getBillingPaymentMethodsUseCase = inject(GetBillingPaymentMethodsUseCase);
+    private deleteBillingPaymentMethodUseCase = inject(DeleteBillingPaymentMethodUseCase);
+    private getBillingClientsUseCase = inject(GetBillingClientsUseCase);
+    private createBillingClientUseCase = inject(CreateBillingClientUseCase);
+    private updateBillingClientUseCase = inject(UpdateBillingClientUseCase);
+    private deleteBillingClientUseCase = inject(DeleteBillingClientUseCase);
+
     private toast = inject(ToastService);
     public dialog = inject(MatDialog);
 
-    // Mock Data
-    public clients = signal<Client[]>([
-        { id: '1', name: 'Empresa Alpha S.A.', email: 'contacto@alpha.com', phone: '123-456-7890', status: 'Activo' },
-        { id: '2', name: 'Juan Pérez', email: 'juan.perez@email.com', phone: '098-765-4321', status: 'Inactivo' },
-        { id: '3', name: 'Servicios Globales', email: 'admin@globales.net', phone: '555-123-4567', status: 'Activo' }
-    ]);
+    // Clients
+    public clients = signal<BillingClient[]>([]);
+    public isClientsLoading = signal(false);
+    private isClientsLoaded = false;
 
-    public paymentMethods = signal<PaymentMethod[]>([
-        { id: '1', name: 'Transferencia Bancaria', details: 'Banco Nacional Cta. 12345', status: 'Activo' },
-        { id: '2', name: 'Tarjeta de Crédito', details: 'Stripe Gateway', status: 'Activo' },
-        { id: '3', name: 'Efectivo', details: 'Pago en caja', status: 'Activo' }
-    ]);
+    // Payment Methods
+    public paymentMethods = signal<BillingPaymentMethod[]>([]);
+    public isPaymentMethodsLoading = signal(false);
+    private isPaymentMethodsLoaded = false;
 
-    public taxes = signal<Tax[]>([
-        { id: '1', name: 'IVA General', rate: 19 },
-        { id: '2', name: 'IVA Reducido', rate: 5 },
-        { id: '3', name: 'Retención en la Fuente', rate: -2.5 }
-    ]);
+    // Taxes
+    public taxes = signal<BillingTax[]>([]);
+    public isTaxesLoading = signal(false);
+    private isTaxesLoaded = false;
 
+    // Services
     public services = signal<BillingService[]>([]);
     public isServicesLoading = signal(false);
     private isServicesLoaded = false;
@@ -84,17 +107,33 @@ export class BillingSettingsComponent implements OnInit {
     private isProductsLoaded = false;
 
     // Columns
-    public clientColumns = ['name', 'email', 'phone', 'status', 'actions'];
+    public clientColumns = ['document', 'name', 'email', 'phone', 'status', 'actions'];
     public paymentColumns = ['name', 'details', 'status', 'actions'];
     public taxColumns = ['name', 'rate', 'actions'];
     public serviceColumns = ['name', 'codes', 'price', 'actions'];
     public productColumns = ['name', 'codes', 'price', 'inventoryLink', 'actions'];
 
     ngOnInit() {
-        // No pre-loading, petitions are intentionally lazy-loaded on tab change
+        this.loadClients();
+        this.isClientsLoaded = true;
     }
 
     onTabChange(event: MatTabChangeEvent) {
+        // Tab index 0 is "Clientes"
+        if (event.index === 0 && !this.isClientsLoaded) {
+            this.loadClients();
+            this.isClientsLoaded = true;
+        }
+        // Tab index 1 is "Medios de Pago"
+        if (event.index === 1 && !this.isPaymentMethodsLoaded) {
+            this.loadPaymentMethods();
+            this.isPaymentMethodsLoaded = true;
+        }
+        // Tab index 2 is "Impuestos"
+        if (event.index === 2 && !this.isTaxesLoaded) {
+            this.loadTaxes();
+            this.isTaxesLoaded = true;
+        }
         // Tab index 3 is the "Servicios" tab
         if (event.index === 3 && !this.isServicesLoaded) {
             this.loadServices();
@@ -105,6 +144,51 @@ export class BillingSettingsComponent implements OnInit {
             this.loadProducts();
             this.isProductsLoaded = true;
         }
+    }
+
+    private loadClients() {
+        this.isClientsLoading.set(true);
+        this.getBillingClientsUseCase.execute().subscribe({
+            next: (data) => {
+                this.clients.set(data);
+                this.isClientsLoading.set(false);
+            },
+            error: (err) => {
+                this.toast.error('Error al cargar clientes');
+                console.error(err);
+                this.isClientsLoading.set(false);
+            }
+        });
+    }
+
+    private loadPaymentMethods() {
+        this.isPaymentMethodsLoading.set(true);
+        this.getBillingPaymentMethodsUseCase.execute().subscribe({
+            next: (data) => {
+                this.paymentMethods.set(data);
+                this.isPaymentMethodsLoading.set(false);
+            },
+            error: (err) => {
+                this.toast.error('Error al cargar medios de pago');
+                console.error(err);
+                this.isPaymentMethodsLoading.set(false);
+            }
+        });
+    }
+
+    private loadTaxes() {
+        this.isTaxesLoading.set(true);
+        this.getBillingTaxesUseCase.execute().subscribe({
+            next: (data) => {
+                this.taxes.set(data);
+                this.isTaxesLoading.set(false);
+            },
+            error: (err) => {
+                this.toast.error('Error al cargar configuración fiscal');
+                console.error(err);
+                this.isTaxesLoading.set(false);
+            }
+        });
     }
 
     private loadServices() {
@@ -137,10 +221,98 @@ export class BillingSettingsComponent implements OnInit {
         });
     }
 
-    // Placeholder actions
-    edit(item: any) { console.log('Edit', item); }
-    delete(item: any) { console.log('Delete', item); }
+    // Placeholder actions for static tabs
     linkInventory(item: BillingProduct) { console.log('Link to inventory', item); }
+
+    // Real Action for Clients
+    openClientForm(client?: BillingClient) {
+        const dialogRef = this.dialog.open(BillingClientFormComponent, {
+            width: '600px',
+            data: { client },
+        });
+
+        dialogRef.afterClosed().subscribe(async (result) => {
+            if (result) {
+                try {
+                    if (client && client.id) {
+                        await lastValueFrom(this.updateBillingClientUseCase.execute(client.id, result));
+                        this.toast.success('Cliente actualizado correctamente');
+                    } else {
+                        await lastValueFrom(this.createBillingClientUseCase.execute(result));
+                        this.toast.success('Cliente creado correctamente');
+                    }
+                    this.loadClients();
+                } catch (error) {
+                    this.toast.error('Error al guardar el cliente');
+                    console.error(error);
+                }
+            }
+        });
+    }
+
+    async deleteClient(client: BillingClient) {
+        if (confirm(`¿Estás seguro de eliminar el cliente "${client.name}"?`)) {
+            try {
+                await lastValueFrom(this.deleteBillingClientUseCase.execute(client.id));
+                this.toast.success('Cliente eliminado correctamente');
+                this.loadClients();
+            } catch (err: any) {
+                this.toast.error('Error al eliminar el cliente');
+            }
+        }
+    }
+
+    // Real Action for Payment Methods
+    openPaymentMethodForm(paymentMethod?: BillingPaymentMethod) {
+        const dialogRef = this.dialog.open(BillingPaymentMethodFormComponent, {
+            width: '500px',
+            data: paymentMethod,
+        });
+
+        dialogRef.afterClosed().subscribe((result) => {
+            if (result) {
+                this.loadPaymentMethods();
+            }
+        });
+    }
+
+    async deletePaymentMethod(paymentMethod: BillingPaymentMethod) {
+        if (confirm(`¿Estás seguro de eliminar el medio de pago "${paymentMethod.name}"?`)) {
+            try {
+                await lastValueFrom(this.deleteBillingPaymentMethodUseCase.execute(paymentMethod.id));
+                this.toast.success('Medio de pago eliminado correctamente');
+                this.loadPaymentMethods();
+            } catch (err: any) {
+                this.toast.error('Error al eliminar el medio de pago');
+            }
+        }
+    }
+
+    // Real Action for Taxes
+    openTaxForm(tax?: BillingTax) {
+        const dialogRef = this.dialog.open(BillingTaxFormComponent, {
+            width: '400px',
+            data: tax,
+        });
+
+        dialogRef.afterClosed().subscribe((result) => {
+            if (result) {
+                this.loadTaxes();
+            }
+        });
+    }
+
+    async deleteTax(tax: BillingTax) {
+        if (confirm(`¿Estás seguro de eliminar el impuesto "${tax.name}"?`)) {
+            try {
+                await lastValueFrom(this.deleteBillingTaxUseCase.execute(tax.id));
+                this.toast.success('Impuesto eliminado correctamente');
+                this.loadTaxes();
+            } catch (err: any) {
+                this.toast.error('Error al eliminar el impuesto');
+            }
+        }
+    }
 
     // Real Action for Products
     openProductForm(product?: BillingProduct) {

@@ -1,0 +1,84 @@
+<h2 mat-dialog-title class="m-0 mb-4">{{ isEditMode ? 'Editar Cliente' : 'Nuevo Cliente' }}</h2>
+
+<mat-dialog-content class="mat-typography p-4 max-h-[70vh] m-b-0">
+    <form [formGroup]="clientForm" class="flex flex-col gap-4 pt-2">
+
+        <!-- Identidad -->
+        <div>
+            <h3 class="text-sm font-semibold mb-3 text-muted-color">Información de Identidad</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Tipo de Documento -->
+                <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Tipo de Documento</mat-label>
+                    <mat-select formControlName="documentType">
+                        <mat-option *ngFor="let type of documentTypes" [value]="type">{{ type }}</mat-option>
+                    </mat-select>
+                    <mat-error *ngIf="clientForm.get('documentType')?.hasError('required')">El tipo de documento es
+                        requerido</mat-error>
+                </mat-form-field>
+
+                <!-- Número de Documento -->
+                <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Número de Documento</mat-label>
+                    <input matInput formControlName="documentNumber" placeholder="Ej. 1000222333">
+                    <mat-error *ngIf="clientForm.get('documentNumber')?.hasError('required')">El número es
+                        requerido</mat-error>
+                </mat-form-field>
+
+                <!-- Nombre o Razón Social -->
+                <mat-form-field appearance="outline" class="w-full md:col-span-2">
+                    <mat-label>Nombre o Razón Social</mat-label>
+                    <input matInput formControlName="name" placeholder="Ej. Empresa SA / Juan Pérez">
+                    <mat-error *ngIf="clientForm.get('name')?.hasError('required')">El nombre es requerido</mat-error>
+                </mat-form-field>
+            </div>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <!-- Contacto -->
+        <div>
+            <h3 class="text-sm font-semibold mb-3 text-muted-color">Contacto y Envío</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Teléfono -->
+                <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Teléfono</mat-label>
+                    <input matInput formControlName="phone" placeholder="Ej. 300 123 4567">
+                </mat-form-field>
+
+                <!-- Email -->
+                <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Correo Electrónico</mat-label>
+                    <input matInput type="email" formControlName="email" placeholder="Ej. contacto@empresa.com">
+                    <mat-error *ngIf="clientForm.get('email')?.hasError('email')">Correo inválido</mat-error>
+                </mat-form-field>
+
+                <!-- Dirección -->
+                <mat-form-field appearance="outline" class="w-full md:col-span-2">
+                    <mat-label>Dirección de Facturación</mat-label>
+                    <input matInput formControlName="address" placeholder="Ej. Calle 123 #45-67">
+                </mat-form-field>
+            </div>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <!-- Estado -->
+        <div class="flex items-center justify-between py-2">
+            <div>
+                <span class="font-medium text-sm block">Estado del Cliente</span>
+                <span class="text-xs text-muted-color">Los clientes inactivos no aparecerán disponibles al
+                    facturar</span>
+            </div>
+            <mat-slide-toggle formControlName="status" color="primary"></mat-slide-toggle>
+        </div>
+
+    </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="p-4 pt-0">
+    <button mat-button (click)="onCancel()">Cancelar</button>
+    <button mat-flat-button color="primary" [disabled]="!clientForm.valid" (click)="onSubmit()">
+        {{ isEditMode ? 'Guardar Cambios' : 'Crear Cliente' }}
+    </button>
+</mat-dialog-actions>

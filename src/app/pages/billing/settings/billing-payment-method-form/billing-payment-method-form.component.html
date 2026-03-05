@@ -1,0 +1,38 @@
+<h2 mat-dialog-title class="m-0 text-lg font-medium">{{ isEditMode ? 'Editar' : 'Nuevo' }} Medio de Pago</h2>
+
+<form [formGroup]="paymentMethodForm" (ngSubmit)="onSubmit()">
+    <mat-dialog-content class="mat-typography pt-6 pb-2">
+        <div class="flex flex-col gap-4">
+            <!-- Nombre / Método -->
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Método de Pago</mat-label>
+                <input matInput formControlName="name" placeholder="Ej: Transferencia Bancaria, Efectivo">
+                @if (paymentMethodForm.get('name')?.hasError('required')) {
+                <mat-error>El método de pago es obligatorio.</mat-error>
+                }
+            </mat-form-field>
+
+            <!-- Detalles -->
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Detalles / Cuenta</mat-label>
+                <input matInput formControlName="details" placeholder="Ej: Banco Nacional Cta. 12345">
+                <mat-hint class="text-xs text-muted">Opcional. Ej: Número de cuenta, enlace, instrucciones.</mat-hint>
+            </mat-form-field>
+
+            <!-- Estado -->
+            <div class="flex items-center justify-between p-4 border rounded-md">
+                <div>
+                    <h4 class="m-0 text-sm font-semibold">Estado de Activación</h4>
+                    <p class="m-0 text-xs text-muted">¿Este usuario puede pagar mediante este método?</p>
+                </div>
+                <mat-slide-toggle formControlName="status" color="primary"></mat-slide-toggle>
+            </div>
+        </div>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end" class="px-6 pb-6 pt-2">
+        <button mat-button type="button" mat-dialog-close [disabled]="isLoading">Cancelar</button>
+        <button mat-flat-button color="primary" type="submit"
+            [disabled]="paymentMethodForm.invalid || isLoading">Guardar</button>
+    </mat-dialog-actions>
+</form>
