@@ -17,16 +17,9 @@
                                     @if(preferences().logoUrl) {
                                     <img [src]="preferences().logoUrl" alt="Logo" class="max-h-16 object-contain" />
                                     } @else {
-                                    <div class="h-10 w-10 text-white flex items-center justify-center font-bold text-xl rounded-sm"
-                                        [style.backgroundColor]="preferences().primaryColor">
-                                        <i-tabler name="brand-abstract" class="size-6"></i-tabler>
-                                    </div>
                                     <div>
                                         <h1 class="m-0 text-2xl font-bold tracking-tight text-gray-900 leading-none">
-                                            INTROAN</h1>
-                                        <p
-                                            class="m-0 text-[10px] tracking-[0.2em] text-gray-500 font-semibold uppercase">
-                                            Soluciones</p>
+                                            {{ preferences().primaryColor === '#2dd4bf' ? '' : '' }}</h1>
                                     </div>
                                     }
                                 </div>
@@ -40,6 +33,12 @@
                                 <!-- Client Info -->
                                 <div class="flex-1 w-full">
                                     <div class="mb-4">
+                                        <div class="flex items-center gap-2 mb-2 print:hidden">
+                                            <button mat-stroked-button type="button" class="w-full text-xs"
+                                                (click)="onClientSelect()">
+                                                <i-tabler name="search" class="size-4 me-1"></i-tabler> Buscar Cliente
+                                            </button>
+                                        </div>
                                         <div class="flex items-center gap-2">
                                             <span class="font-bold"
                                                 [style.color]="preferences().primaryColor">Para:</span>
@@ -51,8 +50,8 @@
                                     </div>
 
                                     <div>
-                                        <input type="text" value="Nombre de la Empresa" class="invoice-input font-bold"
-                                            readonly tabindex="-1">
+                                        <input type="text" placeholder="Nombre de la Empresa"
+                                            class="invoice-input font-bold" readonly tabindex="-1">
                                         <textarea formControlName="companyName"
                                             class="invoice-input text-gray-500 text-sm resize-none h-12"
                                             placeholder="Dirección de la Empresa"></textarea>
@@ -70,11 +69,11 @@
                                     <div class="p-4 border-r border-white/20">
                                         <p class="text-[10px] uppercase tracking-wider mb-1 opacity-80">Fecha de Factura
                                         </p>
-                                        <div class="flex items-center">
+                                        <div class="flex items-center gap-1 group">
                                             <input matInput [matDatepicker]="picker" formControlName="invoiceDate"
-                                                class="w-28 bg-transparent border-none text-white outline-none font-semibold text-sm cursor-pointer">
+                                                class="w-24 bg-transparent border-none text-white outline-none font-semibold text-sm cursor-pointer">
                                             <mat-datepicker-toggle matSuffix [for]="picker"
-                                                class="text-white scale-75"></mat-datepicker-toggle>
+                                                class="invoice-datepicker-toggle scale-75 -ms-2"></mat-datepicker-toggle>
                                             <mat-datepicker #picker></mat-datepicker>
                                         </div>
                                     </div>
@@ -104,7 +103,13 @@
                                     @for (item of items.controls; track item; let i = $index) {
                                     <div [formGroupName]="i" class="flex items-center px-4 py-2 group rounded-md"
                                         [ngClass]="{'bg-[#f8fafc]': i % 2 === 0, 'bg-white': i % 2 !== 0}">
-                                        <div class="flex-1 min-w-[200px]">
+                                        <div class="flex-1 min-w-[200px] flex items-center gap-2">
+                                            <div class="print:hidden w-8">
+                                                <button mat-icon-button type="button" class="scale-75 text-gray-400"
+                                                    (click)="onItemSelect(i)">
+                                                    <i-tabler name="search" class="size-4"></i-tabler>
+                                                </button>
+                                            </div>
                                             <input type="text" formControlName="description"
                                                 class="invoice-input font-medium text-sm text-gray-800"
                                                 placeholder="Descripción del item">
@@ -148,6 +153,16 @@
                                 <!-- Payment Methods -->
                                 <div class="flex-1 text-sm text-gray-600">
                                     <h4 class="font-bold text-gray-800 mb-2">Métodos de Pago:</h4>
+                                    @if (paymentMethods().length > 0) {
+                                    <ul class="list-none p-0 m-0 space-y-1">
+                                        @for (pm of paymentMethods(); track pm.id; let pmIdx = $index) {
+                                        <li class="flex gap-2">
+                                            <span class="font-bold">{{ pmIdx + 1 }}</span>
+                                            {{ pm.name }} @if(pm.details){ - {{ pm.details }} }
+                                        </li>
+                                        }
+                                    </ul>
+                                    } @else {
                                     <ul class="list-none p-0 m-0 space-y-1">
                                         <li class="flex gap-2"><span class="font-bold">1</span> Transferencia: su correo
                                             de pago aquí</li>
@@ -156,6 +171,7 @@
                                         <li class="flex gap-2"><span class="font-bold">3</span> Pago con Tarjeta:
                                             Débito, Crédito</li>
                                     </ul>
+                                    }
                                 </div>
 
                                 <!-- Mathematical Summary -->
