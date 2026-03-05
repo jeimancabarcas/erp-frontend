@@ -18,6 +18,8 @@ import { MovementRepository } from './core/domain/repositories/movement.reposito
 import { MovementHttpRepository } from './data/repositories/movement.http.repository';
 import { BillingProductRepository } from './core/domain/repositories/billing-product.repository';
 import { HttpBillingProductRepository } from './core/infrastructure/repositories/http-billing-product.repository';
+import { BillingTemplatePreferenceRepository } from './core/domain/repositories/billing-template-preference.repository';
+import { HttpBillingTemplatePreferenceRepository } from './core/infrastructure/repositories/http-billing-template-preference.repository';
 import { loadingInterceptor } from './core/interceptors/loading.interceptor';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { ToastrModule, provideToastr } from 'ngx-toastr';
@@ -91,6 +93,10 @@ export const appConfig: ApplicationConfig = {
     {
       provide: BillingProductRepository,
       useClass: HttpBillingProductRepository,
+    },
+    {
+      provide: BillingTemplatePreferenceRepository,
+      useClass: HttpBillingTemplatePreferenceRepository,
     },
   ],
 };

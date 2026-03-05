@@ -100,7 +100,7 @@ export class ProductFormComponent implements OnInit {
 
         this.productForm = this.fb.group({
             id: [data?.id || null],
-            sku: [data?.sku || '', [Validators.required]],
+            sku: [{ value: data?.sku || '', disabled: this.isEdit }, [Validators.required]],
             name: [data?.name || '', [Validators.required]],
             description: [data?.description || ''],
             stock: [data?.stock ?? null, [Validators.required, Validators.min(0)]],
@@ -186,7 +186,7 @@ export class ProductFormComponent implements OnInit {
 
     protected async onSubmit() {
         if (this.productForm.valid) {
-            const { id, ...rest } = this.productForm.value;
+            const { id, ...rest } = this.productForm.getRawValue();
 
             // Strip null/undefined so optional fields are omitted from the request body
             const payload = Object.fromEntries(

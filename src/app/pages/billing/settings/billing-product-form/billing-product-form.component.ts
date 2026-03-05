@@ -64,7 +64,7 @@ export class BillingProductFormComponent implements OnInit {
 
         this.form = this.fb.group({
             standardCode: [data?.standardCode || ''],
-            internalCode: [{ value: data?.internalCode || (data?.inventoryProductId ? data.inventoryProduct?.sku : ''), disabled: !!data?.inventoryProductId }, [Validators.required]],
+            internalCode: [{ value: data?.internalCode || (data?.inventoryProductId ? data.inventoryProduct?.sku : ''), disabled: this.isEditMode || !!data?.inventoryProductId }, [Validators.required]],
             name: [{ value: data?.name || (data?.inventoryProductId ? data.inventoryProduct?.name : ''), disabled: !!data?.inventoryProductId }, [Validators.required]],
             price: [data?.price ?? '', [Validators.required, Validators.min(0)]],
             inventoryProductId: [data?.inventoryProductId || null],

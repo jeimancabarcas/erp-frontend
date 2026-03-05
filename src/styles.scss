@@ -48,3 +48,55 @@ html {
     border-radius: 8px;
   }
 }
+
+/* ── Print Area isolation ───────────────────────────────────────────────── */
+@media print {
+  @page {
+    margin: 0;
+  }
+
+  /* Hide UI that shouldn't be printed */
+  app-header,
+  app-horizontal-header,
+  mat-sidenav,
+  .sidebarNav,
+  app-breadcrumb,
+  .http-loading-bar,
+  button[mat-fab] {
+    display: none !important;
+  }
+
+  /* Reset layout dimension constraints so it flows as a normal document */
+  html,
+  body,
+  .page-container,
+  mat-sidenav-container,
+  .mainWrapper,
+  mat-sidenav-content,
+  .mat-drawer-content,
+  .contentWrapper,
+  .pageWrapper {
+    height: auto !important;
+    min-height: auto !important;
+    position: static !important;
+    overflow: visible !important;
+    transform: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Ensure background colors print (e.g. for the teal accents) */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .print-area {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+}

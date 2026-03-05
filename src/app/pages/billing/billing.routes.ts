@@ -16,6 +16,21 @@ export const BillingRoutes: Routes = [
         },
     },
     {
+        path: 'sales/new',
+        loadComponent: () =>
+            import('./invoice-form/invoice-form.component').then(
+                (m) => m.InvoiceFormComponent
+            ),
+        data: {
+            title: 'Nueva Factura',
+            urls: [
+                { title: 'Facturación' },
+                { title: 'Ventas', url: '/billing/sales' },
+                { title: 'Nueva Factura' },
+            ],
+        },
+    },
+    {
         path: 'settings',
         loadComponent: () =>
             import('./settings/billing-settings.component').then(
@@ -30,3 +45,4 @@ export const BillingRoutes: Routes = [
         },
     },
 ];
+

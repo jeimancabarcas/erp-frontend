@@ -1,0 +1,297 @@
+<div class="max-w-[900px] mx-auto p-4 sm:p-8 print-area">
+    <mat-card class="cardWithShadow bg-white overflow-hidden relative print-wrapper">
+        <!-- Top Left Decoration -->
+        <div class="absolute top-0 left-0 w-32 h-32" style="clip-path: polygon(0 0, 100% 0, 0 100%);"
+            [style.backgroundColor]="preferences().primaryColor">
+        </div>
+
+        <form [formGroup]="invoiceForm" class="relative z-10 pt-8" (ngSubmit)="onSubmit()">
+            <!-- Use a table layout to guarantee repeating headers/footers when printing -->
+            <table class="w-full border-spacing-0 border-collapse">
+                <tbody>
+                    <tr>
+                        <td class="p-0 align-top">
+                            <!-- Header Section -->
+                            <div class="px-8 flex justify-between items-start mb-12">
+                                <div class="flex items-center gap-2 relative z-20">
+                                    @if(preferences().logoUrl) {
+                                    <img [src]="preferences().logoUrl" alt="Logo" class="max-h-16 object-contain" />
+                                    } @else {
+                                    <div class="h-10 w-10 text-white flex items-center justify-center font-bold text-xl rounded-sm"
+                                        [style.backgroundColor]="preferences().primaryColor">
+                                        <i-tabler name="brand-abstract" class="size-6"></i-tabler>
+                                    </div>
+                                    <div>
+                                        <h1 class="m-0 text-2xl font-bold tracking-tight text-gray-900 leading-none">
+                                            INTROAN</h1>
+                                        <p
+                                            class="m-0 text-[10px] tracking-[0.2em] text-gray-500 font-semibold uppercase">
+                                            Soluciones</p>
+                                    </div>
+                                    }
+                                </div>
+                                <div>
+                                    <h2 class="text-4xl font-bold text-gray-300 tracking-wider">FACTURA</h2>
+                                </div>
+                            </div>
+
+                            <!-- Info Section -->
+                            <div class="px-8 flex flex-col sm:flex-row justify-between items-end mb-12 gap-8">
+                                <!-- Client Info -->
+                                <div class="flex-1 w-full">
+                                    <div class="mb-4">
+                                        <div class="flex items-center gap-2">
+                                            <span class="font-bold"
+                                                [style.color]="preferences().primaryColor">Para:</span>
+                                            <input type="text" formControlName="clientName"
+                                                class="invoice-input font-bold" placeholder="Nombre del Cliente">
+                                        </div>
+                                        <input type="text" formControlName="clientPosition"
+                                            class="invoice-input text-gray-500 text-sm" placeholder="Cargo">
+                                    </div>
+
+                                    <div>
+                                        <input type="text" value="Nombre de la Empresa" class="invoice-input font-bold"
+                                            readonly tabindex="-1">
+                                        <textarea formControlName="companyName"
+                                            class="invoice-input text-gray-500 text-sm resize-none h-12"
+                                            placeholder="Dirección de la Empresa"></textarea>
+                                    </div>
+                                </div>
+
+                                <!-- Invoice Details Box -->
+                                <div class="text-white rounded-md flex overflow-hidden shadow-sm w-full sm:w-auto"
+                                    [style.backgroundColor]="preferences().primaryColor">
+                                    <div class="p-4 border-r border-white/20">
+                                        <p class="text-[10px] uppercase tracking-wider mb-1 opacity-80">Factura #</p>
+                                        <input type="text" formControlName="invoiceNumber"
+                                            class="w-24 bg-transparent border-none text-white outline-none font-semibold text-sm placeholder-white/50 focus:ring-1 focus:ring-white/50 rounded px-1">
+                                    </div>
+                                    <div class="p-4 border-r border-white/20">
+                                        <p class="text-[10px] uppercase tracking-wider mb-1 opacity-80">Fecha de Factura
+                                        </p>
+                                        <div class="flex items-center">
+                                            <input matInput [matDatepicker]="picker" formControlName="invoiceDate"
+                                                class="w-28 bg-transparent border-none text-white outline-none font-semibold text-sm cursor-pointer">
+                                            <mat-datepicker-toggle matSuffix [for]="picker"
+                                                class="text-white scale-75"></mat-datepicker-toggle>
+                                            <mat-datepicker #picker></mat-datepicker>
+                                        </div>
+                                    </div>
+                                    <div class="p-4" [style.backgroundColor]="preferences().secondaryColor">
+                                        <p class="text-[10px] uppercase tracking-wider mb-1 opacity-80">Total a Pagar
+                                        </p>
+                                        <p class="font-bold text-lg m-0">{{ grandTotal() | currency }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Items Table -->
+                            <div class="px-8 mb-8" formArrayName="items">
+                                <!-- Header -->
+                                <div class="flex pb-3 border-b-2 mb-2 text-sm font-semibold px-4"
+                                    [style.borderColor]="preferences().primaryColor"
+                                    [style.color]="preferences().primaryColor">
+                                    <div class="flex-1 min-w-[200px]">Descripción del Item</div>
+                                    <div class="w-28 text-center">Precio Unitario</div>
+                                    <div class="w-20 text-center">Cantidad</div>
+                                    <div class="w-28 text-right">Total</div>
+                                    <div class="w-10"></div> <!-- Action column -->
+                                </div>
+
+                                <!-- Rows -->
+                                <div class="flex flex-col gap-1">
+                                    @for (item of items.controls; track item; let i = $index) {
+                                    <div [formGroupName]="i" class="flex items-center px-4 py-2 group rounded-md"
+                                        [ngClass]="{'bg-[#f8fafc]': i % 2 === 0, 'bg-white': i % 2 !== 0}">
+                                        <div class="flex-1 min-w-[200px]">
+                                            <input type="text" formControlName="description"
+                                                class="invoice-input font-medium text-sm text-gray-800"
+                                                placeholder="Descripción del item">
+                                        </div>
+                                        <div class="w-28 h-full flex items-center justify-center relative">
+                                            <span
+                                                class="absolute left-2 text-gray-500 text-sm pointer-events-none">$</span>
+                                            <input type="number" formControlName="price"
+                                                class="invoice-input text-center text-sm" placeholder="0.00">
+                                        </div>
+                                        <div class="w-20">
+                                            <input type="number" formControlName="quantity"
+                                                class="invoice-input text-center text-sm" placeholder="1">
+                                        </div>
+                                        <div class="w-28 text-right font-medium text-gray-600 text-sm pt-1">
+                                            {{ getItemTotal(i) | currency }}
+                                        </div>
+                                        <div class="w-10 flex justify-end">
+                                            <button mat-icon-button type="button" color="warn"
+                                                class="scale-75 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                (click)="removeItem(i)" [disabled]="items.length === 1">
+                                                <i-tabler name="trash" class="size-4"></i-tabler>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    }
+                                </div>
+
+                                <!-- Add Row Button -->
+                                <div class="mt-2">
+                                    <button mat-button color="primary" type="button" (click)="addItem()"
+                                        class="text-xs">
+                                        <i-tabler name="plus" class="size-4 me-1"></i-tabler> Agregar Item
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Totals & Payment Info -->
+                            <div
+                                class="px-8 flex flex-col sm:flex-row justify-between gap-12 mb-16 pt-4 border-t border-gray-100">
+                                <!-- Payment Methods -->
+                                <div class="flex-1 text-sm text-gray-600">
+                                    <h4 class="font-bold text-gray-800 mb-2">Métodos de Pago:</h4>
+                                    <ul class="list-none p-0 m-0 space-y-1">
+                                        <li class="flex gap-2"><span class="font-bold">1</span> Transferencia: su correo
+                                            de pago aquí</li>
+                                        <li class="flex gap-2"><span class="font-bold">2</span> Depósito: su banco aquí
+                                        </li>
+                                        <li class="flex gap-2"><span class="font-bold">3</span> Pago con Tarjeta:
+                                            Débito, Crédito</li>
+                                    </ul>
+                                </div>
+
+                                <!-- Mathematical Summary -->
+                                <div class="w-full sm:w-64">
+                                    <div class="flex justify-between items-center py-1 text-sm text-gray-800">
+                                        <span class="font-bold">Subtotal</span>
+                                        <span>{{ subTotal() | currency }}</span>
+                                    </div>
+                                    <div class="flex justify-between items-center py-1 text-sm text-gray-800">
+                                        <span class="font-bold flex items-center gap-1">
+                                            Impuesto: IVA
+                                            <input type="number" formControlName="taxRate"
+                                                class="invoice-input w-12 text-center text-xs p-0 m-0 border-b border-gray-300 rounded-none bg-transparent hover:border-gray-400 focus:border-gray-500"
+                                                placeholder="15">%
+                                        </span>
+                                        <span>{{ taxAmount() | currency }}</span>
+                                    </div>
+                                    <div class="flex justify-between items-center py-1 text-sm"
+                                        [style.color]="preferences().primaryColor">
+                                        <span class="font-bold flex items-center gap-1">
+                                            Descuento
+                                            <input type="number" formControlName="discountRate"
+                                                class="invoice-input w-12 text-center text-xs p-0 m-0 border-b rounded-none bg-transparent"
+                                                [style.borderColor]="preferences().primaryColor"
+                                                [style.color]="preferences().primaryColor" placeholder="5">%
+                                        </span>
+                                        <span class="font-bold">-{{ discountAmount() | currency }}</span>
+                                    </div>
+                                    <div class="flex justify-between items-center text-white p-2 px-4 rounded-sm mt-2"
+                                        [style.backgroundColor]="preferences().primaryColor">
+                                        <span class="font-bold">Total General</span>
+                                        <span class="font-bold text-lg">{{ grandTotal() | currency }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Signature & Terms -->
+                            <div
+                                class="px-8 flex flex-col sm:flex-row justify-between items-end mb-16 gap-8 break-inside-avoid print:break-inside-avoid">
+                                <!-- Terms -->
+                                <div class="flex-1 text-sm text-gray-500 max-w-sm">
+                                    <h4 class="font-bold text-gray-800 mb-1">Términos y Condiciones:</h4>
+                                    <textarea formControlName="notes"
+                                        class="invoice-input text-gray-500 text-xs resize-none h-16 w-full p-0 leading-relaxed"></textarea>
+                                </div>
+
+                                <!-- Signature -->
+                                <div class="text-center w-48">
+                                    <div class="border-b border-gray-300 pb-2 mb-2 h-16 flex items-end justify-center">
+                                        <span class="font-[BrushScriptMT,cursive] text-4xl text-gray-800">Firma</span>
+                                    </div>
+                                    <input type="text"
+                                        class="invoice-input text-center font-bold text-sm text-gray-800 p-0"
+                                        value="Su Nombre Aquí">
+                                    <input type="text" class="invoice-input text-center text-xs text-gray-500 p-0"
+                                        value="Su Cargo Aquí">
+                                </div>
+                            </div>
+
+                            <!-- Spacer for the footer to push it down if there's room -->
+                            <div class="h-8"></div>
+
+                        </td>
+                    </tr>
+                </tbody>
+
+                <!-- Table Footer naturally repeats on every printed page to reserve space for the fixed footer -->
+                <tfoot class="table-footer-group">
+                    <tr>
+                        <td class="p-0">
+                            <!-- Dummy space that only applies on print so content doesn't overlap the fixed footer -->
+                            <div class="h-[80px] hidden print:block"></div>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <!-- Bottom Right Decoration (Absolute bottom of the card, not the page) -->
+            <div class="absolute bottom-0 right-0 w-48 h-24 pointer-events-none print:hidden"
+                [style.backgroundColor]="preferences().primaryColor"
+                style="clip-path: polygon(100% 0, 100% 100%, 0 100%, 20% 60%);"></div>
+
+            <!-- Footer Contacts (Static on screen, Fixed at bottom of page on print) -->
+            <div
+                class="px-8 py-6 bg-white relative z-10 flex flex-wrap justify-between gap-4 text-xs text-gray-500 print:fixed print:bottom-0 print:left-0 print:w-full print:m-0 print:bg-white border-t border-gray-100 break-inside-avoid">
+                <div class="flex items-center gap-2">
+                    <div class="h-6 w-6 rounded-full text-white flex items-center justify-center"
+                        [style.backgroundColor]="preferences().primaryColor">
+                        <i-tabler name="phone" class="size-3"></i-tabler>
+                    </div>
+                    <div>
+                        <p class="m-0">00 000 000 0000</p>
+                        <p class="m-0">00 000 000 0000</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <div class="h-6 w-6 rounded-full text-white flex items-center justify-center"
+                        [style.backgroundColor]="preferences().primaryColor">
+                        <i-tabler name="mail" class="size-3"></i-tabler>
+                    </div>
+                    <div>
+                        <p class="m-0">su correo electrónico aquí</p>
+                        <p class="m-0">su sitio web aquí</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <div class="h-6 w-6 rounded-full text-white flex items-center justify-center"
+                        [style.backgroundColor]="preferences().primaryColor">
+                        <i-tabler name="map-pin" class="size-3"></i-tabler>
+                    </div>
+                    <div>
+                        <p class="m-0">Calle 123, Ciudad,</p>
+                        <p class="m-0">País 0000</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons (Sticky Footer) -->
+            <div
+                class="sticky bottom-0 z-50 bg-white/95 backdrop-blur-sm border-t border-gray-100 p-4 px-8 mt-8 flex justify-end gap-3 rounded-b-md shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] print:hidden">
+                <button mat-stroked-button type="button" (click)="onCancel()">Cancelar</button>
+                <button mat-stroked-button color="primary" type="button" (click)="onPrint()">
+                    <span class="flex items-center gap-2">
+                        <i-tabler name="printer" class="size-4"></i-tabler>
+                        Imprimir
+                    </span>
+                </button>
+                <button mat-flat-button color="primary" type="submit" [disabled]="invoiceForm.invalid">
+                    <span class="flex items-center gap-2">
+                        <i-tabler name="device-floppy" class="size-4"></i-tabler>
+                        Guardar Factura
+                    </span>
+                </button>
+            </div>
+        </form>
+    </mat-card>
+</div>

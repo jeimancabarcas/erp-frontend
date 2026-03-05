@@ -9,6 +9,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import { MaterialModule } from '../../../material.module';
 import { TableEmptyComponent } from '../../../shared/components/table-empty/table-empty.component';
+import { Router } from '@angular/router';
 
 export interface Sale {
     id: string;
@@ -61,6 +62,7 @@ const MOCK_SALES: Sale[] = [
 })
 export class SalesComponent implements OnInit {
     public dialog = inject(MatDialog);
+    private router = inject(Router);
 
     protected displayedColumns: string[] = ['invoiceNumber', 'clientName', 'date', 'amount', 'status', 'actions'];
     protected dataSource = new MatTableDataSource<Sale>([]);
@@ -156,7 +158,6 @@ export class SalesComponent implements OnInit {
     }
 
     protected newSale() {
-        // Mock new sale action
-        console.log('Crear nueva venta');
+        this.router.navigate(['/billing/sales/new']);
     }
 }
