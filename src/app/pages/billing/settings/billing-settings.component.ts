@@ -14,6 +14,10 @@ import { BillingProduct } from '../../../core/domain/entities/billing-product.en
 import { GetBillingProductsUseCase } from '../../../core/application/use-cases/get-billing-products.use-case';
 import { DeleteBillingProductUseCase } from '../../../core/application/use-cases/delete-billing-product.use-case';
 import { BillingProductFormComponent } from './billing-product-form/billing-product-form.component';
+import { BillingServiceFormComponent } from './billing-service-form/billing-service-form.component';
+import { BillingService } from '../../../core/domain/entities/billing-service.entity';
+import { GetBillingServicesUseCase } from '../../../core/application/use-cases/get-billing-services.use-case';
+import { DeleteBillingServiceUseCase } from '../../../core/application/use-cases/delete-billing-service.use-case';
 import { ToastService } from '../../../core/services/toast.service';
 import { lastValueFrom } from 'rxjs';
 import { TableEmptyComponent } from '../../../shared/components/table-empty/table-empty.component';
@@ -22,7 +26,6 @@ import { TableLoadingComponent } from '../../../shared/components/table-loading/
 export interface Client { id: string; name: string; email: string; phone: string; status: string; }
 export interface PaymentMethod { id: string; name: string; details: string; status: string; }
 export interface Tax { id: string; name: string; rate: number; }
-export interface Service { id: string; name: string; price: number; }
 
 @Component({
     selector: 'app-billing-settings',
@@ -48,6 +51,8 @@ export class BillingSettingsComponent implements OnInit {
 
     private getBillingProductsUseCase = inject(GetBillingProductsUseCase);
     private deleteBillingProductUseCase = inject(DeleteBillingProductUseCase);
+    private getBillingServicesUseCase = inject(GetBillingServicesUseCase);
+    private deleteBillingServiceUseCase = inject(DeleteBillingServiceUseCase);
     private toast = inject(ToastService);
     public dialog = inject(MatDialog);
 
@@ -70,11 +75,9 @@ export class BillingSettingsComponent implements OnInit {
         { id: '3', name: 'Retención en la Fuente', rate: -2.5 }
     ]);
 
-    public services = signal<Service[]>([
-        { id: '1', name: 'Consultoría Técnica', price: 150000 },
-        { id: '2', name: 'Soporte Mensual', price: 500000 },
-        { id: '3', name: 'Capacitación', price: 300000 }
-    ]);
+    public services = signal<BillingService[]>([]);
+    public isServicesLoading = signal(false);
+    private isServicesLoaded = false;
 
     public products = signal<BillingProduct[]>([]);
     public isProductsLoading = signal(false);
@@ -84,7 +87,7 @@ export class BillingSettingsComponent implements OnInit {
     public clientColumns = ['name', 'email', 'phone', 'status', 'actions'];
     public paymentColumns = ['name', 'details', 'status', 'actions'];
     public taxColumns = ['name', 'rate', 'actions'];
-    public serviceColumns = ['name', 'price', 'actions'];
+    public serviceColumns = ['name', 'codes', 'price', 'actions'];
     public productColumns = ['name', 'codes', 'price', 'inventoryLink', 'actions'];
 
     ngOnInit() {
@@ -92,11 +95,31 @@ export class BillingSettingsComponent implements OnInit {
     }
 
     onTabChange(event: MatTabChangeEvent) {
+        // Tab index 3 is the "Servicios" tab
+        if (event.index === 3 && !this.isServicesLoaded) {
+            this.loadServices();
+            this.isServicesLoaded = true;
+        }
         // Tab index 4 is the "Productos" tab
         if (event.index === 4 && !this.isProductsLoaded) {
             this.loadProducts();
             this.isProductsLoaded = true;
         }
+    }
+
+    private loadServices() {
+        this.isServicesLoading.set(true);
+        this.getBillingServicesUseCase.execute().subscribe({
+            next: (data) => {
+                this.services.set(data);
+                this.isServicesLoading.set(false);
+            },
+            error: (err) => {
+                this.toast.error('Error al cargar servicios de facturación');
+                console.error(err);
+                this.isServicesLoading.set(false);
+            }
+        });
     }
 
     private loadProducts() {
@@ -141,6 +164,32 @@ export class BillingSettingsComponent implements OnInit {
                 this.loadProducts();
             } catch (err: any) {
                 this.toast.error('Error al eliminar el producto');
+            }
+        }
+    }
+
+    // Real Action for Services
+    openServiceForm(service?: BillingService) {
+        const dialogRef = this.dialog.open(BillingServiceFormComponent, {
+            width: '500px',
+            data: service,
+        });
+
+        dialogRef.afterClosed().subscribe((result) => {
+            if (result) {
+                this.loadServices();
+            }
+        });
+    }
+
+    async deleteService(service: BillingService) {
+        if (confirm(`¿Estás seguro de eliminar el servicio "${service.name}"?`)) {
+            try {
+                await lastValueFrom(this.deleteBillingServiceUseCase.execute(service.id));
+                this.toast.success('Servicio eliminado correctamente');
+                this.loadServices();
+            } catch (err: any) {
+                this.toast.error('Error al eliminar el servicio');
             }
         }
     }
