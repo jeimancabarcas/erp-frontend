@@ -181,12 +181,7 @@
                                         <span>{{ subTotal() | currency }}</span>
                                     </div>
                                     <div class="flex justify-between items-center py-1 text-sm text-gray-800">
-                                        <span class="font-bold flex items-center gap-1">
-                                            Impuesto: IVA
-                                            <input type="number" formControlName="taxRate"
-                                                class="invoice-input w-12 text-center text-xs p-0 m-0 border-b border-gray-300 rounded-none bg-transparent hover:border-gray-400 focus:border-gray-500"
-                                                placeholder="15">%
-                                        </span>
+                                        <span class="font-bold">Impuestos</span>
                                         <span>{{ taxAmount() | currency }}</span>
                                     </div>
                                     <div class="flex justify-between items-center py-1 text-sm"

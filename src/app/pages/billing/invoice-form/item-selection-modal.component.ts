@@ -10,20 +10,20 @@ import { MatChipsModule } from '@angular/material/chips';
 import { TablerIconsModule } from 'angular-tabler-icons';
 
 @Component({
-    selector: 'app-item-selection-modal',
-    standalone: true,
-    imports: [
-        CommonModule,
-        FormsModule,
-        MatDialogModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatTableModule,
-        MatButtonModule,
-        MatChipsModule,
-        TablerIconsModule
-    ],
-    template: `
+  selector: 'app-item-selection-modal',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatTableModule,
+    MatButtonModule,
+    MatChipsModule,
+    TablerIconsModule
+  ],
+  template: `
     <div class="p-6">
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-bold m-0 text-gray-800">Seleccionar Producto o Servicio</h2>
@@ -54,6 +54,19 @@ import { TablerIconsModule } from 'angular-tabler-icons';
             <th mat-header-cell *matHeaderCellDef> Nombre </th>
             <td mat-cell *matCellDef="let item"> {{item.name}} </td>
           </ng-container>
+          
+          <ng-container matColumnDef="tax">
+            <th mat-header-cell *matHeaderCellDef> Impuestos </th>
+            <td mat-cell *matCellDef="let item"> 
+                @for (t of item.taxes; track $index) {
+                    <span class="text-[10px] bg-gray-100 text-gray-600 px-1 py-0.5 rounded me-1">
+                        {{ t.tax?.name || 'Imp.' }}: {{ t.rate }}%
+                    </span>
+                } @empty {
+                    <span class="text-xs text-gray-300">-</span>
+                }
+            </td>
+          </ng-container>
 
           <ng-container matColumnDef="price">
             <th mat-header-cell *matHeaderCellDef> Precio </th>
@@ -79,29 +92,29 @@ import { TablerIconsModule } from 'angular-tabler-icons';
   `
 })
 export class ItemSelectionModalComponent {
-    searchQuery = '';
-    displayedColumns: string[] = ['type', 'name', 'price', 'actions'];
-    filteredItems = signal<any[]>([]);
+  searchQuery = '';
+  displayedColumns: string[] = ['type', 'name', 'tax', 'price', 'actions'];
+  filteredItems = signal<any[]>([]);
 
-    constructor(
-        public dialogRef: MatDialogRef<ItemSelectionModalComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: { items: any[] }
-    ) {
-        this.filteredItems.set(this.data.items);
-    }
+  constructor(
+    public dialogRef: MatDialogRef<ItemSelectionModalComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: { items: any[] }
+  ) {
+    this.filteredItems.set(this.data.items);
+  }
 
-    filterItems() {
-        const query = this.searchQuery.toLowerCase();
-        this.filteredItems.set(
-            this.data.items.filter(i =>
-                i.name.toLowerCase().includes(query) ||
-                (i.standardCode?.toLowerCase().includes(query)) ||
-                (i.internalCode?.toLowerCase().includes(query))
-            )
-        );
-    }
+  filterItems() {
+    const query = this.searchQuery.toLowerCase();
+    this.filteredItems.set(
+      this.data.items.filter(i =>
+        i.name.toLowerCase().includes(query) ||
+        (i.standardCode?.toLowerCase().includes(query)) ||
+        (i.internalCode?.toLowerCase().includes(query))
+      )
+    );
+  }
 
-    selectItem(item: any) {
-        this.dialogRef.close(item);
-    }
+  selectItem(item: any) {
+    this.dialogRef.close(item);
+  }
 }

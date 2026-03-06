@@ -343,6 +343,22 @@
                                 </div>
                             </mat-cell>
                         </ng-container>
+                        <ng-container matColumnDef="tax">
+                            <mat-header-cell *matHeaderCellDef class="font-semibold text-sm"
+                                style="min-width: 150px;">Impuestos</mat-header-cell>
+                            <mat-cell class="p-4" *matCellDef="let item" style="min-width: 150px;">
+                                <div class="flex flex-wrap gap-1">
+                                    @for (t of item.taxes; track t.id) {
+                                    <span
+                                        class="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-md font-medium">
+                                        {{ t.tax?.name }}: {{ t.rate }}%
+                                    </span>
+                                    } @empty {
+                                    <span class="text-xs text-muted">N/A</span>
+                                    }
+                                </div>
+                            </mat-cell>
+                        </ng-container>
                         <ng-container matColumnDef="price">
                             <mat-header-cell *matHeaderCellDef class="font-semibold text-sm"
                                 style="min-width: 150px;">Precio Base</mat-header-cell>
@@ -450,6 +466,22 @@
                                             }
                                         </div>
                                     </div>
+                                </div>
+                            </mat-cell>
+                        </ng-container>
+                        <ng-container matColumnDef="tax">
+                            <mat-header-cell *matHeaderCellDef class="font-semibold text-sm"
+                                style="min-width: 150px;">Impuestos</mat-header-cell>
+                            <mat-cell class="p-4" *matCellDef="let item" style="min-width: 150px;">
+                                <div class="flex flex-wrap gap-1">
+                                    @for (t of item.taxes; track t.id) {
+                                    <span
+                                        class="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-md font-medium">
+                                        {{ t.tax?.name }}: {{ t.rate }}%
+                                    </span>
+                                    } @empty {
+                                    <span class="text-xs text-muted">N/A</span>
+                                    }
                                 </div>
                             </mat-cell>
                         </ng-container>

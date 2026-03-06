@@ -120,8 +120,8 @@ export class BillingSettingsComponent implements OnInit {
     public clientColumns = ['document', 'name', 'email', 'phone', 'status', 'actions'];
     public paymentColumns = ['name', 'details', 'status', 'actions'];
     public taxColumns = ['name', 'rate', 'actions'];
-    public serviceColumns = ['name', 'codes', 'price', 'actions'];
-    public productColumns = ['name', 'codes', 'price', 'inventoryLink', 'actions'];
+    public serviceColumns = ['name', 'codes', 'tax', 'price', 'actions'];
+    public productColumns = ['name', 'codes', 'tax', 'price', 'inventoryLink', 'actions'];
 
     // Preferences
     public templateForm: FormGroup;

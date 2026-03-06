@@ -7,7 +7,7 @@
   <!-- HTTP Loading bar -->
   <div class="http-loading-bar">
     @if (loadingService.isLoading()) {
-      <mat-progress-bar mode="indeterminate" color="primary"></mat-progress-bar>
+    <mat-progress-bar mode="indeterminate" color="primary"></mat-progress-bar>
     }
   </div>
 
@@ -67,7 +67,7 @@
     <!-- ============================================================== -->
     <!-- Main Content -->
     <!-- ============================================================== -->
-    <mat-sidenav-content class="contentWrapper">
+    <mat-sidenav-content class="contentWrapper" style="height: calc(100vh - 60px) !important;">
       @if(options.horizontal) {
       <app-horizontal-sidebar></app-horizontal-sidebar>
       }

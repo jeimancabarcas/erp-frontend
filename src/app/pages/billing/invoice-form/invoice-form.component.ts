@@ -160,7 +160,6 @@ export class InvoiceFormComponent implements OnInit {
 
             items: this.fb.array([]),
 
-            taxRate: [15],
             discountRate: [5],
 
             notes: ['Gracias por su compra. Esta factura debe ser pagada dentro de los 30 días posteriores a su emisión.']
@@ -231,7 +230,8 @@ export class InvoiceFormComponent implements OnInit {
                 const itemForm = this.items.at(index);
                 itemForm.patchValue({
                     description: item.name,
-                    price: item.price || 0
+                    price: item.price || 0,
+                    taxes: item.taxes || []
                 });
                 this.calculateTotals();
             }
@@ -242,7 +242,8 @@ export class InvoiceFormComponent implements OnInit {
         return this.fb.group({
             description: [''],
             price: [0, [Validators.required, Validators.min(0)]],
-            quantity: [1, [Validators.required, Validators.min(1)]]
+            quantity: [1, [Validators.required, Validators.min(1)]],
+            taxes: [[]] // Array of { taxId: string, rate: number, tax?: any }
         });
     }
 
@@ -263,24 +264,29 @@ export class InvoiceFormComponent implements OnInit {
 
     calculateTotals(): void {
         let sub = 0;
+        let totalTax = 0;
         const itemsValue = this.items.getRawValue();
 
         itemsValue.forEach(item => {
-            sub += (item.price || 0) * (item.quantity || 0);
+            const itemSubtotal = (item.price || 0) * (item.quantity || 0);
+            sub += itemSubtotal;
+
+            // Calculate taxes for this item
+            if (item.taxes && Array.isArray(item.taxes)) {
+                item.taxes.forEach((t: any) => {
+                    totalTax += itemSubtotal * (t.rate / 100);
+                });
+            }
         });
 
         this.subTotal.set(sub);
+        this.taxAmount.set(totalTax);
 
-        const taxRate = this.invoiceForm.get('taxRate')?.value || 0;
         const discountRate = this.invoiceForm.get('discountRate')?.value || 0;
-
-        const calculatedTax = sub * (taxRate / 100);
-        this.taxAmount.set(calculatedTax);
-
         const calculatedDiscount = sub * (discountRate / 100);
         this.discountAmount.set(calculatedDiscount);
 
-        this.grandTotal.set(sub + calculatedTax - calculatedDiscount);
+        this.grandTotal.set(sub + totalTax - calculatedDiscount);
     }
 
     onSubmit(): void {

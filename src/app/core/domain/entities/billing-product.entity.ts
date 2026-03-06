@@ -9,6 +9,11 @@ export interface BillingProduct {
         sku: string;
         name: string;
     };
+    taxes?: {
+        taxId: string;
+        rate: number;
+        tax?: any;
+    }[];
     createdAt?: Date;
     updatedAt?: Date;
 }

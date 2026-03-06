@@ -42,6 +42,56 @@
                 }
             </mat-form-field>
 
+            <!-- Taxes Section -->
+            <div class="p-4 bg-hover rounded-md border border-divider mb-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h4 class="m-0 text-sm font-semibold">Impuestos Aplicables</h4>
+                    <button mat-flat-button color="primary" type="button" class="!px-3 !min-w-0"
+                        style="height: 28px; font-size: 12px;" (click)="addTax()">
+                        <i-tabler name="plus" class="size-4 me-1"></i-tabler> Agregar
+                    </button>
+                </div>
+
+                <div formArrayName="taxes" class="flex flex-col gap-3">
+                    @if (taxesFormArray.hasError('duplicateTax')) {
+                    <div class="px-3 py-2 bg-error/10 text-error rounded text-xs mb-2">
+                        No se puede seleccionar el mismo impuesto más de una vez.
+                    </div>
+                    }
+                    @for (taxGroup of taxesFormArray.controls; track $index) {
+                    <div [formGroupName]="$index" class="flex flex-col sm:flex-row gap-3 items-start">
+                        <mat-form-field appearance="outline" class="w-full">
+                            <mat-label>Impuesto</mat-label>
+                            <mat-select formControlName="taxId" placeholder="Seleccionar Impuesto">
+                                <mat-option [value]="null">Ninguno</mat-option>
+                                @for (tax of taxes(); track tax.id) {
+                                <mat-option [value]="tax.id">{{ tax.name }} (Base {{ tax.rate }}%)</mat-option>
+                                }
+                            </mat-select>
+                        </mat-form-field>
+
+                        <div class="flex gap-2 w-full">
+                            <mat-form-field appearance="outline" class="w-full">
+                                <mat-label>Tasa (%)</mat-label>
+                                <input matInput type="number" formControlName="rate" placeholder="0.00">
+                                @if (taxGroup.get('rate')?.hasError('maxTaxRate')) {
+                                <mat-error class="text-xs">Excede el máximo</mat-error>
+                                }
+                            </mat-form-field>
+
+                            <button mat-icon-button color="warn" type="button" (click)="removeTax($index)"
+                                matTooltip="Eliminar impuesto" class="mt-1">
+                                <i-tabler name="trash" class="size-5"></i-tabler>
+                            </button>
+                        </div>
+                    </div>
+                    } @empty {
+                    <p class="text-xs text-muted text-center py-2">No se han configurado impuestos para este producto.
+                    </p>
+                    }
+                </div>
+            </div>
+
             <div class="p-4 bg-hover rounded-md border border-divider">
                 <div class="flex justify-between items-center bg-hover mb-4">
                     <div>

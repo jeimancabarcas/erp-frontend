@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, AbstractControl } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -8,6 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSelectModule } from '@angular/material/select';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { BillingProduct } from '../../../../core/domain/entities/billing-product.entity';
@@ -16,6 +17,8 @@ import { GetProductsUseCase } from '../../../../core/application/use-cases/get-p
 import { CreateBillingProductUseCase } from '../../../../core/application/use-cases/create-billing-product.use-case';
 import { UpdateBillingProductUseCase } from '../../../../core/application/use-cases/update-billing-product.use-case';
 import { ToastService } from '../../../../core/services/toast.service';
+import { BillingTax } from '../../../../core/domain/entities/billing-tax.entity';
+import { GetBillingTaxesUseCase } from '../../../../core/application/use-cases/get-billing-taxes.use-case';
 
 @Component({
     selector: 'app-billing-product-form',
@@ -30,7 +33,8 @@ import { ToastService } from '../../../../core/services/toast.service';
         MatTableModule,
         MatPaginatorModule,
         MatIconModule,
-        TablerIconsModule
+        TablerIconsModule,
+        MatSelectModule
     ],
     templateUrl: './billing-product-form.component.html',
 })
@@ -43,7 +47,11 @@ export class BillingProductFormComponent implements OnInit {
     private getProductsUseCase = inject(GetProductsUseCase);
     private createBillingProductUseCase = inject(CreateBillingProductUseCase);
     private updateBillingProductUseCase = inject(UpdateBillingProductUseCase);
+    private getTaxesUseCase = inject(GetBillingTaxesUseCase);
     private toast = inject(ToastService);
+
+    // Business Data
+    public taxes = signal<BillingTax[]>([]);
 
     // Table state for Inventory Picker
     public inventoryColumns = ['sku', 'name', 'select'];
@@ -67,6 +75,7 @@ export class BillingProductFormComponent implements OnInit {
             internalCode: [{ value: data?.internalCode || (data?.inventoryProductId ? data.inventoryProduct?.sku : ''), disabled: this.isEditMode || !!data?.inventoryProductId }, [Validators.required]],
             name: [{ value: data?.name || (data?.inventoryProductId ? data.inventoryProduct?.name : ''), disabled: !!data?.inventoryProductId }, [Validators.required]],
             price: [data?.price ?? '', [Validators.required, Validators.min(0)]],
+            taxes: this.fb.array([], [this.duplicateTaxValidator()]),
             inventoryProductId: [data?.inventoryProductId || null],
             inventorySearch: ['']
         });
@@ -93,12 +102,90 @@ export class BillingProductFormComponent implements OnInit {
                     this.filteredInventoryProducts.set([]);
                 }
             });
+
+        // Initialize taxes in edit mode
+        if (this.isEditMode && data?.taxes) {
+            data.taxes.forEach(t => {
+                this.addTax(t.taxId, t.rate);
+            });
+        } else if (!this.isEditMode) {
+            this.addTax(); // Add one empty row by default for new products
+        }
+    }
+
+    get taxesFormArray() {
+        return this.form.get('taxes') as FormArray;
+    }
+
+    public addTax(taxId: string = '', rate: any = '') {
+        const taxGroup = this.fb.group({
+            taxId: [taxId, [Validators.required]],
+            rate: [rate, [Validators.required, Validators.min(0)]]
+        });
+
+        // Watch for tax selection changes in this group to update max rate validation
+        taxGroup.get('taxId')?.valueChanges.subscribe(id => {
+            this.updateTaxRateValidators(taxGroup);
+        });
+
+        taxGroup.get('rate')?.valueChanges.subscribe(() => {
+            this.updateTaxRateValidators(taxGroup);
+        });
+
+        this.taxesFormArray.push(taxGroup);
+        if (taxId) {
+            this.updateTaxRateValidators(taxGroup);
+        }
+    }
+
+    public removeTax(index: number) {
+        this.taxesFormArray.removeAt(index);
+    }
+
+    private duplicateTaxValidator() {
+        return (control: AbstractControl) => {
+            const formArray = control as FormArray;
+            const taxIds = formArray.controls
+                .map(c => c.get('taxId')?.value)
+                .filter(id => !!id);
+
+            const hasDuplicates = taxIds.some((id, index) => taxIds.indexOf(id) !== index);
+            return hasDuplicates ? { duplicateTax: true } : null;
+        };
     }
 
     ngOnInit() {
-        // If we are editing and it has a linked inventory product, we could fetch its name 
-        // to display in the autocomplete. For simplicity in this mockup phase we will leave the search blank 
-        // unless the user types again, but internal ID is retained.
+        this.loadTaxes();
+    }
+
+    private loadTaxes() {
+        this.getTaxesUseCase.execute().subscribe(taxes => {
+            this.taxes.set(taxes);
+            // After loading taxes, re-validate all current tax rows
+            this.taxesFormArray.controls.forEach(control => {
+                this.updateTaxRateValidators(control as FormGroup);
+            });
+        });
+    }
+
+    private updateTaxRateValidators(taxGroup: FormGroup) {
+        const taxId = taxGroup.get('taxId')?.value;
+        const rateControl = taxGroup.get('rate');
+        const selectedTax = this.taxes().find(t => t.id === taxId);
+
+        if (selectedTax) {
+            const maxRate = Number(selectedTax.rate);
+            const currentRate = Number(rateControl?.value);
+
+            if (currentRate > maxRate) {
+                rateControl?.setErrors({ maxTaxRate: { max: maxRate, actual: currentRate } });
+            } else if (rateControl?.hasError('maxTaxRate')) {
+                // Temporarily clear only maxTaxRate error if present
+                const errors = { ...rateControl.errors };
+                delete errors['maxTaxRate'];
+                rateControl.setErrors(Object.keys(errors).length ? errors : null);
+            }
+        }
     }
 
     public searchInventoryProducts(query: string = '', page: number = 1) {
@@ -161,11 +248,17 @@ export class BillingProductFormComponent implements OnInit {
         const formValue = this.form.getRawValue();
 
         // Build payload mapping required types
-        const payload: Partial<BillingProduct> = {
+        const payload: Partial<BillingProduct> & { id?: string } = {
+            id: this.isEditMode ? this.data?.id : undefined,
             standardCode: formValue.standardCode,
             internalCode: formValue.inventoryProductId ? null : formValue.internalCode,
             name: formValue.inventoryProductId ? null : formValue.name,
             price: Number(formValue.price),
+            taxes: formValue.taxes.map((t: any) => ({
+                productId: this.isEditMode ? this.data?.id : undefined,
+                taxId: t.taxId,
+                rate: Number(t.rate)
+            })),
             inventoryProductId: formValue.inventoryProductId || null,
         };
 
