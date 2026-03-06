@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, computed, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
@@ -12,7 +12,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { GetBillingTemplatePreferencesUseCase } from '../../../core/application/use-cases/billing-template-preferences/get-billing-template-preferences.use-case';
+import { GetBillingTaxesUseCase } from '../../../core/application/use-cases/get-billing-taxes.use-case';
 import { BillingTemplatePreference } from '../../../core/domain/entities/billing-template-preference.entity';
+import { BillingTax } from '../../../core/domain/entities/billing-tax.entity';
 import { GetBillingClientsUseCase } from '../../../core/application/use-cases/billing-client/get-billing-clients.use-case';
 import { GetBillingProductsUseCase } from '../../../core/application/use-cases/get-billing-products.use-case';
 import { GetBillingServicesUseCase } from '../../../core/application/use-cases/get-billing-services.use-case';
@@ -27,6 +29,10 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ClientSelectionModalComponent } from './client-selection-modal.component';
 import { ItemSelectionModalComponent } from './item-selection-modal.component';
+import { BillingPaymentMethodFormComponent } from '../settings/billing-payment-method-form/billing-payment-method-form.component';
+import { TaxSelectionModalComponent } from './tax-selection-modal.component';
+import { PaymentMethodSelectionModalComponent } from './payment-method-selection-modal.component';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
     selector: 'app-invoice-form',
@@ -34,6 +40,7 @@ import { ItemSelectionModalComponent } from './item-selection-modal.component';
     imports: [
         CommonModule,
         ReactiveFormsModule,
+        FormsModule,
         MatButtonModule,
         MatIconModule,
         MatCardModule,
@@ -46,7 +53,10 @@ import { ItemSelectionModalComponent } from './item-selection-modal.component';
         MatSelectModule,
         MatAutocompleteModule,
         MatMenuModule,
-        MatDialogModule
+        MatDialogModule,
+        BillingPaymentMethodFormComponent,
+        TaxSelectionModalComponent,
+        PaymentMethodSelectionModalComponent
     ],
     templateUrl: './invoice-form.component.html',
     styles: [`
@@ -131,11 +141,23 @@ export class InvoiceFormComponent implements OnInit {
     private getProductsUseCase = inject(GetBillingProductsUseCase);
     private getServicesUseCase = inject(GetBillingServicesUseCase);
     private getPaymentMethodsUseCase = inject(GetBillingPaymentMethodsUseCase);
+    private getTaxesUseCase = inject(GetBillingTaxesUseCase);
+    private authService = inject(AuthService);
 
+    allTaxes = signal<BillingTax[]>([]);
     clients = signal<BillingClient[]>([]);
     products = signal<BillingProduct[]>([]);
     services = signal<BillingService[]>([]);
     paymentMethods = signal<BillingPaymentMethod[]>([]);
+
+    signatureFonts = [
+        { name: 'Brush Script', value: "'Brush Script MT', cursive" },
+        { name: 'Dancing Script', value: "'Dancing Script', cursive" },
+        { name: 'Alex Brush', value: "'Alex Brush', cursive" },
+        { name: 'Great Vibes', value: "'Great Vibes', cursive" },
+        { name: 'Sacramento', value: "'Sacramento', cursive" },
+        { name: 'Saint Delafield', value: "'Mrs Saint Delafield', cursive" },
+    ];
 
     // Combined list of items (Products + Services)
     availableItems = computed(() => {
@@ -160,7 +182,12 @@ export class InvoiceFormComponent implements OnInit {
 
             items: this.fb.array([]),
 
-            discountRate: [5],
+            paymentMethodId: [''],
+            discountType: ['percent'],
+            discountRate: [0],
+            signatureFont: ["'Sacramento', cursive"],
+            signatureName: [this.authService.currentUser()?.profile?.fullName || this.authService.currentUser()?.profile?.displayName || ''],
+            signaturePosition: [''],
 
             notes: ['Gracias por su compra. Esta factura debe ser pagada dentro de los 30 días posteriores a su emisión.']
         });
@@ -185,11 +212,12 @@ export class InvoiceFormComponent implements OnInit {
         this.getProductsUseCase.execute().subscribe(data => this.products.set(data));
         this.getServicesUseCase.execute().subscribe(data => this.services.set(data));
         this.getPaymentMethodsUseCase.execute().subscribe(data => this.paymentMethods.set(data));
+        this.getTaxesUseCase.execute().subscribe(data => this.allTaxes.set(data));
     }
 
     private loadPreferences() {
         this.getPreferencesUseCase.execute().subscribe({
-            next: (pref) => {
+            next: (pref: BillingTemplatePreference) => {
                 if (pref) {
                     this.preferences.set(pref);
                 }
@@ -219,6 +247,65 @@ export class InvoiceFormComponent implements OnInit {
         });
     }
 
+    onSelectPaymentMethod() {
+        const dialogRef = this.dialog.open(PaymentMethodSelectionModalComponent, {
+            width: '600px',
+            data: { methods: this.paymentMethods() }
+        });
+
+        dialogRef.afterClosed().subscribe(pm => {
+            if (pm) {
+                this.invoiceForm.get('paymentMethodId')?.setValue(pm.id);
+            }
+        });
+    }
+
+    onSelectTax(index: number) {
+        const dialogRef = this.dialog.open(TaxSelectionModalComponent, {
+            width: '600px',
+            data: { taxes: this.allTaxes() }
+        });
+
+        dialogRef.afterClosed().subscribe(tax => {
+            if (tax) {
+                this.addTaxToItem(index, tax);
+            }
+        });
+    }
+
+    private addTaxToItem(index: number, tax: BillingTax) {
+        const itemForm = this.items.at(index);
+        const currentTaxesArray = [...(itemForm.get('taxes')?.value || [])];
+
+        const alreadyExists = currentTaxesArray.some((ct: any) => ct.tax.id === tax.id);
+        if (!alreadyExists) {
+            currentTaxesArray.push({
+                tax: tax,
+                rate: tax.rate
+            });
+            itemForm.get('taxes')?.setValue(currentTaxesArray);
+            this.calculateTotals();
+        }
+    }
+
+    onAddPaymentMethod() {
+        const dialogRef = this.dialog.open(BillingPaymentMethodFormComponent, {
+            width: '500px',
+            data: null // Create mode
+        });
+
+        dialogRef.afterClosed().subscribe(newPm => {
+            if (newPm) {
+                // Refresh list
+                this.getPaymentMethodsUseCase.execute().subscribe(data => {
+                    this.paymentMethods.set(data);
+                    // Selection of the new one
+                    this.invoiceForm.get('paymentMethodId')?.setValue(newPm.id);
+                });
+            }
+        });
+    }
+
     onItemSelect(index: number) {
         const dialogRef = this.dialog.open(ItemSelectionModalComponent, {
             width: '700px',
@@ -228,22 +315,69 @@ export class InvoiceFormComponent implements OnInit {
         dialogRef.afterClosed().subscribe(item => {
             if (item) {
                 const itemForm = this.items.at(index);
+                // Map item taxes to { tax: BillingTax, rate: number }
+                // item.taxes contains { id, taxId, rate, tax: BillingTax }
+                const itemTaxes = (item.taxes || []).map((it: any) => ({
+                    tax: it.tax,
+                    rate: it.rate
+                })).filter((it: any) => it.tax);
+
                 itemForm.patchValue({
+                    itemId: item.id,
                     description: item.name,
                     price: item.price || 0,
-                    taxes: item.taxes || []
+                    taxes: itemTaxes,
+                    taxSelection: itemTaxes.map((it: any) => it.tax)
                 });
                 this.calculateTotals();
             }
         });
     }
 
+    onTaxSelectionChange(index: number, selectedTaxes: BillingTax[]) {
+        // This is kept for compatibility if needed, but we'll use addTaxToItem now
+    }
+
+    removeTaxFromItem(itemIndex: number, taxId: string) {
+        const itemForm = this.items.at(itemIndex);
+        const currentTaxesArray = [...(itemForm.get('taxes')?.value || [])];
+        const newTaxes = currentTaxesArray.filter(t => t.tax.id !== taxId);
+        itemForm.get('taxes')?.setValue(newTaxes);
+        this.calculateTotals();
+    }
+
+    updateTaxRate(itemIndex: number, taxId: string, event: Event) {
+        const input = event.target as HTMLInputElement;
+        const newRate = parseFloat(input.value);
+        if (isNaN(newRate)) return;
+
+        const itemForm = this.items.at(itemIndex);
+        const taxes = [...(itemForm.get('taxes')?.value || [])];
+        const taxEntry = taxes.find(t => t.tax.id === taxId);
+
+        if (taxEntry) {
+            taxEntry.rate = Math.min(newRate, taxEntry.tax.rate);
+            itemForm.get('taxes')?.setValue(taxes, { emitEvent: false }); // Avoid loop if watching taxes
+            this.calculateTotals();
+        }
+    }
+
+    compareTaxes(t1: any, t2: any): boolean {
+        return t1 && t2 ? t1.id === t2.id : t1 === t2;
+    }
+
+    onDescriptionChange(index: number) {
+        this.items.at(index).get('itemId')?.setValue(null);
+    }
+
     createItem(): FormGroup {
         return this.fb.group({
+            itemId: [null], // ID of the product/service if selected from search
             description: [''],
             price: [0, [Validators.required, Validators.min(0)]],
             quantity: [1, [Validators.required, Validators.min(1)]],
-            taxes: [[]] // Array of { taxId: string, rate: number, tax?: any }
+            taxes: [[]], // Array of { tax: BillingTax, rate: number }
+            taxSelection: [[]] // Array of BillingTax entities for the select
         });
     }
 
@@ -262,6 +396,18 @@ export class InvoiceFormComponent implements OnInit {
         return (item.price || 0) * (item.quantity || 0);
     }
 
+    getItemTaxTotal(index: number): number {
+        const item = this.items.at(index).value;
+        const itemSubtotal = (item.price || 0) * (item.quantity || 0);
+        let totalTax = 0;
+        if (item.taxes && Array.isArray(item.taxes)) {
+            item.taxes.forEach((t: any) => {
+                totalTax += itemSubtotal * ((t.rate || 0) / 100);
+            });
+        }
+        return totalTax;
+    }
+
     calculateTotals(): void {
         let sub = 0;
         let totalTax = 0;
@@ -271,10 +417,10 @@ export class InvoiceFormComponent implements OnInit {
             const itemSubtotal = (item.price || 0) * (item.quantity || 0);
             sub += itemSubtotal;
 
-            // Calculate taxes for this item
+            // Calculate taxes for this item using their specific rates
             if (item.taxes && Array.isArray(item.taxes)) {
                 item.taxes.forEach((t: any) => {
-                    totalTax += itemSubtotal * (t.rate / 100);
+                    totalTax += itemSubtotal * ((t.rate || 0) / 100);
                 });
             }
         });
@@ -282,8 +428,16 @@ export class InvoiceFormComponent implements OnInit {
         this.subTotal.set(sub);
         this.taxAmount.set(totalTax);
 
-        const discountRate = this.invoiceForm.get('discountRate')?.value || 0;
-        const calculatedDiscount = sub * (discountRate / 100);
+        const discountType = this.invoiceForm.get('discountType')?.value || 'percent';
+        const discountValue = this.invoiceForm.get('discountRate')?.value || 0;
+        let calculatedDiscount = 0;
+
+        if (discountType === 'percent') {
+            calculatedDiscount = sub * (discountValue / 100);
+        } else {
+            calculatedDiscount = discountValue;
+        }
+
         this.discountAmount.set(calculatedDiscount);
 
         this.grandTotal.set(sub + totalTax - calculatedDiscount);
@@ -312,5 +466,10 @@ export class InvoiceFormComponent implements OnInit {
 
     onPrint(): void {
         window.print();
+    }
+
+    getSelectedPaymentMethod() {
+        const id = this.invoiceForm.get('paymentMethodId')?.value;
+        return this.paymentMethods().find(pm => pm.id === id);
     }
 }
