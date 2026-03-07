@@ -1,8 +1,10 @@
-<div class="max-w-[900px] mx-auto p-4 sm:p-8 print-area">
-    <mat-card class="cardWithShadow bg-white overflow-hidden relative print-wrapper">
+<div class="max-w-[900px] mx-auto p-4 sm:p-8 print-area" [ngClass]="printFormat() === 'A4' ? 'print-A4' : 'print-POS'">
+    <mat-card class="cardWithShadow bg-white overflow-hidden relative print-wrapper"
+        [class.pos-card]="printFormat() === 'POS'">
         <!-- Top Left Decoration -->
-        <div class="absolute top-0 left-0 w-32 h-32" style="clip-path: polygon(0 0, 100% 0, 0 100%);"
-            [style.backgroundColor]="preferences().primaryColor">
+        <div class="absolute top-0 left-0 w-32 h-32 opacity-100 transition-opacity duration-300"
+            [class.opacity-0]="printFormat() === 'POS'" [class.pointer-events-none]="printFormat() === 'POS'"
+            style="clip-path: polygon(0 0, 100% 0, 0 100%);" [style.backgroundColor]="preferences().primaryColor">
         </div>
 
         <form [formGroup]="invoiceForm" class="relative z-10 pt-8" (ngSubmit)="onSubmit()">
@@ -12,24 +14,46 @@
                     <tr>
                         <td class="p-0 align-top">
                             <!-- Header Section -->
-                            <div class="px-8 flex justify-between items-start mb-12">
-                                <div class="flex items-center gap-2 relative z-20">
+                            <div class="px-8 flex justify-between items-start mb-6"
+                                [class.flex-col]="printFormat() === 'POS'"
+                                [class.items-center]="printFormat() === 'POS'">
+                                <div class="relative items-center flex flex-col"
+                                    [class.order-2]="printFormat() === 'POS'">
+                                    <h2 class="text-4xl font-black text-white tracking-widest m-0 select-none pointer-events-none border bg-white"
+                                        [style.color]="printFormat() === 'POS' ? '#000' : 'gray'"
+                                        [style.mixBlendMode]="printFormat() === 'POS' ? 'normal' : 'difference'"
+                                        style="opacity: 0.8;">
+                                        FACTURA
+                                    </h2>
+                                    @if (printFormat() === 'POS') {
+                                    <p class="m-0 font-bold text-lg">#{{
+                                        invoiceForm.get('invoiceNumber')?.value }}</p>
+                                    }
+                                </div>
+                                <div class="flex items-center gap-2 relative z-20"
+                                    [class.order-1]="printFormat() === 'POS'">
                                     @if(preferences().logoUrl) {
                                     <img [src]="preferences().logoUrl" alt="Logo" class="max-h-16 object-contain" />
                                     } @else {
-                                    <div>
-                                        <h1 class="m-0 text-2xl font-bold tracking-tight text-gray-900 leading-none">
-                                            {{ preferences().primaryColor === '#2dd4bf' ? '' : '' }}</h1>
+                                    <div
+                                        class="w-16 h-16 bg-gray-50 rounded flex items-center justify-center border border-dashed border-gray-200">
+                                        <i-tabler name="photo" class="text-gray-300"></i-tabler>
                                     </div>
                                     }
                                 </div>
-                                <div>
-                                    <h2 class="text-4xl font-bold text-gray-300 tracking-wider">FACTURA</h2>
-                                </div>
                             </div>
 
+                            <!-- POS Invoice Details -->
+                            @if (printFormat() === 'POS') {
+                            <div class="w-full text-center border-y border-dashed border-gray-200 py-2 my-2">
+                                <p class="m-0 text-xs">Fecha: {{ invoiceForm.get('invoiceDate')?.value |
+                                    date:'short' }}</p>
+                            </div>
+                            }
+
                             <!-- Info Section -->
-                            <div class="px-8 flex flex-col sm:flex-row justify-between items-end mb-12 gap-8">
+                            <div class="px-8 flex flex-col sm:flex-row justify-between items-end gap-8"
+                                [class.mb-6]="printFormat() === 'POS'" [class.mb-12]="printFormat() === 'A4'">
                                 <!-- Client Info -->
                                 <div class="flex-1 w-full">
                                     <div class="mb-4">
@@ -41,6 +65,9 @@
                                                 </span>
                                             </button>
                                         </div>
+                                    </div>
+
+                                    <div class="mt-2 space-y-1">
                                         <div class="flex items-center gap-2">
                                             <span class="font-bold"
                                                 [style.color]="preferences().primaryColor">Para:</span>
@@ -48,19 +75,18 @@
                                                 class="invoice-input font-bold" placeholder="Nombre del Cliente">
                                         </div>
                                         <input type="text" formControlName="clientPosition"
-                                            class="invoice-input text-gray-500 text-sm" placeholder="Cargo">
-                                    </div>
-
-                                    <div>
-                                        <input type="text" placeholder="Nombre de la Empresa"
-                                            class="invoice-input font-bold" readonly tabindex="-1">
-                                        <textarea formControlName="companyName"
-                                            class="invoice-input text-gray-500 text-sm resize-none h-12"
-                                            placeholder="Dirección de la Empresa"></textarea>
+                                            class="invoice-input text-gray-500 text-sm" placeholder="Identificacion">
+                                        <input type="text" formControlName="clientAddress"
+                                            class="invoice-input text-gray-500 text-sm p-0" placeholder="Dirección">
+                                        <input type="text" formControlName="clientPhone"
+                                            class="invoice-input text-gray-500 text-sm p-0" placeholder="Teléfono">
+                                        <input type="text" formControlName="clientEmail"
+                                            class="invoice-input text-gray-500 text-sm p-0" placeholder="Email">
                                     </div>
                                 </div>
 
                                 <!-- Invoice Details Box -->
+                                @if (printFormat() === 'A4') {
                                 <div class="text-white rounded-md flex overflow-hidden shadow-sm w-full sm:w-auto"
                                     [style.backgroundColor]="preferences().primaryColor">
                                     <div class="p-4 border-r border-white/20">
@@ -85,9 +111,55 @@
                                         <p class="font-bold text-lg m-0">{{ grandTotal() | currency }}</p>
                                     </div>
                                 </div>
+                                }
                             </div>
 
-                            <!-- Items Table -->
+                            <!-- Items List (POS) -->
+                            @if (printFormat() === 'POS') {
+                            <div class="px-4 mb-4">
+                                <div
+                                    class="border-b border-gray-200 pb-1 mb-2 flex justify-between text-[10px] font-bold uppercase">
+                                    <span>Descripción</span>
+                                    <span>Total</span>
+                                </div>
+                                <div class="space-y-3">
+                                    @for (item of items.controls; track item; let i = $index) {
+                                    <div class="flex flex-col text-[11px]">
+                                        <div class="flex justify-between font-bold">
+                                            <span>{{ item.get('description')?.value || 'Sin descripción' }}</span>
+                                            <span>{{ getItemTotal(i) | currency }}</span>
+                                        </div>
+                                        <div class="flex justify-between text-gray-500 text-[10px]">
+                                            <span>{{ item.get('quantity')?.value }} x {{ item.get('price')?.value |
+                                                currency }}</span>
+                                            @if (getItemTaxTotal(i) > 0) {
+                                            <span>+{{ getItemTaxTotal(i) | currency }} imp.</span>
+                                            }
+                                        </div>
+                                    </div>
+                                    }
+                                </div>
+                                <div class="border-t border-dashed border-gray-300 mt-4 pt-2 space-y-1">
+                                    <div class="flex justify-between">
+                                        <span>Subtotal:</span>
+                                        <span>{{ subTotal() | currency }}</span>
+                                    </div>
+                                    @if (taxAmount() > 0) {
+                                    <div class="flex justify-between">
+                                        <span>IVA:</span>
+                                        <span>{{ taxAmount() | currency }}</span>
+                                    </div>
+                                    }
+                                    <div class="flex justify-between font-bold text-lg border-t border-black pt-1">
+                                        <span>TOTAL:</span>
+                                        <span>{{ grandTotal() | currency }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            }
+
+                            <!-- Items Table (A4) -->
+                            @if (printFormat() === 'A4') {
                             <div class="px-8 mb-8" formArrayName="items">
                                 <!-- Header -->
                                 <div class="flex pb-3 border-b-2 mb-2 text-sm font-semibold px-4"
@@ -198,8 +270,10 @@
                                     </button>
                                 </div>
                             </div>
+                            }
 
-                            <!-- Totals & Payment Info -->
+                            <!-- Totals & Payment Info (A4) -->
+                            @if (printFormat() === 'A4') {
                             <div
                                 class="px-8 flex flex-col sm:flex-row justify-between gap-12 mb-16 pt-4 border-t border-gray-100">
                                 <!-- Payment Method Selection -->
@@ -213,7 +287,8 @@
                                             (click)="onSelectPaymentMethod()">
                                             <span class="flex items-center justify-center gap-2">
                                                 <i-tabler name="search" class="size-4"></i-tabler>
-                                                {{ !invoiceForm.get('paymentMethodId')?.value ? 'Seleccionar Método de
+                                                {{ !invoiceForm.get('paymentMethodId')?.value ? 'Seleccionar Método
+                                                de
                                                 Pago' : 'Cambiar Método de Pago' }}
                                             </span>
                                         </button>
@@ -235,7 +310,8 @@
                                             </div>
                                         </div>
                                         } @else {
-                                        <p class="text-xs text-gray-400 italic m-0">Ningún método de pago seleccionado
+                                        <p class="text-xs text-gray-400 italic m-0">Ningún método de pago
+                                            seleccionado
                                         </p>
                                         }
                                     </div>
@@ -296,8 +372,10 @@
                                     </div>
                                 </div>
                             </div>
+                            }
 
-                            <!-- Signature & Terms -->
+                            <!-- Signature & Terms (A4) -->
+                            @if (printFormat() === 'A4') {
                             <div
                                 class="px-8 flex flex-col sm:flex-row justify-between items-end mb-16 gap-8 break-inside-avoid print:break-inside-avoid">
 
@@ -333,14 +411,22 @@
                                             {{ invoiceForm.get('signatureName')?.value || 'Firma' }}
                                         </span>
                                     </div>
+                                    <div class="flex justify-center items-center text-xs text-gray-500 gap-1">
+                                        <input type="text" formControlName="signatureIdType"
+                                            class="invoice-input text-left max-w-10 p-0" placeholder="Tipo">
+                                        <span>:</span>
+                                        <input type="text" formControlName="signatureIdNumber"
+                                            class="invoice-input text-left p-0 " placeholder="Nº Identificación">
+                                    </div>
                                     <input type="text" formControlName="signatureName"
-                                        class="invoice-input text-center font-bold text-sm text-gray-800 p-0"
+                                        class="invoice-input text-left font-bold text-sm text-gray-800 p-0"
                                         placeholder="Su Nombre Aquí">
                                     <input type="text" formControlName="signaturePosition"
-                                        class="invoice-input text-center text-xs text-gray-500 p-0"
+                                        class="invoice-input text-left text-xs text-gray-500 p-0"
                                         placeholder="Su Cargo Aquí">
                                 </div>
                             </div>
+                            }
 
                             <!-- Spacer for the footer to push it down if there's room -->
                             <div class="h-8"></div>
@@ -360,12 +446,13 @@
                 </tfoot>
             </table>
 
-            <!-- Bottom Right Decoration (Absolute bottom of the card, not the page) -->
-            <div class="absolute bottom-0 right-0 w-48 h-24 pointer-events-none print:hidden"
-                [style.backgroundColor]="preferences().primaryColor"
+            <!-- Bottom Right Decoration -->
+            <div class="absolute bottom-0 right-0 w-48 h-24 pointer-events-none print:hidden transition-opacity duration-300"
+                [class.opacity-0]="printFormat() === 'POS'" [style.backgroundColor]="preferences().primaryColor"
                 style="clip-path: polygon(100% 0, 100% 100%, 0 100%, 20% 60%);"></div>
 
             <!-- Footer Contacts (Static on screen, Fixed at bottom of page on print) -->
+            @if (printFormat() === 'A4') {
             <div
                 class="px-8 py-6 bg-white relative z-10 flex flex-wrap justify-between gap-4 text-xs text-gray-500 print:fixed print:bottom-0 print:left-0 print:w-full print:m-0 print:bg-white border-t border-gray-100 break-inside-avoid">
                 <div class="flex items-center gap-2">
@@ -401,17 +488,36 @@
                     </div>
                 </div>
             </div>
+            }
 
             <!-- Action Buttons (Sticky Footer) -->
             <div
-                class="sticky bottom-0 z-50 bg-white/95 backdrop-blur-sm border-t border-gray-100 p-4 px-8 mt-8 flex justify-end gap-3 rounded-b-md shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] print:hidden">
-                <button mat-stroked-button type="button" (click)="onCancel()">Cancelar</button>
-                <button mat-stroked-button color="primary" type="button" (click)="onPrint()">
-                    <span class="flex items-center gap-2">
-                        <i-tabler name="printer" class="size-4"></i-tabler>
-                        Imprimir
-                    </span>
-                </button>
+                class="sticky bottom-0 z-50 bg-white/95 backdrop-blur-sm border-t border-gray-100 p-4 px-8 mt-8 flex flex-wrap justify-between items-center gap-3 rounded-b-md shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] print:hidden">
+
+                <div class="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+                    <button type="button" (click)="printFormat.set('A4')"
+                        class="px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-2"
+                        [class.bg-white]="printFormat() === 'A4'" [class.shadow-sm]="printFormat() === 'A4'"
+                        [style.color]="printFormat() === 'A4' ? preferences().primaryColor : '#64748b'">
+                        <i-tabler name="file-text" class="size-4"></i-tabler> A4 (Carta)
+                    </button>
+                    <button type="button" (click)="printFormat.set('POS')"
+                        class="px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-2"
+                        [class.bg-white]="printFormat() === 'POS'" [class.shadow-sm]="printFormat() === 'POS'"
+                        [style.color]="printFormat() === 'POS' ? preferences().primaryColor : '#64748b'">
+                        <i-tabler name="ticket" class="size-4"></i-tabler> POS (Tirilla)
+                    </button>
+                </div>
+
+                <div class="flex gap-3">
+                    <button mat-stroked-button type="button" (click)="onCancel()">Cancelar</button>
+                    <button mat-stroked-button color="primary" type="button" (click)="onPrint()">
+                        <span class="flex items-center gap-2">
+                            <i-tabler name="printer" class="size-4"></i-tabler>
+                            Imprimir
+                        </span>
+                    </button>
+                </div>
                 <button mat-flat-button color="primary" type="submit" [disabled]="invoiceForm.invalid">
                     <span class="flex items-center gap-2">
                         <i-tabler name="device-floppy" class="size-4"></i-tabler>

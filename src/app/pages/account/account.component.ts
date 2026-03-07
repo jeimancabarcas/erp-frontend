@@ -50,6 +50,9 @@ export class AppAccountSettingComponent implements OnInit {
             address: [user?.profile?.address || ''],
             phone: [user?.profile?.phone || ''],
             displayName: [user?.profile?.displayName || ''],
+            position: [user?.profile?.position || ''],
+            identificationNumber: [user?.profile?.identificationNumber || ''],
+            identificationType: [user?.profile?.identificationType || ''],
         });
 
         this.securityForm = this.fb.group({

@@ -9,10 +9,13 @@ export interface User {
     email: string;
     profile: {
         id: string;
-        displayName: string;
+        displayName: string | null;
         fullName: string;
-        address: string;
-        phone: string;
+        address: string | null;
+        phone: string | null;
+        position: string | null;
+        identificationNumber: string | null;
+        identificationType: string | null;
         avatarUrl: string | null;
         userId: string;
     } | null;

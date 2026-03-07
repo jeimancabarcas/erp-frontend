@@ -47,6 +47,26 @@
                                     cambios</mat-card-subtitle>
                                 <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="mt-6">
                                     <div class="grid grid-cols-12 gap-5">
+                                        <div class="sm:col-span-4 col-span-12">
+                                            <mat-label class="text-sm font-semibold mb-2 block truncate">Tipo de
+                                                Identificación</mat-label>
+                                            <mat-form-field appearance="outline" class="w-full" color="primary">
+                                                <mat-select formControlName="identificationType">
+                                                    <mat-option value="CC">CC</mat-option>
+                                                    <mat-option value="NIT">NIT</mat-option>
+                                                    <mat-option value="CE">CE</mat-option>
+                                                    <mat-option value="TI">TI</mat-option>
+                                                    <mat-option value="PAS">PAS</mat-option>
+                                                </mat-select>
+                                            </mat-form-field>
+                                        </div>
+                                        <div class="sm:col-span-8 col-span-12">
+                                            <mat-label class="text-sm font-semibold mb-2 block">Número de
+                                                Identificación</mat-label>
+                                            <mat-form-field appearance="outline" class="w-full" color="primary">
+                                                <input matInput type="text" formControlName="identificationNumber" />
+                                            </mat-form-field>
+                                        </div>
                                         <div class="col-span-12">
                                             <mat-label class="text-sm font-semibold mb-2 block">Nombre
                                                 Completo</mat-label>
@@ -79,6 +99,13 @@
                                             <mat-label class="text-sm font-semibold mb-2 block">Dirección</mat-label>
                                             <mat-form-field appearance="outline" class="w-full" color="primary">
                                                 <input matInput type="text" formControlName="address" />
+                                            </mat-form-field>
+                                        </div>
+                                        <div class="col-span-12">
+                                            <mat-label class="text-sm font-semibold mb-2 block">Cargo /
+                                                Posición</mat-label>
+                                            <mat-form-field appearance="outline" class="w-full" color="primary">
+                                                <input matInput type="text" formControlName="position" />
                                             </mat-form-field>
                                         </div>
                                     </div>

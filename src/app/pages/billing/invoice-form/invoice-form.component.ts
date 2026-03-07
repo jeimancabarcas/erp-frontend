@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, computed, signal } from '@angular/core';
+import { Component, OnInit, inject, computed, signal, effect } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
@@ -53,10 +53,7 @@ import { AuthService } from '../../../core/services/auth.service';
         MatSelectModule,
         MatAutocompleteModule,
         MatMenuModule,
-        MatDialogModule,
-        BillingPaymentMethodFormComponent,
-        TaxSelectionModalComponent,
-        PaymentMethodSelectionModalComponent
+        MatDialogModule
     ],
     templateUrl: './invoice-form.component.html',
     styles: [`
@@ -113,6 +110,66 @@ import { AuthService } from '../../../core/services/auth.service';
         ::ng-deep .invoice-datepicker-toggle .mat-mdc-icon-button {
             color: inherit !important;
         }
+
+        /* Print Formats CSS */
+        @media print {
+            .print-A4 {
+                width: 210mm;
+                min-height: 297mm;
+                padding: 10mm;
+                margin: 0 auto;
+            }
+            .print-POS {
+                width: 80mm;
+                padding: 2mm;
+                margin: 0;
+                font-size: 10px !important;
+            }
+            .print-POS * {
+                font-size: 10px !important;
+            }
+            .print-POS .hide-on-pos {
+                display: none !important;
+            }
+            .print-POS table {
+                width: 100% !important;
+            }
+            .print-POS .mat-card {
+                padding: 0 !important;
+                box-shadow: none !important;
+            }
+            .print-POS .pos-divider {
+                border-top: 1px dashed #000;
+                margin: 5px 0;
+            }
+            .print-POS .A4-only {
+                display: none !important;
+            }
+        }
+
+        /* Screen POS Preview */
+        .pos-card {
+            max-width: 380px !important;
+            margin: 0 auto !important;
+            font-size: 11px !important;
+        }
+        .pos-card .px-8 {
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+        }
+        .pos-card .mb-12 {
+            margin-bottom: 1.5rem !important;
+        }
+        .pos-card .invoice-input {
+            font-size: 11px !important;
+            padding: 2px !important;
+        }
+        .pos-card .text-4xl {
+            font-size: 1.5rem !important;
+        }
+        .pos-card .text-lg {
+            font-size: 1rem !important;
+        }
     `]
 })
 export class InvoiceFormComponent implements OnInit {
@@ -149,6 +206,7 @@ export class InvoiceFormComponent implements OnInit {
     products = signal<BillingProduct[]>([]);
     services = signal<BillingService[]>([]);
     paymentMethods = signal<BillingPaymentMethod[]>([]);
+    printFormat = signal<'A4' | 'POS'>('A4');
 
     signatureFonts = [
         { name: 'Brush Script', value: "'Brush Script MT', cursive" },
@@ -177,6 +235,9 @@ export class InvoiceFormComponent implements OnInit {
 
             clientName: [''],
             clientPosition: [''],
+            clientAddress: [''],
+            clientPhone: [''],
+            clientEmail: [''],
 
             companyName: [''],
 
@@ -187,13 +248,28 @@ export class InvoiceFormComponent implements OnInit {
             discountRate: [0],
             signatureFont: ["'Sacramento', cursive"],
             signatureName: [this.authService.currentUser()?.profile?.fullName || this.authService.currentUser()?.profile?.displayName || ''],
-            signaturePosition: [''],
+            signaturePosition: [this.authService.currentUser()?.profile?.position || ''],
+            signatureIdType: [this.authService.currentUser()?.profile?.identificationType || ''],
+            signatureIdNumber: [this.authService.currentUser()?.profile?.identificationNumber || ''],
 
             notes: ['Gracias por su compra. Esta factura debe ser pagada dentro de los 30 días posteriores a su emisión.']
         });
 
         // Initialize with one empty item
         this.addItem();
+
+        // Reactive effect to pre-populate signature with user profile data
+        effect(() => {
+            const user = this.authService.currentUser();
+            if (user?.profile) {
+                this.invoiceForm.patchValue({
+                    signatureName: user.profile.fullName || user.profile.displayName || '',
+                    signaturePosition: user.profile.position || '',
+                    signatureIdType: user.profile.identificationType || '',
+                    signatureIdNumber: user.profile.identificationNumber || '',
+                }, { emitEvent: false });
+            }
+        });
 
         // Listen for changes
         this.invoiceForm.valueChanges.subscribe(() => {
@@ -238,10 +314,15 @@ export class InvoiceFormComponent implements OnInit {
 
         dialogRef.afterClosed().subscribe(client => {
             if (client) {
+                const docInfo = `${client.documentType}: ${client.documentNumber}`;
+
                 this.invoiceForm.patchValue({
                     clientName: client.name,
-                    clientPosition: client.email || 'Cliente',
-                    companyName: client.phone ? `Tel: ${client.phone}` : ''
+                    clientPosition: docInfo,
+                    clientAddress: client.address || '',
+                    clientPhone: client.phone || '',
+                    clientEmail: client.email || '',
+                    companyName: '' // Clear the old consolidated field
                 });
             }
         });
