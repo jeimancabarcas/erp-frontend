@@ -23,6 +23,10 @@ import { BillingClient } from '../../../core/domain/entities/billing-client.enti
 import { BillingProduct } from '../../../core/domain/entities/billing-product.entity';
 import { BillingService } from '../../../core/domain/entities/billing-service.entity';
 import { BillingPaymentMethod } from '../../../core/domain/entities/billing-payment-method.entity';
+import { BillingPaymentFrequency } from '../../../core/domain/entities/billing-payment-frequency.entity';
+import { BillingPaymentTerm } from '../../../core/domain/entities/billing-payment-term.entity';
+import { GetBillingPaymentFrequenciesUseCase } from '../../../core/application/use-cases/get-billing-payment-frequencies.use-case';
+import { GetBillingPaymentTermsUseCase } from '../../../core/application/use-cases/get-billing-payment-terms.use-case';
 import { MatSelectModule } from '@angular/material/select';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatMenuModule } from '@angular/material/menu';
@@ -199,6 +203,8 @@ export class InvoiceFormComponent implements OnInit {
     private getServicesUseCase = inject(GetBillingServicesUseCase);
     private getPaymentMethodsUseCase = inject(GetBillingPaymentMethodsUseCase);
     private getTaxesUseCase = inject(GetBillingTaxesUseCase);
+    private getFrequenciesUseCase = inject(GetBillingPaymentFrequenciesUseCase);
+    private getTermsUseCase = inject(GetBillingPaymentTermsUseCase);
     private authService = inject(AuthService);
 
     allTaxes = signal<BillingTax[]>([]);
@@ -206,6 +212,8 @@ export class InvoiceFormComponent implements OnInit {
     products = signal<BillingProduct[]>([]);
     services = signal<BillingService[]>([]);
     paymentMethods = signal<BillingPaymentMethod[]>([]);
+    paymentFrequencies = signal<BillingPaymentFrequency[]>([]);
+    paymentTerms = signal<BillingPaymentTerm[]>([]);
     printFormat = signal<'A4' | 'POS'>('A4');
 
     signatureFonts = [
@@ -228,6 +236,13 @@ export class InvoiceFormComponent implements OnInit {
         return [...p, ...s];
     });
 
+    availableTerms = computed(() => {
+        const freqId = this.invoiceForm.get('creditFrequencyId')?.value;
+        const freq = this.paymentFrequencies().find(f => f.id === freqId);
+        if (!freq) return this.paymentTerms();
+        return this.paymentTerms().filter(t => t.days >= freq.days);
+    });
+
     constructor() {
         this.invoiceForm = this.fb.group({
             invoiceNumber: ['0000123'],
@@ -244,6 +259,12 @@ export class InvoiceFormComponent implements OnInit {
             items: this.fb.array([]),
 
             paymentMethodId: [''],
+            paymentType: ['Debito'],
+            creditInstallments: [1],
+            creditFrequencyId: [''],
+            creditTermId: [''],
+            creditPeriodicity: [''], // kept for backward compatibility if needed, or can be removed
+            creditTerm: [''],        // kept for backward compatibility or display
             discountType: ['percent'],
             discountRate: [0],
             signatureFont: ["'Sacramento', cursive"],
@@ -275,6 +296,35 @@ export class InvoiceFormComponent implements OnInit {
         this.invoiceForm.valueChanges.subscribe(() => {
             this.calculateTotals();
         });
+
+        // Effect for Credit Installments Calculation
+        effect(() => {
+            const freqId = this.invoiceForm.get('creditFrequencyId')?.value;
+            const termId = this.invoiceForm.get('creditTermId')?.value;
+            const type = this.invoiceForm.get('paymentType')?.value;
+
+            if (type === 'Credito' && freqId && termId) {
+                const freq = this.paymentFrequencies().find(f => f.id === freqId);
+                const term = this.paymentTerms().find(t => t.id === termId);
+
+                if (freq && term) {
+                    if (term.days < freq.days) {
+                        // Validation: term cannot be less than frequency
+                        // Maybe reset term or show error? For now, we'll try to calculate or set to 1
+                        this.invoiceForm.get('creditInstallments')?.setValue(1, { emitEvent: false });
+                    } else {
+                        const installments = Math.max(1, Math.floor(term.days / freq.days));
+                        this.invoiceForm.get('creditInstallments')?.setValue(installments, { emitEvent: false });
+                    }
+
+                    // Sync text fields for display if needed
+                    this.invoiceForm.patchValue({
+                        creditPeriodicity: freq.name,
+                        creditTerm: term.name
+                    }, { emitEvent: false });
+                }
+            }
+        });
     }
 
     ngOnInit(): void {
@@ -289,6 +339,8 @@ export class InvoiceFormComponent implements OnInit {
         this.getServicesUseCase.execute().subscribe(data => this.services.set(data));
         this.getPaymentMethodsUseCase.execute().subscribe(data => this.paymentMethods.set(data));
         this.getTaxesUseCase.execute().subscribe(data => this.allTaxes.set(data));
+        this.getFrequenciesUseCase.execute().subscribe(data => this.paymentFrequencies.set(data));
+        this.getTermsUseCase.execute().subscribe(data => this.paymentTerms.set(data));
     }
 
     private loadPreferences() {

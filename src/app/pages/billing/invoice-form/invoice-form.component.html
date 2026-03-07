@@ -172,6 +172,35 @@
                                         <span>TOTAL:</span>
                                         <span>{{ grandTotal() | currency }}</span>
                                     </div>
+                                    <div class="pt-4 space-y-1 text-[10px]">
+                                        <div class="flex justify-between border-t border-dashed border-gray-300 pt-1">
+                                            <span class="font-bold">MÉTODO:</span>
+                                            <span class="uppercase italic">{{ invoiceForm.get('paymentType')?.value
+                                                }}</span>
+                                        </div>
+                                        @if (invoiceForm.get('paymentType')?.value === 'Credito') {
+                                        <div class="flex flex-col border-b border-dashed border-gray-200 pb-1 mb-1">
+                                            <div class="flex justify-between">
+                                                <span>Cuotas:</span>
+                                                <span>{{ invoiceForm.get('creditInstallments')?.value }}</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span>Frecuencia:</span>
+                                                <span>{{ invoiceForm.get('creditPeriodicity')?.value }}</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span>Plazo:</span>
+                                                <span>{{ invoiceForm.get('creditTerm')?.value }}</span>
+                                            </div>
+                                        </div>
+                                        }
+                                        @if (getSelectedPaymentMethod(); as pm) {
+                                        <div class="flex justify-between">
+                                            <span class="font-bold">MEDIO:</span>
+                                            <span>{{ pm.name }}</span>
+                                        </div>
+                                        }
+                                    </div>
                                 </div>
                             </div>
                             }
@@ -296,20 +325,83 @@
                                 class="px-8 flex flex-col sm:flex-row justify-between gap-12 mb-16 pt-4 border-t border-gray-100">
                                 <!-- Payment Method Selection -->
                                 <div class="flex-1 text-sm text-gray-600">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <h4 class="font-bold text-gray-800 m-0">Método de Pago:</h4>
-                                    </div>
-                                    <div class="print:hidden mb-4">
-                                        <button mat-stroked-button type="button"
-                                            class="w-full max-w-xs text-xs h-10 border-dashed"
-                                            (click)="onSelectPaymentMethod()">
-                                            <span class="flex items-center justify-center gap-2">
-                                                <i-tabler name="search" class="size-4"></i-tabler>
-                                                {{ !invoiceForm.get('paymentMethodId')?.value ? 'Seleccionar Método
-                                                de
-                                                Pago' : 'Cambiar Método de Pago' }}
-                                            </span>
-                                        </button>
+                                    <div class="flex flex-col gap-4 mb-4">
+                                        <!-- Método de Pago (Crédito/Débito) -->
+                                        <div>
+                                            <h4 class="font-bold text-gray-800 mb-2">Método de Pago:</h4>
+                                            <div class="flex gap-2 print:hidden">
+                                                <button type="button"
+                                                    (click)="invoiceForm.get('paymentType')?.setValue('Debito')"
+                                                    class="px-4 py-2 rounded-md text-xs font-bold border transition-all flex items-center gap-2"
+                                                    [style.backgroundColor]="invoiceForm.get('paymentType')?.value === 'Debito' ? preferences().primaryColor : 'white'"
+                                                    [style.borderColor]="invoiceForm.get('paymentType')?.value === 'Debito' ? preferences().primaryColor : '#e2e8f0'"
+                                                    [style.color]="invoiceForm.get('paymentType')?.value === 'Debito' ? 'white' : '#64748b'">
+                                                    <i-tabler name="wallet" class="size-4"></i-tabler> Débito
+                                                </button>
+                                                <button type="button"
+                                                    (click)="invoiceForm.get('paymentType')?.setValue('Credito')"
+                                                    class="px-4 py-2 rounded-md text-xs font-bold border transition-all flex items-center gap-2"
+                                                    [style.backgroundColor]="invoiceForm.get('paymentType')?.value === 'Credito' ? preferences().primaryColor : 'white'"
+                                                    [style.borderColor]="invoiceForm.get('paymentType')?.value === 'Credito' ? preferences().primaryColor : '#e2e8f0'"
+                                                    [style.color]="invoiceForm.get('paymentType')?.value === 'Credito' ? 'white' : '#64748b'">
+                                                    <i-tabler name="calendar-time" class="size-4"></i-tabler> Crédito
+                                                </button>
+                                            </div>
+                                            <!-- Print Display for Método -->
+                                            <div class="hidden print:block text-gray-800 font-semibold italic">
+                                                {{ invoiceForm.get('paymentType')?.value }}
+                                            </div>
+                                        </div>
+
+                                        <!-- Credit Details (Specific to Credito) -->
+                                        @if (invoiceForm.get('paymentType')?.value === 'Credito') {
+                                        <div
+                                            class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-blue-50/50 p-3 rounded-md border border-blue-100">
+                                            <div>
+                                                <label
+                                                    class="text-[10px] font-bold text-blue-800 uppercase block mb-1">Cuotas</label>
+                                                <input type="number" formControlName="creditInstallments" readonly
+                                                    class="invoice-input text-xs font-semibold p-1 bg-gray-100 border border-gray-200 cursor-not-allowed"
+                                                    placeholder="0">
+                                            </div>
+                                            <div class="no-label-field">
+                                                <label
+                                                    class="text-[10px] font-bold text-blue-800 uppercase block mb-1">Frecuencia</label>
+                                                <mat-select formControlName="creditFrequencyId"
+                                                    class="invoice-input text-xs font-semibold p-1 bg-white border border-gray-200 rounded">
+                                                    @for (freq of paymentFrequencies(); track freq.id) {
+                                                    <mat-option [value]="freq.id">{{ freq.name }}</mat-option>
+                                                    }
+                                                </mat-select>
+                                            </div>
+                                            <div class="no-label-field">
+                                                <label
+                                                    class="text-[10px] font-bold text-blue-800 uppercase block mb-1">Plazo</label>
+                                                <mat-select formControlName="creditTermId"
+                                                    class="invoice-input text-xs font-semibold p-1 bg-white border border-gray-200 rounded">
+                                                    @for (term of availableTerms(); track term.id) {
+                                                    <mat-option [value]="term.id">{{ term.name }}</mat-option>
+                                                    }
+                                                </mat-select>
+                                            </div>
+                                        </div>
+                                        }
+
+                                        <!-- Medio de Pago (Efectivo/Tarjeta/etc) -->
+                                        <div>
+                                            <h4 class="font-bold text-gray-800 mb-2">Medio de Pago:</h4>
+                                            <div class="print:hidden">
+                                                <button mat-stroked-button type="button"
+                                                    class="w-full max-w-xs text-xs h-10 border-dashed"
+                                                    (click)="onSelectPaymentMethod()">
+                                                    <span class="flex items-center justify-center gap-2">
+                                                        <i-tabler name="search" class="size-4"></i-tabler>
+                                                        {{ !invoiceForm.get('paymentMethodId')?.value ? 'Seleccionar
+                                                        Medio de Pago' : 'Cambiar Medio de Pago' }}
+                                                    </span>
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <div class="p-3 bg-gray-50 border border-gray-100 rounded-md">
