@@ -1,0 +1,41 @@
+<mat-card class="cardWithShadow">
+    <mat-card-content>
+        <div class="max-w-lg mx-auto">
+            <mat-card class="cardWithShadow mb-0!">
+                <mat-card-content>
+                    <mat-card-title>Cambiar Contraseña</mat-card-title>
+                    <mat-card-subtitle class="text-sm">Para cambiar tu contraseña, confírmala aquí</mat-card-subtitle>
+                    <form [formGroup]="securityForm" (ngSubmit)="updatePassword()" class="mt-6">
+                        <mat-label class="text-sm font-semibold mb-2 block">Contraseña Actual</mat-label>
+                        <mat-form-field appearance="outline" class="w-full" color="primary">
+                            <input matInput type="password" formControlName="currentPassword" />
+                        </mat-form-field>
+
+                        <mat-label class="text-sm font-semibold mb-2 block">Nueva Contraseña</mat-label>
+                        <mat-form-field appearance="outline" class="w-full" color="primary">
+                            <input matInput type="password" formControlName="newPassword" />
+                            <mat-hint>Mínimo 8 caracteres</mat-hint>
+                        </mat-form-field>
+
+                        <div class="mt-4"></div>
+
+                        <mat-label class="text-sm font-semibold mb-2 block">Confirmar Contraseña</mat-label>
+                        <mat-form-field appearance="outline" class="w-full hide-hint" color="primary">
+                            <input matInput type="password" formControlName="confirmPassword" />
+                            @if (securityForm.hasError('mismatch') && securityForm.get('confirmPassword')?.touched) {
+                            <mat-error>
+                                Las contraseñas no coinciden
+                            </mat-error>
+                            }
+                        </mat-form-field>
+
+                        <div class="text-end mt-6">
+                            <button mat-flat-button color="primary" type="submit"
+                                [disabled]="securityForm.invalid">Actualizar Contraseña</button>
+                        </div>
+                    </form>
+                </mat-card-content>
+            </mat-card>
+        </div>
+    </mat-card-content>
+</mat-card>

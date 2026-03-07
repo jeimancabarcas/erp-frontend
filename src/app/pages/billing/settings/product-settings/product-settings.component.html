@@ -1,0 +1,121 @@
+<mat-card class="cardWithShadow">
+    <mat-card-content class="p-6">
+        <div class="flex items-center flex-wrap justify-between mb-6">
+            <div>
+                <mat-card-title class="mb-1">Productos para Facturación</mat-card-title>
+                <mat-card-subtitle class="text-sm">
+                    Artículos disponibles para venta. Puedes enlazarlos a ítems de tu Inventario.
+                </mat-card-subtitle>
+            </div>
+            <button mat-flat-button color="primary" (click)="openProductForm()">
+                <span class="flex items-center gap-2">
+                    <i-tabler name="plus" class="size-5"></i-tabler> Nuevo Producto
+                </span>
+            </button>
+        </div>
+
+        <div class="relative overflow-auto">
+            <mat-table [dataSource]="products()" class="w-full" style="min-width: max-content;">
+                <ng-container matColumnDef="name">
+                    <mat-header-cell *matHeaderCellDef class="font-semibold text-sm ps-0"
+                        style="min-width: 250px;">Nombre Facturación</mat-header-cell>
+                    <mat-cell class="p-4 ps-0 font-medium text-sm" *matCellDef="let item" style="min-width: 250px;">
+                        <div class="flex flex-col">
+                            <span>{{ item.name || item.inventoryProduct?.name }}</span>
+                        </div>
+                    </mat-cell>
+                </ng-container>
+                <ng-container matColumnDef="codes">
+                    <mat-header-cell *matHeaderCellDef class="font-semibold text-sm"
+                        style="min-width: 250px;">Códigos</mat-header-cell>
+                    <mat-cell class="p-4" *matCellDef="let item" style="min-width: 250px;">
+                        <div class="flex flex-col gap-2">
+                            <div class="flex flex-col gap-1">
+                                <span class="text-xs font-semibold text-muted">Interno:</span>
+                                <div class="flex"><span
+                                        class="text-xs font-mono bg-hover border border-divider px-1.5 py-0.5 rounded">{{
+                                        item.internalCode || item.inventoryProduct?.sku || 'N/A' }}</span></div>
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <span class="text-xs font-semibold text-muted">UNSPSC:</span>
+                                <div class="flex">
+                                    @if (item.standardCode) {
+                                    <span
+                                        class="text-xs font-mono bg-hover border border-divider px-1.5 py-0.5 rounded">{{
+                                        item.standardCode }}</span>
+                                    } @else {
+                                    <div class="flex flex-col gap-1">
+                                        <div class="flex items-center gap-1 text-error">
+                                            <i-tabler name="alert-circle" class="size-4"></i-tabler>
+                                            <span class="text-xs font-medium">Sin configurar</span>
+                                        </div>
+                                        <span class="text-[10px] leading-tight text-error opacity-80"
+                                            style="max-width: 200px; white-space: break-spaces;">Sin este código este
+                                            producto no podrá facturarse electrónicamente ante la DIAN.</span>
+                                    </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </mat-cell>
+                </ng-container>
+                <ng-container matColumnDef="tax">
+                    <mat-header-cell *matHeaderCellDef class="font-semibold text-sm"
+                        style="min-width: 150px;">Impuestos</mat-header-cell>
+                    <mat-cell class="p-4" *matCellDef="let item" style="min-width: 150px;">
+                        <div class="flex flex-wrap gap-1">
+                            @for (t of item.taxes; track t.id) {
+                            <span class="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-md font-medium">
+                                {{ t.tax?.name }}: {{ t.rate }}%
+                            </span>
+                            } @empty {
+                            <span class="text-xs text-muted">N/A</span>
+                            }
+                        </div>
+                    </mat-cell>
+                </ng-container>
+                <ng-container matColumnDef="price">
+                    <mat-header-cell *matHeaderCellDef class="font-semibold text-sm" style="min-width: 150px;">Precio de
+                        Venta</mat-header-cell>
+                    <mat-cell class="p-4 text-sm font-semibold" *matCellDef="let item" style="min-width: 150px;">{{
+                        item.price | currency }}</mat-cell>
+                </ng-container>
+                <ng-container matColumnDef="inventoryLink">
+                    <mat-header-cell *matHeaderCellDef class="font-semibold text-sm" style="min-width: 200px;">Enlace c/
+                        Inventario</mat-header-cell>
+                    <mat-cell class="p-4" *matCellDef="let item" style="min-width: 200px;">
+                        @if(item.inventoryProductId) {
+                        <span
+                            class="bg-light-success text-success rounded-md font-semibold px-2 py-1 text-xs me-2">Vinculado</span>
+                        <span class="text-xs text-muted font-mono border rounded px-1 py-0.5 bg-hover"
+                            *ngIf="item.inventoryProduct?.sku">SKU: {{ item.inventoryProduct?.sku }}</span>
+                        } @else {
+                        <button mat-stroked-button color="accent" class="pointer-events-none"
+                            style="height: 30px; line-height: 28px; padding: 0 12px; font-size: 12px; opacity: 0.6">No
+                            Vinculado</button>
+                        }
+                    </mat-cell>
+                </ng-container>
+                <ng-container matColumnDef="actions">
+                    <mat-header-cell *matHeaderCellDef class="font-semibold text-sm text-right pe-0"
+                        style="min-width: 100px;">Acciones</mat-header-cell>
+                    <td mat-cell class="p-4 text-right pe-0" *matCellDef="let item" style="min-width: 100px;">
+                        <button mat-icon-button color="primary" (click)="openProductForm(item)"><i-tabler name="edit"
+                                class="size-5"></i-tabler></button>
+                        <button mat-icon-button color="warn" (click)="deleteProduct(item)"><i-tabler name="trash"
+                                class="size-5"></i-tabler></button>
+                    </td>
+                </ng-container>
+                <mat-header-row *matHeaderRowDef="productColumns"></mat-header-row>
+                <mat-row *matRowDef="let row; columns: productColumns"></mat-row>
+            </mat-table>
+
+            @if (isProductsLoading()) {
+            <app-table-loading message="Cargando productos de facturación…"></app-table-loading>
+            }
+            @if (!isProductsLoading() && products().length === 0) {
+            <app-table-empty message="No hay productos registrados" icon="box-off"></app-table-empty>
+            }
+        </div>
+    </mat-card-content>
+</mat-card>

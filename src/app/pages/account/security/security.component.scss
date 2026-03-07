@@ -1,0 +1,12 @@
+/* Security setting specific styles */
+.mb-0\! {
+    margin-bottom: 0 !important;
+}
+
+.hide-hint .mat-mdc-form-field-subscript-wrapper {
+    display: none;
+}
+
+.hide-hint.mat-form-field-invalid .mat-mdc-form-field-subscript-wrapper {
+    display: block;
+}

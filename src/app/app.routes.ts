@@ -17,11 +17,8 @@ export const routes: Routes = [
       },
       {
         path: 'account',
-        loadComponent: () =>
-          import('./pages/account/account.component').then((m) => m.AppAccountSettingComponent),
-        data: {
-          title: 'Configuración de Cuenta',
-        },
+        loadChildren: () =>
+          import('./pages/account/account.routes').then((m) => m.AccountRoutes),
       },
       {
         path: 'starter',

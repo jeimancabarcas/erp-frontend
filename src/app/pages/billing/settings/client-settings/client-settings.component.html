@@ -1,0 +1,86 @@
+<mat-card class="cardWithShadow">
+    <mat-card-content class="p-6">
+        <div class="flex items-center flex-wrap justify-between mb-6">
+            <div>
+                <mat-card-title class="mb-1">Directorio de Clientes</mat-card-title>
+                <mat-card-subtitle class="text-sm">
+                    Gestiona tu base de clientes para la emisión rápida de facturas.
+                </mat-card-subtitle>
+            </div>
+            <button mat-flat-button color="primary" (click)="openClientForm()">
+                <span class="flex items-center gap-2">
+                    <i-tabler name="plus" class="size-5"></i-tabler> Nuevo Cliente
+                </span>
+            </button>
+        </div>
+
+        <div class="relative overflow-auto">
+            <table mat-table [dataSource]="clients()" class="w-full" style="min-width: max-content;">
+                <ng-container matColumnDef="document">
+                    <th mat-header-cell *matHeaderCellDef class="font-semibold text-sm ps-0" style="min-width: 150px;">
+                        Documento</th>
+                    <td mat-cell class="p-4 ps-0 font-medium text-sm" *matCellDef="let item" style="min-width: 150px;">
+                        <div class="flex flex-col">
+                            <span>{{ item.documentType }} {{ item.documentNumber }}</span>
+                        </div>
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="name">
+                    <th mat-header-cell *matHeaderCellDef class="font-semibold text-sm" style="min-width: 250px;">Nombre
+                        / Razón Social</th>
+                    <td mat-cell class="p-4 font-medium text-sm" *matCellDef="let item" style="min-width: 250px;">{{
+                        item.name }}</td>
+                </ng-container>
+                <ng-container matColumnDef="email">
+                    <th mat-header-cell *matHeaderCellDef class="font-semibold text-sm" style="min-width: 200px;">Correo
+                    </th>
+                    <td mat-cell class="p-4 text-sm text-muted" *matCellDef="let item" style="min-width: 200px;">
+                        {{ item.email || 'N/A' }}
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="phone">
+                    <th mat-header-cell *matHeaderCellDef class="font-semibold text-sm" style="min-width: 150px;">
+                        Teléfono</th>
+                    <td mat-cell class="p-4 text-sm text-muted" *matCellDef="let item" style="min-width: 150px;">
+                        {{ item.phone || 'N/A' }}
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="status">
+                    <th mat-header-cell *matHeaderCellDef class="font-semibold text-sm" style="min-width: 100px;">Estado
+                    </th>
+                    <td mat-cell class="p-4 text-sm" *matCellDef="let item" style="min-width: 100px;">
+                        <span
+                            class="px-2 py-1 rounded-full text-xs font-medium {{ item.status ? 'bg-success/10 text-success' : 'bg-error/10 text-error' }}">
+                            {{ item.status ? 'Activo' : 'Inactivo' }}
+                        </span>
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef class="font-semibold text-sm text-right pe-0"
+                        style="min-width: 100px;">Acciones</th>
+                    <td mat-cell class="p-4 text-right pe-0" *matCellDef="let item" style="min-width: 100px;">
+                        <button mat-icon-button color="primary" matTooltip="Editar" (click)="openClientForm(item)">
+                            <i-tabler name="edit" class="size-5"></i-tabler>
+                        </button>
+                        <button mat-icon-button color="warn" matTooltip="Eliminar" (click)="deleteClient(item)">
+                            <i-tabler name="trash" class="size-5"></i-tabler>
+                        </button>
+                    </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="clientColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: clientColumns" class="hover:bg-hover-color transition-colors">
+                </tr>
+            </table>
+
+            @if (isClientsLoading()) {
+            <app-table-loading message="Cargando directorio de clientes…"></app-table-loading>
+            }
+            @if (!isClientsLoading() && clients().length === 0) {
+            <app-table-empty icon="users" title="No hay clientes"
+                subtitle="Aún no tienes ningún cliente en tu directorio para facturar." buttonText="Crear Cliente"
+                (action)="openClientForm()">
+            </app-table-empty>
+            }
+        </div>
+    </mat-card-content>
+</mat-card>

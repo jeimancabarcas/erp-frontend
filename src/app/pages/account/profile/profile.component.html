@@ -1,0 +1,104 @@
+<mat-card class="cardWithShadow">
+    <mat-card-content>
+        <div class="grid grid-cols-12 gap-6">
+            <div class="sm:col-span-6 col-span-12">
+                <mat-card class="cardWithShadow mb-0!">
+                    <mat-card-content>
+                        <mat-card-title>Cambiar Perfil</mat-card-title>
+                        <mat-card-subtitle class="text-sm">Cambia tu foto de perfil desde aquí</mat-card-subtitle>
+                        <div class="text-center mt-8">
+                            <img [src]="authService.currentUser()?.profile?.avatarUrl || '/assets/images/profile/user-1.jpg'"
+                                class="rounded-full mx-auto object-cover size-[120px]" />
+                            <div class="mt-6">
+                                <input type="file" #fileInput (change)="onFileSelected($event)" hidden
+                                    accept="image/*" />
+                                <button mat-flat-button color="primary" class="me-2" (click)="fileInput.click()">
+                                    Subir
+                                </button>
+                                <button mat-stroked-button color="warn" (click)="resetAvatar()">Restablecer</button>
+                            </div>
+                            <span class="text-sm mt-6 block text-muted">Permitido JPG, GIF o PNG. Tamaño máximo de
+                                800K</span>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+            </div>
+
+            <div class="sm:col-span-6 col-span-12">
+                <mat-card class="cardWithShadow mb-0!">
+                    <mat-card-content>
+                        <mat-card-title>Detalles Personales</mat-card-title>
+                        <mat-card-subtitle class="text-sm">Edita tus detalles personales y guarda los
+                            cambios</mat-card-subtitle>
+                        <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="mt-6">
+                            <div class="grid grid-cols-12 gap-5">
+                                <div class="sm:col-span-4 col-span-12">
+                                    <mat-label class="text-sm font-semibold mb-2 block truncate">Tipo de
+                                        Identificación</mat-label>
+                                    <mat-form-field appearance="outline" class="w-full" color="primary">
+                                        <mat-select formControlName="identificationType">
+                                            <mat-option value="CC">CC</mat-option>
+                                            <mat-option value="NIT">NIT</mat-option>
+                                            <mat-option value="CE">CE</mat-option>
+                                            <mat-option value="TI">TI</mat-option>
+                                            <mat-option value="PAS">PAS</mat-option>
+                                        </mat-select>
+                                    </mat-form-field>
+                                </div>
+                                <div class="sm:col-span-8 col-span-12">
+                                    <mat-label class="text-sm font-semibold mb-2 block">Número de
+                                        Identificación</mat-label>
+                                    <mat-form-field appearance="outline" class="w-full" color="primary">
+                                        <input matInput type="text" formControlName="identificationNumber" />
+                                    </mat-form-field>
+                                </div>
+                                <div class="col-span-12">
+                                    <mat-label class="text-sm font-semibold mb-2 block">Nombre Completo</mat-label>
+                                    <mat-form-field appearance="outline" class="w-full" color="primary">
+                                        <input matInput type="text" formControlName="fullName" />
+                                    </mat-form-field>
+                                </div>
+                                <div class="col-span-12">
+                                    <mat-label class="text-sm font-semibold mb-2 block">Nombre de Usuario
+                                        (Display)</mat-label>
+                                    <mat-form-field appearance="outline" class="w-full" color="primary">
+                                        <input matInput type="text" formControlName="displayName" />
+                                    </mat-form-field>
+                                </div>
+                                <div class="sm:col-span-6 col-span-12">
+                                    <mat-label class="text-sm font-semibold mb-2 block">Teléfono</mat-label>
+                                    <mat-form-field appearance="outline" class="w-full" color="primary">
+                                        <input matInput type="text" formControlName="phone" />
+                                    </mat-form-field>
+                                </div>
+                                <div class="sm:col-span-6 col-span-12">
+                                    <mat-label class="text-sm font-semibold mb-2 block">Correo electrónico</mat-label>
+                                    <mat-form-field appearance="outline" class="w-full" color="primary">
+                                        <input matInput type="email" [value]="authService.currentUser()?.email"
+                                            disabled />
+                                    </mat-form-field>
+                                </div>
+                                <div class="col-span-12">
+                                    <mat-label class="text-sm font-semibold mb-2 block">Dirección</mat-label>
+                                    <mat-form-field appearance="outline" class="w-full" color="primary">
+                                        <input matInput type="text" formControlName="address" />
+                                    </mat-form-field>
+                                </div>
+                                <div class="col-span-12">
+                                    <mat-label class="text-sm font-semibold mb-2 block">Cargo / Posición</mat-label>
+                                    <mat-form-field appearance="outline" class="w-full" color="primary">
+                                        <input matInput type="text" formControlName="position" />
+                                    </mat-form-field>
+                                </div>
+                            </div>
+                            <div class="text-end mt-4">
+                                <button mat-flat-button color="primary" type="submit"
+                                    [disabled]="profileForm.invalid">Guardar Perfil</button>
+                            </div>
+                        </form>
+                    </mat-card-content>
+                </mat-card>
+            </div>
+        </div>
+    </mat-card-content>
+</mat-card>

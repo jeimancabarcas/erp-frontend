@@ -1,93 +1,12 @@
-<!-- Same card pattern as Account Settings in the main project -->
-<mat-card class="cardWithShadow mb-0!">
-
-    <mat-tab-group mat-stretch-tabs="false" animationDuration="0ms">
-
-        <!-- ── Categories tab ───────────────────────────────────── -->
-        <mat-tab>
-            <ng-template mat-tab-label>
-                <div class="flex items-center gap-2">
-                    <mat-icon class="flex! items-center">
-                        <i-tabler name="tag" class="size-5!"></i-tabler>
-                    </mat-icon>
-                    Categorías
-                </div>
-            </ng-template>
-
-            <mat-card-content class="p-6">
-                <div class="flex items-center flex-wrap justify-between mb-6">
-                    <div>
-                        <mat-card-title class="mb-1">Categorías de productos</mat-card-title>
-                        <mat-card-subtitle class="text-sm">
-                            Crea, edita y elimina las categorías disponibles para los productos del inventario.
-                        </mat-card-subtitle>
-                    </div>
-                    <button mat-flat-button color="primary" (click)="openCreate()">
-                        <span class="flex items-center gap-2">
-                            <i-tabler name="plus" class="size-5"></i-tabler> Nueva categoría
-                        </span>
-                    </button>
-                </div>
-
-                <!-- Table -->
-                <div class="relative overflow-auto">
-                    <mat-table [dataSource]="categories()" class="min-w-full">
-
-                        <!-- Name -->
-                        <ng-container matColumnDef="name">
-                            <mat-header-cell *matHeaderCellDef class="font-semibold mat-subtitle-1 text-sm ps-0">
-                                Nombre
-                            </mat-header-cell>
-                            <mat-cell class="p-4 ps-0 font-medium" *matCellDef="let cat">
-                                {{ cat.name }}
-                            </mat-cell>
-                        </ng-container>
-
-                        <!-- Description -->
-                        <ng-container matColumnDef="description">
-                            <mat-header-cell *matHeaderCellDef class="font-semibold mat-subtitle-1 text-sm">
-                                Descripción
-                            </mat-header-cell>
-                            <mat-cell class="p-4 text-sm text-muted" *matCellDef="let cat">
-                                <span [matTooltip]="cat.description" matTooltipPosition="below"
-                                    class="truncate max-w-xs block">
-                                    {{ cat.description || '—' }}
-                                </span>
-                            </mat-cell>
-                        </ng-container>
-
-                        <!-- Actions -->
-                        <ng-container matColumnDef="actions">
-                            <mat-header-cell *matHeaderCellDef
-                                class="font-semibold mat-subtitle-1 text-sm text-right pe-0">
-                                Acciones
-                            </mat-header-cell>
-                            <mat-cell class="p-4 text-right pe-0" *matCellDef="let cat">
-                                <button mat-icon-button color="primary" (click)="openEdit(cat)" matTooltip="Editar"
-                                    matTooltipPosition="below" class="me-1">
-                                    <i-tabler name="edit" class="size-5"></i-tabler>
-                                </button>
-                                <button mat-icon-button color="warn" (click)="onDelete(cat.id)" matTooltip="Eliminar"
-                                    matTooltipPosition="below">
-                                    <i-tabler name="trash" class="size-5"></i-tabler>
-                                </button>
-                            </mat-cell>
-                        </ng-container>
-
-                        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-                        <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
-                    </mat-table>
-
-                    @if (isLoading()) {
-                    <app-table-loading message="Cargando categorías…"></app-table-loading>
-                    }
-                    @if (!isLoading() && categories().length === 0) {
-                    <app-table-empty message="No hay categorías registradas" icon="tag-off"></app-table-empty>
-                    }
-                </div>
-            </mat-card-content>
-        </mat-tab>
-
-    </mat-tab-group>
-
-</mat-card>
+<mat-tab-group animationDuration="0ms">
+    <mat-tab>
+        <ng-template mat-tab-label>
+            <div class="flex items-center gap-2">
+                <i-tabler name="tag" class="size-5"></i-tabler> Categorías
+            </div>
+        </ng-template>
+        <div class="py-6">
+            <app-category-settings></app-category-settings>
+        </div>
+    </mat-tab>
+</mat-tab-group>

@@ -1,222 +1,24 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTabsModule } from '@angular/material/tabs';
 import { TablerIconsModule } from 'angular-tabler-icons';
-import { MatDividerModule } from '@angular/material/divider';
-import { AuthService } from 'src/app/core/services/auth.service';
-import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { GetBillingTemplatePreferencesUseCase } from 'src/app/core/application/use-cases/billing-template-preferences/get-billing-template-preferences.use-case';
-import { UpdateBillingTemplatePreferencesUseCase } from 'src/app/core/application/use-cases/billing-template-preferences/update-billing-template-preferences.use-case';
-import { UploadLogoUseCase } from 'src/app/core/application/use-cases/billing-template-preferences/upload-logo.use-case';
-import { BillingTemplatePreference } from 'src/app/core/domain/entities/billing-template-preference.entity';
+import { ProfileSettingComponent } from './profile/profile.component';
+import { CompanySettingComponent } from './company/company.component';
+import { SecuritySettingComponent } from './security/security.component';
 
 @Component({
-    selector: 'app-account-setting',
+    selector: 'app-account-settings',
     standalone: true,
     imports: [
         CommonModule,
-        ReactiveFormsModule,
         MatCardModule,
-        MatIconModule,
-        TablerIconsModule,
         MatTabsModule,
-        MatFormFieldModule,
-        MatSlideToggleModule,
-        MatSelectModule,
-        MatInputModule,
-        MatButtonModule,
-        MatDividerModule,
-        MatSnackBarModule
+        TablerIconsModule,
+        ProfileSettingComponent,
+        CompanySettingComponent,
+        SecuritySettingComponent
     ],
-    templateUrl: './account.component.html'
+    templateUrl: './account.component.html',
 })
-export class AppAccountSettingComponent implements OnInit {
-    private fb = inject(FormBuilder);
-    private snackBar = inject(MatSnackBar);
-    authService = inject(AuthService);
-
-    profileForm: FormGroup;
-    securityForm: FormGroup;
-    companyForm: FormGroup;
-    companyPreferences: BillingTemplatePreference | null = null;
-
-    private getBillingPrefs = inject(GetBillingTemplatePreferencesUseCase);
-    private updateBillingPrefs = inject(UpdateBillingTemplatePreferencesUseCase);
-    private uploadLogoUseCase = inject(UploadLogoUseCase);
-
-    constructor() {
-        const user = this.authService.currentUser();
-
-        this.profileForm = this.fb.group({
-            fullName: [user?.profile?.fullName || '', [Validators.required]],
-            address: [user?.profile?.address || ''],
-            phone: [user?.profile?.phone || ''],
-            displayName: [user?.profile?.displayName || ''],
-            position: [user?.profile?.position || ''],
-            identificationNumber: [user?.profile?.identificationNumber || ''],
-            identificationType: [user?.profile?.identificationType || ''],
-        });
-
-        this.companyForm = this.fb.group({
-            nit: [''],
-            companyName: ['', [Validators.required]],
-            address: [''],
-            phone1: [''],
-            phone2: [''],
-            email: ['', [Validators.email]],
-            website: [''],
-            logoUrl: [null]
-        });
-
-        this.securityForm = this.fb.group({
-            currentPassword: ['', [Validators.required]],
-            newPassword: ['', [Validators.required, Validators.minLength(8)]],
-            confirmPassword: ['', [Validators.required]],
-        }, { validators: this.passwordsMatchValidator });
-    }
-
-    ngOnInit(): void {
-        this.loadCompanyPreferences();
-    }
-
-    loadCompanyPreferences() {
-        this.getBillingPrefs.execute().subscribe({
-            next: (prefs) => {
-                this.companyPreferences = prefs;
-                this.companyForm.patchValue({
-                    nit: prefs.nit || '',
-                    companyName: prefs.companyName || '',
-                    address: prefs.address || '',
-                    phone1: prefs.phone1 || '',
-                    phone2: prefs.phone2 || '',
-                    email: prefs.email || '',
-                    website: prefs.website || '',
-                    logoUrl: prefs.logoUrl
-                });
-            }
-        });
-    }
-
-    passwordsMatchValidator(g: FormGroup) {
-        return g.get('newPassword')?.value === g.get('confirmPassword')?.value
-            ? null : { mismatch: true };
-    }
-
-    saveProfile() {
-        if (this.profileForm.invalid) return;
-
-        this.authService.updateProfile(this.profileForm.value).subscribe({
-            next: () => {
-                this.snackBar.open('Perfil actualizado con éxito', 'Cerrar', { duration: 3000 });
-            },
-            error: (err) => {
-                this.snackBar.open(err.error?.message || 'Error al actualizar perfil', 'Cerrar', { duration: 3000 });
-            }
-        });
-    }
-
-    saveCompanyProfile() {
-        if (this.companyForm.invalid) return;
-
-        this.updateBillingPrefs.execute(this.companyForm.value).subscribe({
-            next: (updated) => {
-                this.companyPreferences = updated;
-                this.snackBar.open('Información de empresa actualizada', 'Cerrar', { duration: 3000 });
-            },
-            error: (err) => {
-                this.snackBar.open(err.error?.message || 'Error al actualizar empresa', 'Cerrar', { duration: 3000 });
-            }
-        });
-    }
-
-    onFileSelected(event: any) {
-        const file: File = event.target.files[0];
-        if (!file) return;
-
-        if (file.size > 800 * 1024) {
-            this.snackBar.open('El archivo es demasiado grande (máximo 800KB)', 'Cerrar', { duration: 3000 });
-            return;
-        }
-
-        this.authService.uploadAvatar(file).subscribe({
-            next: () => {
-                this.snackBar.open('Foto de perfil actualizada', 'Cerrar', { duration: 3000 });
-            },
-            error: (err) => {
-                this.snackBar.open(err.error?.message || 'Error al subir imagen', 'Cerrar', { duration: 3000 });
-            }
-        });
-    }
-
-    onLogoSelected(event: any) {
-        const file: File = event.target.files[0];
-        if (!file) return;
-
-        if (file.size > 1024 * 1024) {
-            this.snackBar.open('El logo es demasiado grande (máximo 1MB)', 'Cerrar', { duration: 3000 });
-            return;
-        }
-
-        this.uploadLogoUseCase.execute(file).subscribe({
-            next: (res) => {
-                this.companyForm.patchValue({ logoUrl: res.url });
-                if (this.companyPreferences) {
-                    this.companyPreferences.logoUrl = res.url;
-                }
-                this.snackBar.open('Logo de empresa actualizado', 'Cerrar', { duration: 3000 });
-            },
-            error: (err) => {
-                this.snackBar.open(err.error?.message || 'Error al subir logo', 'Cerrar', { duration: 3000 });
-            }
-        });
-    }
-
-    resetLogo() {
-        if (!this.companyPreferences) return;
-
-        this.updateBillingPrefs.execute({ logoUrl: null }).subscribe({
-            next: (updated) => {
-                this.companyPreferences = updated;
-                this.companyForm.patchValue({ logoUrl: null });
-                this.snackBar.open('Logo de empresa eliminado', 'Cerrar', { duration: 3000 });
-            },
-            error: (err) => {
-                this.snackBar.open(err.error?.message || 'Error al eliminar logo', 'Cerrar', { duration: 3000 });
-            }
-        });
-    }
-
-    resetAvatar() {
-        this.authService.updateProfile({ avatarUrl: null } as any).subscribe({
-            next: () => {
-                this.snackBar.open('Foto de perfil restablecida', 'Cerrar', { duration: 3000 });
-            },
-            error: (err) => {
-                this.snackBar.open(err.error?.message || 'Error al restablecer imagen', 'Cerrar', { duration: 3000 });
-            }
-        });
-    }
-
-    updatePassword() {
-        if (this.securityForm.invalid) return;
-
-        const { currentPassword, newPassword } = this.securityForm.value;
-        this.authService.changePassword({ currentPassword, newPassword }).subscribe({
-            next: () => {
-                this.snackBar.open('Contraseña cambiada con éxito', 'Cerrar', { duration: 3000 });
-                this.securityForm.reset();
-            },
-            error: (err) => {
-                this.snackBar.open(err.error?.message || 'Error al cambiar contraseña', 'Cerrar', { duration: 3000 });
-            }
-        });
-    }
-}
+export class AccountComponent { }

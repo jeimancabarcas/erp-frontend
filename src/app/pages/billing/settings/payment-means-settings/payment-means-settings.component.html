@@ -1,0 +1,79 @@
+<mat-card class="cardWithShadow">
+    <mat-card-content class="p-6">
+        <div class="flex items-center flex-wrap justify-between mb-6">
+            <div>
+                <mat-card-title class="mb-1">Medios de Pago</mat-card-title>
+                <mat-card-subtitle class="text-sm">
+                    Administra los métodos de pago disponibles.
+                </mat-card-subtitle>
+            </div>
+            <button mat-flat-button color="primary" (click)="openPaymentMethodForm()">
+                <span class="flex items-center gap-2">
+                    <i-tabler name="plus" class="size-5"></i-tabler> Nuevo Medio de Pago
+                </span>
+            </button>
+        </div>
+
+        <div class="table-responsive">
+            <table mat-table [dataSource]="paymentMethods()" class="w-full">
+                <ng-container matColumnDef="name">
+                    <th mat-header-cell *matHeaderCellDef class="text-sm font-semibold"> Método </th>
+                    <td mat-cell *matCellDef="let method" class="text-sm">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                <i-tabler name="credit-card" class="icon-20"></i-tabler>
+                            </div>
+                            <span class="font-medium">{{ method.name }}</span>
+                        </div>
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="details">
+                    <th mat-header-cell *matHeaderCellDef class="text-sm font-semibold"> Detalles </th>
+                    <td mat-cell *matCellDef="let method" class="text-sm text-muted-color">
+                        {{ method.details || 'Sin detalles configurados' }}
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="status">
+                    <th mat-header-cell *matHeaderCellDef class="text-sm font-semibold"> Estado </th>
+                    <td mat-cell *matCellDef="let method">
+                        <span
+                            class="px-2 py-1 rounded-full text-xs font-medium {{ method.status ? 'bg-success/10 text-success' : 'bg-error/10 text-error' }}">
+                            {{ method.status ? 'Activo' : 'Inactivo' }}
+                        </span>
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef class="text-right text-sm font-semibold"> Acciones </th>
+                    <td mat-cell *matCellDef="let method" class="text-right">
+                        <button mat-icon-button color="primary" matTooltip="Editar"
+                            (click)="openPaymentMethodForm(method)">
+                            <i-tabler name="edit" class="icon-18"></i-tabler>
+                        </button>
+                        <button mat-icon-button color="warn" matTooltip="Eliminar"
+                            (click)="deletePaymentMethod(method)">
+                            <i-tabler name="trash" class="icon-18"></i-tabler>
+                        </button>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="['name', 'details', 'status', 'actions']"></tr>
+                <tr mat-row *matRowDef="let row; columns: ['name', 'details', 'status', 'actions'];"
+                    class="hover:bg-hover-color transition-colors"></tr>
+            </table>
+
+            @if (isPaymentMethodsLoading()) {
+            <app-table-loading message="Cargando medios de pago…"></app-table-loading>
+            }
+            @if (!isPaymentMethodsLoading() && paymentMethods().length === 0) {
+            <app-table-empty icon="wallet" title="No hay medios de pago"
+                subtitle="Aún no has configurado ningún medio de pago." buttonText="Crear Medio de Pago"
+                (action)="openPaymentMethodForm()">
+            </app-table-empty>
+            }
+        </div>
+    </mat-card-content>
+</mat-card>

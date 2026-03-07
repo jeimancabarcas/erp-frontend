@@ -36,13 +36,7 @@ export const BillingRoutes: Routes = [
             import('./settings/billing-settings.component').then(
                 (m) => m.BillingSettingsComponent
             ),
-        data: {
-            title: 'Configuración de Facturación',
-            urls: [
-                { title: 'Facturación' },
-                { title: 'Configuración' },
-            ],
-        },
+        data: { title: 'Configuración de Facturación' },
     },
 ];
 

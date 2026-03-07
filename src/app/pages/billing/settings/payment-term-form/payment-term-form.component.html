@@ -1,0 +1,38 @@
+<div class="flex items-center justify-between p-4 border-b">
+    <h3 mat-dialog-title class="m-0 text-lg font-semibold">{{ isEditMode ? 'Editar' : 'Nuevo' }} Plazo</h3>
+    <button mat-icon-button mat-dialog-close>
+        <i-tabler name="x" class="size-5"></i-tabler>
+    </button>
+</div>
+
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <mat-dialog-content class="p-6">
+        <div class="flex flex-col gap-4">
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Nombre</mat-label>
+                <input matInput formControlName="name" placeholder="Ej: 30 días">
+                @if (form.get('name')?.hasError('required')) {
+                <mat-error>El nombre es requerido</mat-error>
+                }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Días</mat-label>
+                <input matInput type="number" formControlName="days" placeholder="Ej: 30">
+                @if (form.get('days')?.hasError('required')) {
+                <mat-error>Los días son requeridos</mat-error>
+                }
+                @if (form.get('days')?.hasError('min')) {
+                <mat-error>Los días deben ser mayor o igual a 0</mat-error>
+                }
+            </mat-form-field>
+        </div>
+    </mat-dialog-content>
+
+    <mat-dialog-actions class="p-6 pt-0 flex justify-end gap-2">
+        <button mat-button type="button" mat-dialog-close [disabled]="isLoading">Cancelar</button>
+        <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || isLoading">
+            {{ isLoading ? 'Guardando...' : 'Guardar' }}
+        </button>
+    </mat-dialog-actions>
+</form>

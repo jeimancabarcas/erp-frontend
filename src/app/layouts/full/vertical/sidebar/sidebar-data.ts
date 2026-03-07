@@ -10,6 +10,11 @@ export const navItems: NavItem[] = [
     route: '/starter',
   },
   {
+    displayName: 'Cuenta',
+    iconName: 'user-circle',
+    route: '/account',
+  },
+  {
     navCap: 'Inventory',
   },
   {

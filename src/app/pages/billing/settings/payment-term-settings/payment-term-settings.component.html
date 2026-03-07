@@ -1,0 +1,60 @@
+<mat-card class="cardWithShadow">
+    <mat-card-content class="p-6">
+        <div class="flex items-center flex-wrap justify-between mb-6">
+            <div>
+                <mat-card-title class="mb-1">Plazos de Pago</mat-card-title>
+                <mat-card-subtitle class="text-sm">
+                    Gestiona los plazos de vencimiento para tus facturas.
+                </mat-card-subtitle>
+            </div>
+            <button mat-flat-button color="primary" (click)="openForm()">
+                <span class="flex items-center gap-2">
+                    <i-tabler name="plus" class="size-5"></i-tabler> Nuevo Plazo
+                </span>
+            </button>
+        </div>
+
+        <div class="table-responsive">
+            <table mat-table [dataSource]="terms()" class="w-full">
+                <!-- Name Column -->
+                <ng-container matColumnDef="name">
+                    <th mat-header-cell *matHeaderCellDef class="text-sm font-semibold"> Nombre </th>
+                    <td mat-cell *matCellDef="let element" class="text-sm font-medium"> {{ element.name }} </td>
+                </ng-container>
+
+                <!-- Days Column -->
+                <ng-container matColumnDef="days">
+                    <th mat-header-cell *matHeaderCellDef class="text-sm font-semibold"> Días </th>
+                    <td mat-cell *matCellDef="let element" class="text-sm"> {{ element.days }} </td>
+                </ng-container>
+
+                <!-- Actions Column -->
+                <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef class="text-right text-sm font-semibold"> Acciones </th>
+                    <td mat-cell *matCellDef="let element" class="text-right">
+                        <button mat-icon-button color="primary" (click)="openForm(element)" matTooltip="Editar">
+                            <i-tabler name="edit" class="icon-18"></i-tabler>
+                        </button>
+                        <button mat-icon-button color="warn" (click)="deleteTerm(element)" matTooltip="Eliminar">
+                            <i-tabler name="trash" class="icon-18"></i-tabler>
+                        </button>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="['name', 'days', 'actions']"></tr>
+                <tr mat-row *matRowDef="let row; columns: ['name', 'days', 'actions'];"
+                    class="hover:bg-hover-color transition-colors"></tr>
+            </table>
+
+            @if (isLoading()) {
+            <app-table-loading message="Cargando plazos…"></app-table-loading>
+            }
+
+            @if (!isLoading() && terms().length === 0) {
+            <app-table-empty icon="clock-hour-4" title="No hay plazos"
+                subtitle="Aún no has configurado ningún plazo de pago." buttonText="Nuevo Plazo"
+                (action)="openForm()"></app-table-empty>
+            }
+        </div>
+    </mat-card-content>
+</mat-card>

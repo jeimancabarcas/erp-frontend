@@ -295,36 +295,48 @@ export class InvoiceFormComponent implements OnInit {
         // Listen for changes
         this.invoiceForm.valueChanges.subscribe(() => {
             this.calculateTotals();
+            this.updateCreditLogic();
         });
 
-        // Effect for Credit Installments Calculation
-        effect(() => {
-            const freqId = this.invoiceForm.get('creditFrequencyId')?.value;
-            const termId = this.invoiceForm.get('creditTermId')?.value;
-            const type = this.invoiceForm.get('paymentType')?.value;
+    }
 
-            if (type === 'Credito' && freqId && termId) {
-                const freq = this.paymentFrequencies().find(f => f.id === freqId);
-                const term = this.paymentTerms().find(t => t.id === termId);
+    private updateCreditLogic() {
+        if (!this.invoiceForm) return;
 
-                if (freq && term) {
-                    if (term.days < freq.days) {
-                        // Validation: term cannot be less than frequency
-                        // Maybe reset term or show error? For now, we'll try to calculate or set to 1
-                        this.invoiceForm.get('creditInstallments')?.setValue(1, { emitEvent: false });
-                    } else {
-                        const installments = Math.max(1, Math.floor(term.days / freq.days));
-                        this.invoiceForm.get('creditInstallments')?.setValue(installments, { emitEvent: false });
-                    }
+        const freqId = this.invoiceForm.get('creditFrequencyId')?.value;
+        const termId = this.invoiceForm.get('creditTermId')?.value;
+        const type = this.invoiceForm.get('paymentType')?.value;
 
-                    // Sync text fields for display if needed
-                    this.invoiceForm.patchValue({
-                        creditPeriodicity: freq.name,
-                        creditTerm: term.name
-                    }, { emitEvent: false });
+        if (type === 'Credito') {
+            const freq = this.paymentFrequencies().find(f => f.id === freqId);
+            const term = this.paymentTerms().find(t => t.id === termId);
+
+            if (freq && term) {
+                let installments = 1;
+                if (term.days >= freq.days && freq.days > 0) {
+                    installments = Math.max(1, Math.floor(term.days / freq.days));
+                }
+
+                this.invoiceForm.get('creditInstallments')?.setValue(installments, { emitEvent: false });
+
+                // Update terms and conditions text
+                const notesText = `Esta factura de crédito a ${term.name} será cancelada en ${installments} ${installments === 1 ? 'cuota' : 'cuotas'} con frecuencia ${freq.name}.`;
+                this.invoiceForm.get('notes')?.setValue(notesText, { emitEvent: false });
+
+                // Sync text fields for display if needed
+                this.invoiceForm.patchValue({
+                    creditPeriodicity: freq.name,
+                    creditTerm: term.name
+                }, { emitEvent: false });
+            } else {
+                if (!freqId || !termId) {
+                    this.invoiceForm.get('notes')?.setValue('Esta factura debe ser pagada según las condiciones de crédito acordadas.', { emitEvent: false });
                 }
             }
-        });
+        } else {
+            // Default notes for Debit/Cash
+            this.invoiceForm.get('notes')?.setValue('Gracias por su compra. Esta factura de contado debe ser pagada al momento de su emisión.', { emitEvent: false });
+        }
     }
 
     ngOnInit(): void {
@@ -339,8 +351,14 @@ export class InvoiceFormComponent implements OnInit {
         this.getServicesUseCase.execute().subscribe(data => this.services.set(data));
         this.getPaymentMethodsUseCase.execute().subscribe(data => this.paymentMethods.set(data));
         this.getTaxesUseCase.execute().subscribe(data => this.allTaxes.set(data));
-        this.getFrequenciesUseCase.execute().subscribe(data => this.paymentFrequencies.set(data));
-        this.getTermsUseCase.execute().subscribe(data => this.paymentTerms.set(data));
+        this.getFrequenciesUseCase.execute().subscribe(data => {
+            this.paymentFrequencies.set(data);
+            this.updateCreditLogic();
+        });
+        this.getTermsUseCase.execute().subscribe(data => {
+            this.paymentTerms.set(data);
+            this.updateCreditLogic();
+        });
     }
 
     private loadPreferences() {
