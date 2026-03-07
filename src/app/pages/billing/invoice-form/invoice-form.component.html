@@ -30,8 +30,8 @@
                                         invoiceForm.get('invoiceNumber')?.value }}</p>
                                     }
                                 </div>
-                                <div class="flex items-center gap-2 relative z-20"
-                                    [class.order-1]="printFormat() === 'POS'">
+                                <div class="flex items-center gap-4 relative z-20"
+                                    [class.order-1]="printFormat() === 'POS'" [class.mb-4]="printFormat() === 'POS'">
                                     @if(preferences().logoUrl) {
                                     <img [src]="preferences().logoUrl" alt="Logo" class="max-h-16 object-contain" />
                                     } @else {
@@ -40,13 +40,31 @@
                                         <i-tabler name="photo" class="text-gray-300"></i-tabler>
                                     </div>
                                     }
+                                    <div class="flex flex-col" [class.text-center]="printFormat() === 'POS'">
+                                        @if (preferences().companyName) {
+                                        <h1 class="m-0 text-xl font-bold leading-tight uppercase">
+                                            {{ preferences().companyName }}
+                                        </h1>
+                                        }
+                                        @if (preferences().nit) {
+                                        <span class="text-xs font-semibold text-gray-500">
+                                            NIT: {{ preferences().nit }}
+                                        </span>
+                                        }
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- POS Invoice Details -->
                             @if (printFormat() === 'POS') {
-                            <div class="w-full text-center border-y border-dashed border-gray-200 py-2 my-2">
-                                <p class="m-0 text-xs">Fecha: {{ invoiceForm.get('invoiceDate')?.value |
+                            <div class="w-full text-center border-y border-dashed border-gray-200 py-3 my-2 space-y-1">
+                                @if (preferences().address) {
+                                <p class="m-0 text-[10px] uppercase">{{ preferences().address }}</p>
+                                }
+                                @if (preferences().phone1) {
+                                <p class="m-0 text-[10px]">Tel: {{ preferences().phone1 }}</p>
+                                }
+                                <p class="m-0 text-xs font-bold pt-1">Fecha: {{ invoiceForm.get('invoiceDate')?.value |
                                     date:'short' }}</p>
                             </div>
                             }
@@ -461,8 +479,10 @@
                         <i-tabler name="phone" class="size-3"></i-tabler>
                     </div>
                     <div>
-                        <p class="m-0">00 000 000 0000</p>
-                        <p class="m-0">00 000 000 0000</p>
+                        <p class="m-0">{{ preferences().phone1 || 'Su teléfono aquí' }}</p>
+                        @if (preferences().phone2) {
+                        <p class="m-0">{{ preferences().phone2 }}</p>
+                        }
                     </div>
                 </div>
 
@@ -472,8 +492,8 @@
                         <i-tabler name="mail" class="size-3"></i-tabler>
                     </div>
                     <div>
-                        <p class="m-0">su correo electrónico aquí</p>
-                        <p class="m-0">su sitio web aquí</p>
+                        <p class="m-0">{{ preferences().email || 'Su correo electrónico aquí' }}</p>
+                        <p class="m-0">{{ preferences().website || 'Su sitio web aquí' }}</p>
                     </div>
                 </div>
 
@@ -483,8 +503,7 @@
                         <i-tabler name="map-pin" class="size-3"></i-tabler>
                     </div>
                     <div>
-                        <p class="m-0">Calle 123, Ciudad,</p>
-                        <p class="m-0">País 0000</p>
+                        <p class="m-0 whitespace-pre-line">{{ preferences().address || 'Su dirección aquí' }}</p>
                     </div>
                 </div>
             </div>

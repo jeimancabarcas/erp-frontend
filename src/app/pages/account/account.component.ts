@@ -13,6 +13,10 @@ import { AuthService } from 'src/app/core/services/auth.service';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { GetBillingTemplatePreferencesUseCase } from 'src/app/core/application/use-cases/billing-template-preferences/get-billing-template-preferences.use-case';
+import { UpdateBillingTemplatePreferencesUseCase } from 'src/app/core/application/use-cases/billing-template-preferences/update-billing-template-preferences.use-case';
+import { UploadLogoUseCase } from 'src/app/core/application/use-cases/billing-template-preferences/upload-logo.use-case';
+import { BillingTemplatePreference } from 'src/app/core/domain/entities/billing-template-preference.entity';
 
 @Component({
     selector: 'app-account-setting',
@@ -41,6 +45,12 @@ export class AppAccountSettingComponent implements OnInit {
 
     profileForm: FormGroup;
     securityForm: FormGroup;
+    companyForm: FormGroup;
+    companyPreferences: BillingTemplatePreference | null = null;
+
+    private getBillingPrefs = inject(GetBillingTemplatePreferencesUseCase);
+    private updateBillingPrefs = inject(UpdateBillingTemplatePreferencesUseCase);
+    private uploadLogoUseCase = inject(UploadLogoUseCase);
 
     constructor() {
         const user = this.authService.currentUser();
@@ -55,6 +65,17 @@ export class AppAccountSettingComponent implements OnInit {
             identificationType: [user?.profile?.identificationType || ''],
         });
 
+        this.companyForm = this.fb.group({
+            nit: [''],
+            companyName: ['', [Validators.required]],
+            address: [''],
+            phone1: [''],
+            phone2: [''],
+            email: ['', [Validators.email]],
+            website: [''],
+            logoUrl: [null]
+        });
+
         this.securityForm = this.fb.group({
             currentPassword: ['', [Validators.required]],
             newPassword: ['', [Validators.required, Validators.minLength(8)]],
@@ -62,7 +83,27 @@ export class AppAccountSettingComponent implements OnInit {
         }, { validators: this.passwordsMatchValidator });
     }
 
-    ngOnInit(): void { }
+    ngOnInit(): void {
+        this.loadCompanyPreferences();
+    }
+
+    loadCompanyPreferences() {
+        this.getBillingPrefs.execute().subscribe({
+            next: (prefs) => {
+                this.companyPreferences = prefs;
+                this.companyForm.patchValue({
+                    nit: prefs.nit || '',
+                    companyName: prefs.companyName || '',
+                    address: prefs.address || '',
+                    phone1: prefs.phone1 || '',
+                    phone2: prefs.phone2 || '',
+                    email: prefs.email || '',
+                    website: prefs.website || '',
+                    logoUrl: prefs.logoUrl
+                });
+            }
+        });
+    }
 
     passwordsMatchValidator(g: FormGroup) {
         return g.get('newPassword')?.value === g.get('confirmPassword')?.value
@@ -82,6 +123,20 @@ export class AppAccountSettingComponent implements OnInit {
         });
     }
 
+    saveCompanyProfile() {
+        if (this.companyForm.invalid) return;
+
+        this.updateBillingPrefs.execute(this.companyForm.value).subscribe({
+            next: (updated) => {
+                this.companyPreferences = updated;
+                this.snackBar.open('Información de empresa actualizada', 'Cerrar', { duration: 3000 });
+            },
+            error: (err) => {
+                this.snackBar.open(err.error?.message || 'Error al actualizar empresa', 'Cerrar', { duration: 3000 });
+            }
+        });
+    }
+
     onFileSelected(event: any) {
         const file: File = event.target.files[0];
         if (!file) return;
@@ -97,6 +152,44 @@ export class AppAccountSettingComponent implements OnInit {
             },
             error: (err) => {
                 this.snackBar.open(err.error?.message || 'Error al subir imagen', 'Cerrar', { duration: 3000 });
+            }
+        });
+    }
+
+    onLogoSelected(event: any) {
+        const file: File = event.target.files[0];
+        if (!file) return;
+
+        if (file.size > 1024 * 1024) {
+            this.snackBar.open('El logo es demasiado grande (máximo 1MB)', 'Cerrar', { duration: 3000 });
+            return;
+        }
+
+        this.uploadLogoUseCase.execute(file).subscribe({
+            next: (res) => {
+                this.companyForm.patchValue({ logoUrl: res.url });
+                if (this.companyPreferences) {
+                    this.companyPreferences.logoUrl = res.url;
+                }
+                this.snackBar.open('Logo de empresa actualizado', 'Cerrar', { duration: 3000 });
+            },
+            error: (err) => {
+                this.snackBar.open(err.error?.message || 'Error al subir logo', 'Cerrar', { duration: 3000 });
+            }
+        });
+    }
+
+    resetLogo() {
+        if (!this.companyPreferences) return;
+
+        this.updateBillingPrefs.execute({ logoUrl: null }).subscribe({
+            next: (updated) => {
+                this.companyPreferences = updated;
+                this.companyForm.patchValue({ logoUrl: null });
+                this.snackBar.open('Logo de empresa eliminado', 'Cerrar', { duration: 3000 });
+            },
+            error: (err) => {
+                this.snackBar.open(err.error?.message || 'Error al eliminar logo', 'Cerrar', { duration: 3000 });
             }
         });
     }

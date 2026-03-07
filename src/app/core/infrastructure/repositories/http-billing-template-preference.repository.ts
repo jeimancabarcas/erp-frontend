@@ -24,4 +24,12 @@ export class HttpBillingTemplatePreferenceRepository extends BillingTemplatePref
             map(response => response.data)
         );
     }
+
+    uploadLogo(file: File): Observable<{ url: string }> {
+        const formData = new FormData();
+        formData.append('file', file);
+        return this.http.post<any>(`${this.apiUrl}/upload-logo`, formData).pipe(
+            map(response => response.data)
+        );
+    }
 }

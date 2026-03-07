@@ -121,6 +121,136 @@
             </mat-card-content>
         </mat-tab>
 
+        <!-- Tab Empresa -->
+        <mat-tab>
+            <ng-template mat-tab-label>
+                <div class="flex items-center">
+                    <mat-icon class="flex! items-center">
+                        <i-tabler name="building-store" class="size-5!"></i-tabler>
+                    </mat-icon>
+                    Empresa
+                </div>
+            </ng-template>
+            <mat-card-content>
+                <div class="grid grid-cols-12 gap-6">
+                    <div class="sm:col-span-6 col-span-12">
+                        <mat-card class="cardWithShadow mb-0!">
+                            <mat-card-content>
+                                <mat-card-title>Logo de la Empresa</mat-card-title>
+                                <mat-card-subtitle class="text-sm">Sube el logo de tu empresa para tus
+                                    facturas</mat-card-subtitle>
+                                <div class="text-center mt-8">
+                                    <div
+                                        class="size-[120px] mx-auto border border-gray-100 rounded-lg overflow-hidden flex items-center justify-center bg-gray-50">
+                                        @if (companyForm.get('logoUrl')?.value) {
+                                        <img [src]="companyForm.get('logoUrl')?.value"
+                                            class="max-w-full max-h-full object-contain" />
+                                        } @else {
+                                        <i-tabler name="photo" class="size-12 text-gray-300"></i-tabler>
+                                        }
+                                    </div>
+                                    <div class="mt-6">
+                                        <input type="file" #logoInput (change)="onLogoSelected($event)" hidden
+                                            accept="image/*" />
+                                        <button mat-flat-button color="primary" class="me-2"
+                                            (click)="logoInput.click()">
+                                            Subir Logo
+                                        </button>
+                                        <button mat-stroked-button color="warn" (click)="resetLogo()">Quitar</button>
+                                    </div>
+                                    <span class="text-sm mt-6 block text-gray-400">Tamaño máximo de 1MB.</span>
+                                </div>
+                            </mat-card-content>
+                        </mat-card>
+                    </div>
+
+                    <div class="sm:col-span-6 col-span-12">
+                        <mat-card class="cardWithShadow mb-0!">
+                            <mat-card-content>
+                                <mat-card-title>Información de la Empresa</mat-card-title>
+                                <mat-card-subtitle class="text-sm">Configura los datos que aparecerán en tus
+                                    facturas</mat-card-subtitle>
+
+                                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6 mt-4">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0">
+                                            <i-tabler name="info-circle" class="size-5 text-blue-400"></i-tabler>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm text-blue-700 m-0">
+                                                <strong>Nota importante:</strong> La información que configures en esta
+                                                sección será la que aparezca por defecto en todas tus facturas.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <form [formGroup]="companyForm" (ngSubmit)="saveCompanyProfile()" class="mt-6">
+                                    <div class="grid grid-cols-12 gap-5">
+                                        <div class="col-span-12">
+                                            <mat-label class="text-sm font-semibold mb-2 block">Nombre de la
+                                                Empresa</mat-label>
+                                            <mat-form-field appearance="outline" class="w-full" color="primary">
+                                                <input matInput type="text" formControlName="companyName"
+                                                    placeholder="Ej: Mi Empresa S.A.S" />
+                                            </mat-form-field>
+                                        </div>
+                                        <div class="sm:col-span-6 col-span-12">
+                                            <mat-label class="text-sm font-semibold mb-2 block">NIT /
+                                                Identificación</mat-label>
+                                            <mat-form-field appearance="outline" class="w-full" color="primary">
+                                                <input matInput type="text" formControlName="nit"
+                                                    placeholder="Ej: 900.123.456-7" />
+                                            </mat-form-field>
+                                        </div>
+                                        <div class="sm:col-span-6 col-span-12">
+                                            <mat-label class="text-sm font-semibold mb-2 block">Correo de
+                                                Contacto</mat-label>
+                                            <mat-form-field appearance="outline" class="w-full" color="primary">
+                                                <input matInput type="email" formControlName="email"
+                                                    placeholder="contacto@empresa.com" />
+                                            </mat-form-field>
+                                        </div>
+                                        <div class="sm:col-span-6 col-span-12">
+                                            <mat-label class="text-sm font-semibold mb-2 block">Teléfono
+                                                Principal</mat-label>
+                                            <mat-form-field appearance="outline" class="w-full" color="primary">
+                                                <input matInput type="text" formControlName="phone1" />
+                                            </mat-form-field>
+                                        </div>
+                                        <div class="sm:col-span-6 col-span-12">
+                                            <mat-label class="text-sm font-semibold mb-2 block">Teléfono
+                                                Secundario</mat-label>
+                                            <mat-form-field appearance="outline" class="w-full" color="primary">
+                                                <input matInput type="text" formControlName="phone2" />
+                                            </mat-form-field>
+                                        </div>
+                                        <div class="col-span-12">
+                                            <mat-label class="text-sm font-semibold mb-2 block">Dirección</mat-label>
+                                            <mat-form-field appearance="outline" class="w-full" color="primary">
+                                                <input matInput type="text" formControlName="address" />
+                                            </mat-form-field>
+                                        </div>
+                                        <div class="col-span-12">
+                                            <mat-label class="text-sm font-semibold mb-2 block">Página Web</mat-label>
+                                            <mat-form-field appearance="outline" class="w-full" color="primary">
+                                                <input matInput type="text" formControlName="website"
+                                                    placeholder="www.empresa.com" />
+                                            </mat-form-field>
+                                        </div>
+                                    </div>
+                                    <div class="text-end mt-4">
+                                        <button mat-flat-button color="primary" type="submit"
+                                            [disabled]="companyForm.invalid">Guardar Configuración</button>
+                                    </div>
+                                </form>
+                            </mat-card-content>
+                        </mat-card>
+                    </div>
+                </div>
+            </mat-card-content>
+        </mat-tab>
+
         <!-- Tab Seguridad -->
         <mat-tab>
             <ng-template mat-tab-label>
