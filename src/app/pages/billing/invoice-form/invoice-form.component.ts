@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, computed, signal, effect } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -37,6 +37,10 @@ import { BillingPaymentMethodFormComponent } from '../settings/billing-payment-m
 import { TaxSelectionModalComponent } from './tax-selection-modal.component';
 import { PaymentMethodSelectionModalComponent } from './payment-method-selection-modal.component';
 import { AuthService } from '../../../core/services/auth.service';
+import { CreateBillingInvoiceUseCase } from '../../../core/application/use-cases/billing-invoice/create-billing-invoice.use-case';
+import { GetBillingInvoiceByIdUseCase } from '../../../core/application/use-cases/billing-invoice/get-billing-invoice-by-id.use-case';
+import { BillingInvoice, BillingInvoiceItem, BillingInvoiceItemTax } from '../../../core/domain/entities/billing-invoice.entity';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
     selector: 'app-invoice-form',
@@ -179,6 +183,8 @@ import { AuthService } from '../../../core/services/auth.service';
 export class InvoiceFormComponent implements OnInit {
     private fb = inject(FormBuilder);
     private router = inject(Router);
+    private route = inject(ActivatedRoute);
+    private getInvoiceByIdUseCase = inject(GetBillingInvoiceByIdUseCase);
     private dialog = inject(MatDialog);
 
     invoiceForm: FormGroup;
@@ -206,6 +212,8 @@ export class InvoiceFormComponent implements OnInit {
     private getFrequenciesUseCase = inject(GetBillingPaymentFrequenciesUseCase);
     private getTermsUseCase = inject(GetBillingPaymentTermsUseCase);
     private authService = inject(AuthService);
+    private createInvoiceUseCase = inject(CreateBillingInvoiceUseCase);
+    private toastr = inject(ToastrService);
 
     allTaxes = signal<BillingTax[]>([]);
     clients = signal<BillingClient[]>([]);
@@ -215,6 +223,8 @@ export class InvoiceFormComponent implements OnInit {
     paymentFrequencies = signal<BillingPaymentFrequency[]>([]);
     paymentTerms = signal<BillingPaymentTerm[]>([]);
     printFormat = signal<'A4' | 'POS'>('A4');
+    isReadOnly = signal(false);
+    invoiceId = signal<string | null>(null);
 
     signatureFonts = [
         { name: 'Brush Script', value: "'Brush Script MT', cursive" },
@@ -247,6 +257,7 @@ export class InvoiceFormComponent implements OnInit {
         this.invoiceForm = this.fb.group({
             invoiceNumber: ['0000123'],
             invoiceDate: [new Date()],
+            clientId: [null],
 
             clientName: [''],
             clientPosition: [''],
@@ -273,11 +284,14 @@ export class InvoiceFormComponent implements OnInit {
             signatureIdType: [this.authService.currentUser()?.profile?.identificationType || ''],
             signatureIdNumber: [this.authService.currentUser()?.profile?.identificationNumber || ''],
 
-            notes: ['Gracias por su compra. Esta factura debe ser pagada dentro de los 30 días posteriores a su emisión.']
+            notes: ['Gracias por su compra. Esta factura debe ser pagada dentro de los 30 días posteriores a su emisión.'],
+            paymentMethodName: [''],
+            paymentMethodDetails: [''],
+            creditFrequencyName: [''],
+            creditTermName: ['']
         });
 
-        // Initialize with one empty item
-        this.addItem();
+        // Initialize with one empty item removed from here to avoid duplication with ngOnInit
 
         // Reactive effect to pre-populate signature with user profile data
         effect(() => {
@@ -340,9 +354,97 @@ export class InvoiceFormComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        this.loadInitialData();
+        this.loadBillingData(); // Load billing data for both new and existing invoices
+
+        // Check if we are in view mode
+        const snapshot = this.route.snapshot;
+        if (snapshot.data['isReadOnly']) {
+            this.isReadOnly.set(true);
+        }
+
+        const id = snapshot.params['id'];
+        if (id) {
+            this.invoiceId.set(id);
+            this.loadInvoice(id);
+        } else {
+            // Only if creating new
+            this.addItem();
+        }
+    }
+
+    private loadInitialData() {
         this.calculateTotals();
         this.loadPreferences();
-        this.loadBillingData();
+    }
+
+    private loadInvoice(id: string) {
+        this.getInvoiceByIdUseCase.execute(id).subscribe({
+            next: (invoice) => {
+                this.populateFormWithInvoice(invoice);
+                if (this.isReadOnly()) {
+                    this.invoiceForm.disable();
+                }
+            },
+            error: (err) => {
+                this.toastr.error('No se pudo cargar la factura');
+                this.router.navigate(['/billing/sales']);
+            }
+        });
+    }
+
+    private populateFormWithInvoice(invoice: BillingInvoice) {
+        // Prepare items array
+        this.items.clear();
+        invoice.items.forEach(item => {
+            const itemGroup = this.createItem();
+
+            // Map snapshot taxes back to selection format if possible, 
+            // but for view-only we just care about the display list
+            const taxes = item.taxes.map(t => ({
+                tax: { name: t.taxName } as any, // Temporary object for display
+                rate: t.taxRate
+            }));
+
+            itemGroup.patchValue({
+                itemId: item.itemId,
+                description: item.description,
+                price: item.price,
+                quantity: item.quantity,
+                itemType: item.itemType,
+                standardCode: item.standardCode,
+                internalCode: item.internalCode,
+                taxes: taxes,
+                taxSelection: taxes.map(t => t.tax)
+            });
+            this.items.push(itemGroup);
+        });
+
+        this.invoiceForm.patchValue({
+            invoiceNumber: invoice.invoiceNumber,
+            invoiceDate: new Date(invoice.invoiceDate),
+            clientId: invoice.clientId,
+            clientName: invoice.clientName,
+            clientPosition: `${invoice.clientDocumentType}: ${invoice.clientDocumentNumber}`,
+            clientAddress: invoice.clientAddress,
+            clientPhone: invoice.clientPhone,
+            clientEmail: invoice.clientEmail,
+            paymentType: invoice.paymentType,
+            // Note: Since it's a snapshot, some master data links might be broken
+            // We mainly want to display the saved text values
+            creditInstallments: invoice.creditInstallments,
+            signatureName: invoice.signatureName,
+            signaturePosition: invoice.signaturePosition,
+            signatureIdType: invoice.signatureIdType,
+            signatureIdNumber: invoice.signatureIdNumber,
+            signatureFont: invoice.signatureFont,
+            paymentMethodName: invoice.paymentMethodName,
+            paymentMethodDetails: invoice.paymentMethodDetails,
+            creditFrequencyName: invoice.creditFrequencyName,
+            creditTermName: invoice.creditTermName
+        }, { emitEvent: false });
+
+        this.calculateTotals();
     }
 
     private loadBillingData() {
@@ -387,6 +489,7 @@ export class InvoiceFormComponent implements OnInit {
                 const docInfo = `${client.documentType}: ${client.documentNumber}`;
 
                 this.invoiceForm.patchValue({
+                    clientId: client.id,
                     clientName: client.name,
                     clientPosition: docInfo,
                     clientAddress: client.address || '',
@@ -476,7 +579,10 @@ export class InvoiceFormComponent implements OnInit {
                 itemForm.patchValue({
                     itemId: item.id,
                     description: item.name,
-                    price: item.price || 0,
+                    price: item.price,
+                    itemType: item.type,
+                    standardCode: item.standardCode,
+                    internalCode: item.internalCode,
                     taxes: itemTaxes,
                     taxSelection: itemTaxes.map((it: any) => it.tax)
                 });
@@ -518,12 +624,20 @@ export class InvoiceFormComponent implements OnInit {
     }
 
     onDescriptionChange(index: number) {
-        this.items.at(index).get('itemId')?.setValue(null);
+        this.items.at(index).patchValue({
+            itemId: null,
+            itemType: null,
+            standardCode: null,
+            internalCode: null
+        });
     }
 
     createItem(): FormGroup {
         return this.fb.group({
             itemId: [null], // ID of the product/service if selected from search
+            itemType: [null],
+            standardCode: [null],
+            internalCode: [null],
             description: [''],
             price: [0, [Validators.required, Validators.min(0)]],
             quantity: [1, [Validators.required, Validators.min(1)]],
@@ -595,32 +709,135 @@ export class InvoiceFormComponent implements OnInit {
     }
 
     onSubmit(): void {
-        if (this.invoiceForm.valid) {
-            console.log('Invoice Data:', this.invoiceForm.getRawValue());
-            console.log('Totals:', {
-                subTotal: this.subTotal(),
-                taxAmount: this.taxAmount(),
-                discountAmount: this.discountAmount(),
-                grandTotal: this.grandTotal()
-            });
-            // Handle save logic
+        if (this.invoiceForm.invalid) {
+            this.toastr.error('Por favor complete todos los campos requeridos', 'Error');
+            this.invoiceForm.markAllAsTouched();
+            return;
         }
+
+        const formValue = this.invoiceForm.getRawValue();
+        const prefs = this.preferences();
+        const user = this.authService.currentUser();
+
+        // Map Items for Snapshot
+        const itemsSnapshot: BillingInvoiceItem[] = this.items.controls.map(control => {
+            const val = control.value;
+            const itemBase = Number(val.price || 0) * Number(val.quantity || 0);
+            let itemTaxesTotal = 0;
+
+            const itemTaxes = (val.taxes || []).map((t: any) => {
+                const taxAmount = itemBase * (Number(t.rate) / 100);
+                itemTaxesTotal += taxAmount;
+                return {
+                    taxName: t.tax.name,
+                    taxRate: Number(t.rate),
+                    taxAmount: taxAmount
+                };
+            });
+
+            return {
+                description: val.description,
+                price: Number(val.price),
+                quantity: Number(val.quantity),
+                subTotal: itemBase + itemTaxesTotal,
+                itemId: val.itemId || null,
+                itemType: val.itemType || null,
+                standardCode: val.standardCode || null,
+                internalCode: val.internalCode || null,
+                taxes: itemTaxes
+            };
+        });
+
+        const paymentMethod = this.paymentMethods().find(pm => pm.id === formValue.paymentMethodId);
+        const frequency = this.paymentFrequencies().find(f => f.id === formValue.creditFrequencyId);
+        const term = this.paymentTerms().find(t => t.id === formValue.creditTermId);
+
+        // Build Invoice Snapshot object
+        const invoiceSnapshot: BillingInvoice = {
+            invoiceNumber: formValue.invoiceNumber,
+            invoiceDate: formValue.invoiceDate.toISOString(),
+            clientId: formValue.clientId || null,
+
+            // Company Snapshot (Seller)
+            companyName: prefs.companyName || 'Empresa Generica',
+            companyNit: prefs.nit || '000-000-000',
+            companyAddress: prefs.address || '',
+            companyPhone: prefs.phone1 || '',
+            companyEmail: prefs.email || '',
+            companyWebsite: prefs.website || '',
+            companyLogoUrl: prefs.logoUrl || '',
+
+            // Client Snapshot (Buyer)
+            clientName: formValue.clientName,
+            clientDocumentType: formValue.clientPosition?.split(':')[0]?.trim() || 'NIT',
+            clientDocumentNumber: formValue.clientPosition?.split(':')[1]?.trim() || '0',
+            clientAddress: formValue.clientAddress || '',
+            clientPhone: formValue.clientPhone || '',
+            clientEmail: formValue.clientEmail || '',
+
+            // Payment Snapshot
+            paymentType: formValue.paymentType,
+            paymentMethodName: paymentMethod?.name || 'Contado',
+            paymentMethodDetails: `Medio: ${paymentMethod?.name || 'Efectivo'}`,
+
+            // Credit Snapshot
+            creditInstallments: Number(formValue.creditInstallments || 1),
+            creditFrequencyName: frequency?.name || '',
+            creditTermName: term?.name || '',
+
+            // Totals
+            subTotal: this.subTotal(),
+            taxAmount: this.taxAmount(),
+            discountAmount: this.discountAmount(),
+            grandTotal: this.grandTotal(),
+
+            // Appearance & Terms
+            notes: formValue.notes || '',
+            signatureName: formValue.signatureName || user?.profile?.fullName || '',
+            signaturePosition: formValue.signaturePosition || '',
+            signatureIdType: formValue.signatureIdType || '',
+            signatureIdNumber: formValue.signatureIdNumber || '',
+            signatureFont: formValue.signatureFont || '',
+
+            items: itemsSnapshot
+        };
+
+        this.createInvoiceUseCase.execute(invoiceSnapshot).subscribe({
+            next: (saved) => {
+                this.toastr.success(`Factura ${saved.invoiceNumber} guardada exitosamente`, 'Éxito');
+                this.router.navigate(['/billing/sales']);
+            },
+            error: (err) => {
+                this.toastr.error('Error al guardar la factura: ' + (err.error?.message || err.message), 'Error');
+                console.error('Invoice save error:', err);
+            }
+        });
     }
 
     getItemType(item: any): string {
         return item.type || '';
     }
 
-    onCancel(): void {
-        this.router.navigate(['/billing/sales']);
-    }
-
     onPrint(): void {
         window.print();
     }
 
+    onCancel(): void {
+        this.router.navigate(['/billing/sales']);
+    }
+
     getSelectedPaymentMethod() {
         const id = this.invoiceForm.get('paymentMethodId')?.value;
-        return this.paymentMethods().find(pm => pm.id === id);
+        const found = this.paymentMethods().find(pm => pm.id === id);
+        if (found) return found;
+
+        // Fallback for read-only / snapshot mode
+        if (this.isReadOnly()) {
+            return {
+                name: this.invoiceForm.get('paymentMethodName')?.value || 'Contado',
+                description: this.invoiceForm.get('paymentMethodDetails')?.value || ''
+            } as any;
+        }
+        return null;
     }
 }

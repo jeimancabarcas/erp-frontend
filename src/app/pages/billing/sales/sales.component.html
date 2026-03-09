@@ -62,7 +62,7 @@
                         Fecha
                     </mat-header-cell>
                     <mat-cell class="p-4 text-xs text-muted" *matCellDef="let element" style="min-width: 150px;">
-                        {{ element.date | date:'mediumDate' }}
+                        {{ element.invoiceDate | date:'mediumDate' }}
                     </mat-cell>
                 </ng-container>
 
@@ -73,7 +73,7 @@
                         Monto
                     </mat-header-cell>
                     <mat-cell class="p-4 font-semibold" *matCellDef="let element" style="min-width: 120px;">
-                        {{ element.amount | currency }}
+                        {{ element.grandTotal | currency }}
                     </mat-cell>
                 </ng-container>
 

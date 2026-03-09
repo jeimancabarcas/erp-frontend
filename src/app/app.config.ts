@@ -20,6 +20,8 @@ import { BillingProductRepository } from './core/domain/repositories/billing-pro
 import { HttpBillingProductRepository } from './core/infrastructure/repositories/http-billing-product.repository';
 import { BillingTemplatePreferenceRepository } from './core/domain/repositories/billing-template-preference.repository';
 import { HttpBillingTemplatePreferenceRepository } from './core/infrastructure/repositories/http-billing-template-preference.repository';
+import { BillingInvoiceRepository } from './core/domain/repositories/billing-invoice.repository';
+import { HttpBillingInvoiceRepository } from './core/infrastructure/repositories/http-billing-invoice.repository';
 import { loadingInterceptor } from './core/interceptors/loading.interceptor';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { ToastrModule, provideToastr } from 'ngx-toastr';
@@ -97,6 +99,10 @@ export const appConfig: ApplicationConfig = {
     {
       provide: BillingTemplatePreferenceRepository,
       useClass: HttpBillingTemplatePreferenceRepository,
+    },
+    {
+      provide: BillingInvoiceRepository,
+      useClass: HttpBillingInvoiceRepository,
     },
   ],
 };

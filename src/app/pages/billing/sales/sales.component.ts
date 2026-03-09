@@ -10,6 +10,8 @@ import { TablerIconsModule } from 'angular-tabler-icons';
 import { MaterialModule } from '../../../material.module';
 import { TableEmptyComponent } from '../../../shared/components/table-empty/table-empty.component';
 import { Router } from '@angular/router';
+import { GetBillingInvoicesUseCase } from '../../../core/application/use-cases/billing-invoice/get-billing-invoices.use-case';
+import { BillingInvoice } from '../../../core/domain/entities/billing-invoice.entity';
 
 export interface Sale {
     id: string;
@@ -63,9 +65,11 @@ const MOCK_SALES: Sale[] = [
 export class SalesComponent implements OnInit {
     public dialog = inject(MatDialog);
     private router = inject(Router);
+    private getInvoicesUseCase = inject(GetBillingInvoicesUseCase);
 
     protected displayedColumns: string[] = ['invoiceNumber', 'clientName', 'date', 'amount', 'status', 'actions'];
-    protected dataSource = new MatTableDataSource<Sale>([]);
+    protected dataSource = new MatTableDataSource<BillingInvoice>([]);
+    private allInvoices: BillingInvoice[] = [];
 
     // UI State
     protected filterValue = '';
@@ -85,7 +89,19 @@ export class SalesComponent implements OnInit {
     }
 
     protected loadSales() {
-        let filtered = MOCK_SALES;
+        this.getInvoicesUseCase.execute().subscribe({
+            next: (invoices) => {
+                this.allInvoices = invoices;
+                this.applyFiltersAndPagination();
+            },
+            error: (err) => {
+                console.error('Error loading invoices:', err);
+            }
+        });
+    }
+
+    private applyFiltersAndPagination() {
+        let filtered = [...this.allInvoices];
 
         // Apply string filter
         if (this.filterValue.trim()) {
@@ -98,7 +114,7 @@ export class SalesComponent implements OnInit {
 
         // Apply status filter
         if (this.statusFilter !== 'Todas') {
-            filtered = filtered.filter(s => s.status === this.statusFilter);
+            filtered = filtered.filter(s => (s.status || 'Emitida') === this.statusFilter);
         }
 
         this.totalElements.set(filtered.length);
@@ -112,18 +128,18 @@ export class SalesComponent implements OnInit {
 
     protected applyFilter() {
         this.currentPage.set(0);
-        this.loadSales();
+        this.applyFiltersAndPagination();
     }
 
     protected onStatusChange() {
         this.currentPage.set(0);
-        this.loadSales();
+        this.applyFiltersAndPagination();
     }
 
     protected onPageChange(event: PageEvent) {
         this.currentPage.set(event.pageIndex);
         this.pageSize.set(event.pageSize);
-        this.loadSales();
+        this.applyFiltersAndPagination();
     }
 
     protected onSortChange(sort: Sort) {
@@ -134,27 +150,26 @@ export class SalesComponent implements OnInit {
             return;
         }
 
-        MOCK_SALES.sort((a, b) => {
+        this.allInvoices.sort((a, b) => {
             const isAsc = sort.direction === 'asc';
             switch (sort.active) {
                 case 'invoiceNumber': return this.compare(a.invoiceNumber, b.invoiceNumber, isAsc);
                 case 'clientName': return this.compare(a.clientName, b.clientName, isAsc);
-                case 'date': return this.compare(a.date.getTime(), b.date.getTime(), isAsc);
-                case 'amount': return this.compare(a.amount, b.amount, isAsc);
-                case 'status': return this.compare(a.status, b.status, isAsc);
+                case 'date': return this.compare(new Date(a.invoiceDate).getTime(), new Date(b.invoiceDate).getTime(), isAsc);
+                case 'amount': return this.compare(a.grandTotal, b.grandTotal, isAsc);
+                case 'status': return this.compare(a.status || 'Emitida', b.status || 'Emitida', isAsc);
                 default: return 0;
             }
         });
-        this.loadSales();
+        this.applyFiltersAndPagination();
     }
 
     private compare(a: number | string, b: number | string, isAsc: boolean) {
         return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
     }
 
-    protected viewDetails(sale: Sale) {
-        // Mock view details action
-        console.log('Ver detalles de la factura:', sale.invoiceNumber);
+    protected viewDetails(sale: BillingInvoice) {
+        this.router.navigate(['/billing/sales/view', sale.id]);
     }
 
     protected newSale() {

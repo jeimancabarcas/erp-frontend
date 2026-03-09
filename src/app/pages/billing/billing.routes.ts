@@ -31,6 +31,22 @@ export const BillingRoutes: Routes = [
         },
     },
     {
+        path: 'sales/view/:id',
+        loadComponent: () =>
+            import('./invoice-form/invoice-form.component').then(
+                (m) => m.InvoiceFormComponent
+            ),
+        data: {
+            title: 'Ver Factura',
+            isReadOnly: true,
+            urls: [
+                { title: 'Facturación' },
+                { title: 'Ventas', url: '/billing/sales' },
+                { title: 'Detalle de Factura' },
+            ],
+        },
+    },
+    {
         path: 'settings',
         loadComponent: () =>
             import('./settings/billing-settings.component').then(

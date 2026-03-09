@@ -75,6 +75,7 @@
                                 <!-- Client Info -->
                                 <div class="flex-1 w-full">
                                     <div class="mb-4">
+                                        @if (!isReadOnly()) {
                                         <div class="flex items-center gap-2 mb-2 print:hidden">
                                             <button mat-stroked-button type="button" class="w-full text-xs"
                                                 (click)="onClientSelect()">
@@ -83,22 +84,23 @@
                                                 </span>
                                             </button>
                                         </div>
+                                        }
                                     </div>
 
                                     <div class="mt-2 space-y-1">
                                         <div class="flex items-center gap-2">
                                             <span class="font-bold"
                                                 [style.color]="preferences().primaryColor">Para:</span>
-                                            <input type="text" formControlName="clientName"
+                                            <input type="text" formControlName="clientName" [readonly]="isReadOnly()"
                                                 class="invoice-input font-bold" placeholder="Nombre del Cliente">
                                         </div>
-                                        <input type="text" formControlName="clientPosition"
+                                        <input type="text" formControlName="clientPosition" [readonly]="isReadOnly()"
                                             class="invoice-input text-gray-500 text-sm" placeholder="Identificacion">
-                                        <input type="text" formControlName="clientAddress"
+                                        <input type="text" formControlName="clientAddress" [readonly]="isReadOnly()"
                                             class="invoice-input text-gray-500 text-sm p-0" placeholder="Dirección">
-                                        <input type="text" formControlName="clientPhone"
+                                        <input type="text" formControlName="clientPhone" [readonly]="isReadOnly()"
                                             class="invoice-input text-gray-500 text-sm p-0" placeholder="Teléfono">
-                                        <input type="text" formControlName="clientEmail"
+                                        <input type="text" formControlName="clientEmail" [readonly]="isReadOnly()"
                                             class="invoice-input text-gray-500 text-sm p-0" placeholder="Email">
                                     </div>
                                 </div>
@@ -109,7 +111,7 @@
                                     [style.backgroundColor]="preferences().primaryColor">
                                     <div class="p-4 border-r border-white/20">
                                         <p class="text-[10px] uppercase tracking-wider mb-1 opacity-80">Factura #</p>
-                                        <input type="text" formControlName="invoiceNumber"
+                                        <input type="text" formControlName="invoiceNumber" [readonly]="isReadOnly()"
                                             class="w-24 bg-transparent border-none text-white outline-none font-semibold text-sm placeholder-white/50 focus:ring-1 focus:ring-white/50 rounded px-1">
                                     </div>
                                     <div class="p-4 border-r border-white/20">
@@ -117,9 +119,12 @@
                                         </p>
                                         <div class="flex items-center gap-1 group">
                                             <input matInput [matDatepicker]="picker" formControlName="invoiceDate"
+                                                [readonly]="isReadOnly()"
                                                 class="w-24 bg-transparent border-none text-white outline-none font-semibold text-sm cursor-pointer">
+                                            @if (!isReadOnly()) {
                                             <mat-datepicker-toggle matSuffix [for]="picker"
                                                 class="invoice-datepicker-toggle scale-75 -ms-2"></mat-datepicker-toggle>
+                                            }
                                             <mat-datepicker #picker></mat-datepicker>
                                         </div>
                                     </div>
@@ -228,25 +233,29 @@
 
                                         <div class="flex items-center w-full">
                                             <div class="flex-1 min-w-[200px] flex items-center gap-2">
+                                                @if (!isReadOnly()) {
                                                 <div class="print:hidden w-8">
                                                     <button mat-icon-button type="button" class="scale-75 text-gray-400"
                                                         (click)="onItemSelect(i)">
                                                         <i-tabler name="search" class="size-4"></i-tabler>
                                                     </button>
                                                 </div>
+                                                }
                                                 <input type="text" formControlName="description"
+                                                    [readonly]="isReadOnly()"
                                                     class="invoice-input font-medium text-sm text-gray-800"
                                                     placeholder="Descripción del item" (input)="onDescriptionChange(i)">
                                             </div>
                                             <div class="w-28 h-full flex items-center justify-center relative">
                                                 <span
                                                     class="absolute left-2 text-gray-500 text-sm pointer-events-none">$</span>
-                                                <input type="number" formControlName="price"
+                                                <input type="number" formControlName="price" [readonly]="isReadOnly()"
                                                     class="invoice-input text-center text-sm" placeholder="0.00">
                                             </div>
                                             <div class="w-20">
                                                 <input type="number" formControlName="quantity"
-                                                    class="invoice-input text-center text-sm" placeholder="1">
+                                                    [readonly]="isReadOnly()" class="invoice-input text-center text-sm"
+                                                    placeholder="1">
                                             </div>
                                             <div
                                                 class="w-28 text-right font-medium text-gray-600 text-sm pt-1 flex flex-col">
@@ -257,6 +266,7 @@
                                                 </span>
                                                 }
                                             </div>
+                                            @if (!isReadOnly()) {
                                             <div class="w-10 flex justify-end print:hidden">
                                                 <button mat-icon-button type="button" color="warn"
                                                     class="scale-75 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -264,10 +274,12 @@
                                                     <i-tabler name="trash" class="size-4"></i-tabler>
                                                 </button>
                                             </div>
+                                            }
                                         </div>
 
                                         <!-- Tax Selection Trigger -->
                                         <div class="flex items-center gap-2 mt-2 px-10">
+                                            @if (!isReadOnly()) {
                                             <div class="print:hidden">
                                                 <button mat-button color="primary" type="button"
                                                     class="text-[10px] h-7 px-3 border border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors rounded-full"
@@ -278,6 +290,7 @@
                                                     </span>
                                                 </button>
                                             </div>
+                                            }
                                             <div class="flex flex-wrap gap-2">
                                                 @for (t of items.at(i).get('taxes')?.value; track t.tax.id) {
                                                 <div
@@ -289,16 +302,19 @@
                                                         class="flex items-center bg-gray-50 border border-gray-300 rounded px-1 ml-1 focus-within:border-blue-400 focus-within:ring-1 focus-within:ring-blue-100">
                                                         <input type="number" [value]="t.rate"
                                                             (input)="updateTaxRate(i, t.tax.id, $event)"
+                                                            [readonly]="isReadOnly()"
                                                             class="w-10 border-none bg-transparent text-[10px] font-semibold text-center focus:ring-0 p-0 h-4"
                                                             [max]="t.tax.rate" min="0" step="0.01">
                                                         <span
                                                             class="text-[10px] text-gray-400 font-bold pr-0.5">%</span>
                                                     </div>
+                                                    @if (!isReadOnly()) {
                                                     <button mat-icon-button type="button"
                                                         class="size-4 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors ms-1 print:hidden"
                                                         (click)="removeTaxFromItem(i, t.tax.id)">
                                                         <i-tabler name="x" class="size-2.5"></i-tabler>
                                                     </button>
+                                                    }
                                                 </div>
                                                 }
                                             </div>
@@ -308,14 +324,18 @@
                                 </div>
 
                                 <!-- Add Row Button -->
-                                <div class="mt-2">
-                                    <button mat-button color="primary" type="button" (click)="addItem()"
-                                        class="text-xs">
-                                        <span class="flex items-center gap-2">
-                                            <i-tabler name="plus" class="size-4"></i-tabler> Agregar Item
+                                @if (!isReadOnly()) {
+                                <div class="mt-2 text-center py-4 border-2 border-dashed border-gray-100 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group"
+                                    (click)="addItem()">
+                                    <button mat-button color="primary" type="button" class="text-xs">
+                                        <span class="flex items-center gap-2 scale-110">
+                                            <i-tabler name="plus"
+                                                class="size-4 group-hover:rotate-90 transition-transform duration-300"></i-tabler>
+                                            Agregar Nuevo Item de Factura
                                         </span>
                                     </button>
                                 </div>
+                                }
                             </div>
                             }
 
@@ -329,6 +349,7 @@
                                         <!-- Método de Pago (Crédito/Débito) -->
                                         <div>
                                             <h4 class="font-bold text-gray-800 mb-2">Método de Pago:</h4>
+                                            @if (!isReadOnly()) {
                                             <div class="flex gap-2 print:hidden">
                                                 <button type="button"
                                                     (click)="invoiceForm.get('paymentType')?.setValue('Debito')"
@@ -347,8 +368,10 @@
                                                     <i-tabler name="calendar-time" class="size-4"></i-tabler> Crédito
                                                 </button>
                                             </div>
-                                            <!-- Print Display for Método -->
-                                            <div class="hidden print:block text-gray-800 font-semibold italic">
+                                            }
+                                            <!-- Print & Read-only Display for Método -->
+                                            <div class="hidden print:block text-gray-800 font-semibold italic"
+                                                [class.!block]="isReadOnly()">
                                                 {{ invoiceForm.get('paymentType')?.value }}
                                             </div>
                                         </div>
@@ -367,22 +390,36 @@
                                             <div class="no-label-field">
                                                 <label
                                                     class="text-[10px] font-bold text-blue-800 uppercase block mb-1">Frecuencia</label>
+                                                @if (!isReadOnly()) {
                                                 <mat-select formControlName="creditFrequencyId"
                                                     class="invoice-input text-xs font-semibold p-1 bg-white border border-gray-200 rounded">
                                                     @for (freq of paymentFrequencies(); track freq.id) {
                                                     <mat-option [value]="freq.id">{{ freq.name }}</mat-option>
                                                     }
                                                 </mat-select>
+                                                } @else {
+                                                <div
+                                                    class="invoice-input text-xs font-semibold p-1 bg-gray-50 border border-gray-200 rounded cursor-not-allowed min-h-[30px] flex items-center">
+                                                    {{ invoiceForm.get('creditFrequencyName')?.value || 'N/A' }}
+                                                </div>
+                                                }
                                             </div>
                                             <div class="no-label-field">
                                                 <label
                                                     class="text-[10px] font-bold text-blue-800 uppercase block mb-1">Plazo</label>
+                                                @if (!isReadOnly()) {
                                                 <mat-select formControlName="creditTermId"
                                                     class="invoice-input text-xs font-semibold p-1 bg-white border border-gray-200 rounded">
                                                     @for (term of availableTerms(); track term.id) {
                                                     <mat-option [value]="term.id">{{ term.name }}</mat-option>
                                                     }
                                                 </mat-select>
+                                                } @else {
+                                                <div
+                                                    class="invoice-input text-xs font-semibold p-1 bg-gray-50 border border-gray-200 rounded cursor-not-allowed min-h-[30px] flex items-center">
+                                                    {{ invoiceForm.get('creditTermName')?.value || 'N/A' }}
+                                                </div>
+                                                }
                                             </div>
                                         </div>
                                         }
@@ -390,6 +427,7 @@
                                         <!-- Medio de Pago (Efectivo/Tarjeta/etc) -->
                                         <div>
                                             <h4 class="font-bold text-gray-800 mb-2">Medio de Pago:</h4>
+                                            @if (!isReadOnly()) {
                                             <div class="print:hidden">
                                                 <button mat-stroked-button type="button"
                                                     class="w-full max-w-xs text-xs h-10 border-dashed"
@@ -401,6 +439,7 @@
                                                     </span>
                                                 </button>
                                             </div>
+                                            }
                                         </div>
                                     </div>
 
@@ -441,6 +480,7 @@
                                         [style.color]="preferences().primaryColor">
                                         <div class="flex justify-between gap-1 w-full mb-2">
                                             <div class="font-bold">Descuento</div>
+                                            @if (!isReadOnly()) {
                                             <div
                                                 class="flex items-center gap-1 bg-gray-50 p-0.5 rounded-md border border-gray-200 w-fit print:hidden">
                                                 <button type="button"
@@ -458,6 +498,7 @@
                                                     $
                                                 </button>
                                             </div>
+                                            }
                                         </div>
                                         <div class="flex flex-col items-end gap-1 w-full">
                                             <div class="flex items-center gap-1 w-full">
@@ -465,6 +506,7 @@
                                                     invoiceForm.get('discountType')?.value === 'amount' ? '$' : ''
                                                     }}</span>
                                                 <input type="number" formControlName="discountRate"
+                                                    [readonly]="isReadOnly()"
                                                     class="invoice-input w-20 text-right font-bold text-sm p-0 m-0 border-b-2 rounded-none bg-transparent"
                                                     [style.borderColor]="preferences().primaryColor"
                                                     [style.color]="preferences().primaryColor" placeholder="0">
@@ -492,12 +534,13 @@
                                 <!-- Terms -->
                                 <div class="flex-1 text-sm text-gray-500 max-w-sm">
                                     <h4 class="font-bold text-gray-800 mb-1">Términos y Condiciones:</h4>
-                                    <textarea formControlName="notes"
+                                    <textarea formControlName="notes" [readonly]="isReadOnly()"
                                         class="invoice-input text-gray-500 text-xs resize-none h-16 w-full p-0 leading-relaxed"></textarea>
                                 </div>
 
                                 <!-- Signature -->
                                 <div class="text-center w-64 group/signature relative">
+                                    @if (!isReadOnly()) {
                                     <div
                                         class="print:hidden absolute -top-8 left-0 right-0 flex justify-center opacity-0 group-hover/signature:opacity-100 transition-opacity">
                                         <button mat-icon-button [matMenuTriggerFor]="fontMenu" type="button"
@@ -514,6 +557,7 @@
                                             }
                                         </mat-menu>
                                     </div>
+                                    }
 
                                     <div class="border-b border-gray-300 pb-2 mb-2 h-16 flex items-end justify-center">
                                         <span class="text-4xl text-gray-800 whitespace-nowrap"
@@ -522,16 +566,16 @@
                                         </span>
                                     </div>
                                     <div class="flex justify-center items-center text-xs text-gray-500 gap-1">
-                                        <input type="text" formControlName="signatureIdType"
+                                        <input type="text" formControlName="signatureIdType" [readonly]="isReadOnly()"
                                             class="invoice-input text-left max-w-10 p-0" placeholder="Tipo">
                                         <span>:</span>
-                                        <input type="text" formControlName="signatureIdNumber"
+                                        <input type="text" formControlName="signatureIdNumber" [readonly]="isReadOnly()"
                                             class="invoice-input text-left p-0 " placeholder="Nº Identificación">
                                     </div>
-                                    <input type="text" formControlName="signatureName"
+                                    <input type="text" formControlName="signatureName" [readonly]="isReadOnly()"
                                         class="invoice-input text-left font-bold text-sm text-gray-800 p-0"
                                         placeholder="Su Nombre Aquí">
-                                    <input type="text" formControlName="signaturePosition"
+                                    <input type="text" formControlName="signaturePosition" [readonly]="isReadOnly()"
                                         class="invoice-input text-left text-xs text-gray-500 p-0"
                                         placeholder="Su Cargo Aquí">
                                 </div>
@@ -621,7 +665,10 @@
                 </div>
 
                 <div class="flex gap-3">
-                    <button mat-stroked-button type="button" (click)="onCancel()">Cancelar</button>
+                    <button mat-stroked-button type="button" (click)="onCancel()"
+                        [color]="isReadOnly() ? 'primary' : ''">
+                        {{ isReadOnly() ? 'Regresar' : 'Cancelar' }}
+                    </button>
                     <button mat-stroked-button color="primary" type="button" (click)="onPrint()">
                         <span class="flex items-center gap-2">
                             <i-tabler name="printer" class="size-4"></i-tabler>
@@ -629,12 +676,14 @@
                         </span>
                     </button>
                 </div>
+                @if (!isReadOnly()) {
                 <button mat-flat-button color="primary" type="submit" [disabled]="invoiceForm.invalid">
                     <span class="flex items-center gap-2">
                         <i-tabler name="device-floppy" class="size-4"></i-tabler>
                         Guardar Factura
                     </span>
                 </button>
+                }
             </div>
         </form>
     </mat-card>
