@@ -111,8 +111,9 @@
                                     [style.backgroundColor]="preferences().primaryColor">
                                     <div class="p-4 border-r border-white/20">
                                         <p class="text-[10px] uppercase tracking-wider mb-1 opacity-80">Factura #</p>
-                                        <input type="text" formControlName="invoiceNumber" [readonly]="isReadOnly()"
-                                            class="w-24 bg-transparent border-none text-white outline-none font-semibold text-sm placeholder-white/50 focus:ring-1 focus:ring-white/50 rounded px-1">
+                                        <input type="text" formControlName="invoiceNumber" [readonly]="true"
+                                            class="w-24 bg-transparent border-none text-white outline-none font-semibold text-sm placeholder-white/50 focus:ring-1 focus:ring-white/50 rounded px-1 cursor-not-allowed"
+                                            title="El consecutivo se genera automáticamente al guardar">
                                     </div>
                                     <div class="p-4 border-r border-white/20">
                                         <p class="text-[10px] uppercase tracking-wider mb-1 opacity-80">Fecha de Factura

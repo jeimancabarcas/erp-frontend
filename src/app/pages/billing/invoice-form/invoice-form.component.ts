@@ -38,6 +38,7 @@ import { TaxSelectionModalComponent } from './tax-selection-modal.component';
 import { PaymentMethodSelectionModalComponent } from './payment-method-selection-modal.component';
 import { AuthService } from '../../../core/services/auth.service';
 import { CreateBillingInvoiceUseCase } from '../../../core/application/use-cases/billing-invoice/create-billing-invoice.use-case';
+import { GetNextInvoiceNumberUseCase } from '../../../core/application/use-cases/billing-invoice/get-next-invoice-number.use-case';
 import { GetBillingInvoiceByIdUseCase } from '../../../core/application/use-cases/billing-invoice/get-billing-invoice-by-id.use-case';
 import { BillingInvoice, BillingInvoiceItem, BillingInvoiceItemTax } from '../../../core/domain/entities/billing-invoice.entity';
 import { ToastrService } from 'ngx-toastr';
@@ -213,6 +214,7 @@ export class InvoiceFormComponent implements OnInit {
     private getTermsUseCase = inject(GetBillingPaymentTermsUseCase);
     private authService = inject(AuthService);
     private createInvoiceUseCase = inject(CreateBillingInvoiceUseCase);
+    private getNextInvoiceNumberUseCase = inject(GetNextInvoiceNumberUseCase);
     private toastr = inject(ToastrService);
 
     allTaxes = signal<BillingTax[]>([]);
@@ -255,7 +257,7 @@ export class InvoiceFormComponent implements OnInit {
 
     constructor() {
         this.invoiceForm = this.fb.group({
-            invoiceNumber: ['0000123'],
+            invoiceNumber: ['AUTO'],
             invoiceDate: [new Date()],
             clientId: [null],
 
@@ -370,7 +372,25 @@ export class InvoiceFormComponent implements OnInit {
         } else {
             // Only if creating new
             this.addItem();
+            this.fetchNextInvoiceNumber();
         }
+    }
+
+    private fetchNextInvoiceNumber() {
+        this.getNextInvoiceNumberUseCase.execute().subscribe({
+            next: (response: { nextNumber: string }) => {
+                this.invoiceForm.patchValue({
+                    invoiceNumber: response.nextNumber
+                }, { emitEvent: false });
+            },
+            error: (err: any) => {
+                console.error('Error fetching next invoice number:', err);
+                // Fallback to AUTO if we can't fetch the predictor
+                this.invoiceForm.patchValue({
+                    invoiceNumber: 'AUTO'
+                }, { emitEvent: false });
+            }
+        });
     }
 
     private loadInitialData() {

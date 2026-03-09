@@ -32,4 +32,10 @@ export class HttpBillingInvoiceRepository extends BillingInvoiceRepository {
             map(response => response.data)
         );
     }
+
+    getNextNumber(): Observable<{ nextNumber: string }> {
+        return this.http.get<any>(`${this.apiUrl}/next-number`).pipe(
+            map(response => response.data)
+        );
+    }
 }
