@@ -38,4 +38,8 @@ export class HttpBillingInvoiceRepository extends BillingInvoiceRepository {
             map(response => response.data)
         );
     }
+
+    updateStatus(id: string, status: string): Observable<void> {
+        return this.http.patch<void>(`${this.apiUrl}/${id}/status`, { status });
+    }
 }

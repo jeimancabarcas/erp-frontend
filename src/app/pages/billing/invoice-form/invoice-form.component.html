@@ -7,7 +7,57 @@
             style="clip-path: polygon(0 0, 100% 0, 0 100%);" [style.backgroundColor]="preferences().primaryColor">
         </div>
 
-        <form [formGroup]="invoiceForm" class="relative z-10 pt-8" (ngSubmit)="onSubmit()">
+        <form [formGroup]="invoiceForm" class="relative z-10 pt-4" (ngSubmit)="onSubmit()">
+            <!-- Read-only Action Toolbar -->
+            @if (isReadOnly()) {
+            <div
+                class="sticky top-0 z-[100] bg-white/90 backdrop-blur-md border-b border-gray-100 p-3 px-8 mb-4 flex flex-wrap items-center justify-between gap-4 shadow-sm print:hidden rounded-t-lg">
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-bold uppercase tracking-widest text-gray-400">Acciones de Factura:</span>
+                    <div class="flex gap-2">
+                        @if (currentStatus() === 'Emitida') {
+                        <button mat-flat-button color="primary" type="button" class="!px-3 !h-9 !leading-none"
+                            (click)="onUpdateStatus('Pagada')">
+                            <span class="flex items-center gap-2 text-xs">
+                                <i-tabler name="check" class="size-4"></i-tabler> Registrar Pago
+                            </span>
+                        </button>
+                        }
+
+                        <button mat-stroked-button type="button" class="!px-3 !h-9 !leading-none"
+                            (click)="onUpdateStatus('Anulada')">
+                            <span class="flex items-center gap-2 text-xs text-red-500">
+                                <i-tabler name="x" class="size-4"></i-tabler> Anular
+                            </span>
+                        </button>
+
+                        <button mat-stroked-button type="button" class="!px-3 !h-9 !leading-none">
+                            <span class="flex items-center gap-2 text-xs">
+                                <i-tabler name="minus" class="size-4"></i-tabler> Nota Crédito
+                            </span>
+                        </button>
+
+                        <button mat-stroked-button type="button" class="!px-3 !h-9 !leading-none">
+                            <span class="flex items-center gap-2 text-xs">
+                                <i-tabler name="plus" class="size-4"></i-tabler> Nota Débito
+                            </span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] uppercase font-bold text-gray-400">Estado Actual:</span>
+                    <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter shadow-sm"
+                        [ngClass]="{
+                            'bg-blue-100 text-blue-700': currentStatus() === 'Emitida',
+                            'bg-green-100 text-green-700': currentStatus() === 'Pagada',
+                            'bg-red-100 text-red-700': currentStatus() === 'Anulada'
+                        }">
+                        {{ currentStatus() }}
+                    </span>
+                </div>
+            </div>
+            }
             <!-- Use a table layout to guarantee repeating headers/footers when printing -->
             <table class="w-full border-spacing-0 border-collapse">
                 <tbody>
@@ -110,7 +160,16 @@
                                 <div class="text-white rounded-md flex overflow-hidden shadow-sm w-full sm:w-auto"
                                     [style.backgroundColor]="preferences().primaryColor">
                                     <div class="p-4 border-r border-white/20">
-                                        <p class="text-[10px] uppercase tracking-wider mb-1 opacity-80">Factura #</p>
+                                        <p
+                                            class="text-[10px] uppercase tracking-wider mb-1 opacity-80 flex items-center gap-2">
+                                            Factura #
+                                            @if (isReadOnly()) {
+                                            <span
+                                                class="px-1.5 py-0.5 rounded bg-white/20 text-[8px] font-bold uppercase">
+                                                {{ currentStatus() }}
+                                            </span>
+                                            }
+                                        </p>
                                         <input type="text" formControlName="invoiceNumber" [readonly]="true"
                                             class="w-24 bg-transparent border-none text-white outline-none font-semibold text-sm placeholder-white/50 focus:ring-1 focus:ring-white/50 rounded px-1 cursor-not-allowed"
                                             title="El consecutivo se genera automáticamente al guardar">

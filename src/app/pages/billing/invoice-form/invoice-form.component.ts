@@ -40,6 +40,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { CreateBillingInvoiceUseCase } from '../../../core/application/use-cases/billing-invoice/create-billing-invoice.use-case';
 import { GetNextInvoiceNumberUseCase } from '../../../core/application/use-cases/billing-invoice/get-next-invoice-number.use-case';
 import { GetBillingInvoiceByIdUseCase } from '../../../core/application/use-cases/billing-invoice/get-billing-invoice-by-id.use-case';
+import { UpdateBillingInvoiceStatusUseCase } from '../../../core/application/use-cases/billing-invoice/update-billing-invoice-status.use-case';
 import { BillingInvoice, BillingInvoiceItem, BillingInvoiceItemTax } from '../../../core/domain/entities/billing-invoice.entity';
 import { ToastrService } from 'ngx-toastr';
 
@@ -215,6 +216,7 @@ export class InvoiceFormComponent implements OnInit {
     private authService = inject(AuthService);
     private createInvoiceUseCase = inject(CreateBillingInvoiceUseCase);
     private getNextInvoiceNumberUseCase = inject(GetNextInvoiceNumberUseCase);
+    private updateStatusUseCase = inject(UpdateBillingInvoiceStatusUseCase);
     private toastr = inject(ToastrService);
 
     allTaxes = signal<BillingTax[]>([]);
@@ -227,6 +229,7 @@ export class InvoiceFormComponent implements OnInit {
     printFormat = signal<'A4' | 'POS'>('A4');
     isReadOnly = signal(false);
     invoiceId = signal<string | null>(null);
+    currentStatus = signal<string>('Emitida');
 
     signatureFonts = [
         { name: 'Brush Script', value: "'Brush Script MT', cursive" },
@@ -393,6 +396,22 @@ export class InvoiceFormComponent implements OnInit {
         });
     }
 
+    onUpdateStatus(newStatus: string) {
+        const id = this.invoiceId();
+        if (!id) return;
+
+        this.updateStatusUseCase.execute(id, newStatus).subscribe({
+            next: () => {
+                this.currentStatus.set(newStatus);
+                this.toastr.success(`Estado actualizado a: ${newStatus}`, 'Éxito');
+            },
+            error: (err) => {
+                this.toastr.error('Error al actualizar el estado', 'Error');
+                console.error(err);
+            }
+        });
+    }
+
     private loadInitialData() {
         this.calculateTotals();
         this.loadPreferences();
@@ -402,6 +421,7 @@ export class InvoiceFormComponent implements OnInit {
         this.getInvoiceByIdUseCase.execute(id).subscribe({
             next: (invoice) => {
                 this.populateFormWithInvoice(invoice);
+                this.currentStatus.set(invoice.status || 'Emitida');
                 if (this.isReadOnly()) {
                     this.invoiceForm.disable();
                 }
@@ -825,7 +845,7 @@ export class InvoiceFormComponent implements OnInit {
         this.createInvoiceUseCase.execute(invoiceSnapshot).subscribe({
             next: (saved) => {
                 this.toastr.success(`Factura ${saved.invoiceNumber} guardada exitosamente`, 'Éxito');
-                this.router.navigate(['/billing/sales']);
+                this.router.navigate(['/billing/sales/view', saved.id]);
             },
             error: (err) => {
                 this.toastr.error('Error al guardar la factura: ' + (err.error?.message || err.message), 'Error');

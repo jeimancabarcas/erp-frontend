@@ -6,4 +6,5 @@ export abstract class BillingInvoiceRepository {
     abstract findAll(): Observable<BillingInvoice[]>;
     abstract findById(id: string): Observable<BillingInvoice>;
     abstract getNextNumber(): Observable<{ nextNumber: string }>;
+    abstract updateStatus(id: string, status: string): Observable<void>;
 }
